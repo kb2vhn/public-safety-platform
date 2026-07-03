@@ -1,0 +1,195 @@
+Ideas for the Sql of the project, nothing definitive just some quick thoughts.
+
+Phase 1
+identity/
+---------
+  users
+  roles
+  permissions
+  agencies
+  personnel
+
+location/
+---------
+  addresses
+  jurisdictions
+  beats
+  districts
+  zones
+
+assets/
+------
+  units
+  vehicles
+  equipment
+
+audit/
+------
+  audit_log
+  change_history
+
+address
+-----------
+id
+street_number
+stree_name
+city
+state
+zip
+latitude
+longitude
+goemetry
+
+Phase 2: CAD
+  call recieved
+  	|
+  call event
+  	|
+	caller
+	location
+	priority
+	nature
+	notes
+
+  dispatch
+      |
+     assigned units
+     status timeline
+     radio log
+     gps positions
+
+  disposition
+
+  Update unit by history not in place
+  
+  unit_status_history
+
+  id
+  unit_id
+  status
+  timestamp
+  event_id
+  changed_by
+
+
+Phase 3: RMS
+Incident
+  persons
+  vehicles
+  property
+  evidence
+  charges
+  citations
+  arrests
+  photos
+  narratives
+
+	person should exist only once this can then be related to all events of that person may it be a live call with history to or whatever.
+
+	Relate to incidents incident_id
+			    person_id
+			    role	victim
+			    		suspect
+					witness
+					reporting party
+					caller
+					juvenile
+					officer
+
+** Avoid clutter tables "everything" tables
+	incident (shouldn't have abounch of entires it should have a refernce)
+	victim_name
+	victim_phone
+	suspect_name
+	suspect_shirt
+	suspect_pants
+	suspect_mode_of_travel
+
+  instead create ref this will take time to build and create a good schema
+
+  incident
+    person
+    vechicle
+    mode_of_travel
+    
+
+-------------------------
+each record should create a immutable history of rows.
+
+project layout
+
+database/
+        |
+     schema/
+       - 001_identity.sql
+       - 002_locations.sql
+       - 003_units.sql
+       - 004_calls.sql
+       - 005_dispatch.sql
+       - 006_incidents.sql
+       - 007_persons.sql
+       - 008_property.sql
+
+- views
+- functions
+- triggers
+- seed
+- migrations
+
+
+---------------------------------
+domains
+
+identity
+  users
+  roles
+  authentication
+
+
+cad
+  calls
+  dispatch
+  units
+  radio
+
+ems
+  medical
+  type
+
+fire
+  type (struct, land)
+  dept
+
+
+RMS
+  incidents
+  reports
+  evidence
+  property
+
+justice
+  warrants
+  charges
+  citations
+  court
+
+
+GIS
+  address
+  jurisdictions
+  districts
+  mapping
+
+
+administration
+  audit
+  configuration
+  logs
+  reporting
+
+
+
+
+
+
+			    
