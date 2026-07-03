@@ -1,0 +1,50 @@
+cad-platform/
+│
+├── cmd/
+│   └── cad-server/
+│       └── main.go
+│
+├── internal/
+│   ├── auth/
+│   │   ├── ldap.go
+│   │   ├── local.go
+│   │   ├── service.go
+│   │   └── middleware.go
+│   │
+│   ├── cad/
+│   │   ├── incidents.go
+│   │   ├── calls.go
+│   │   ├── dispatch.go
+│   │   └── service.go
+│   │
+│   ├── units/
+│   │   ├── units.go
+│   │   ├── status.go
+│   │   └── service.go
+│   │
+│   ├── audit/
+│   │   ├── audit.go
+│   │   ├── events.go
+│   │   └── writer.go
+│   │
+│   ├── database/
+│   │   ├── postgres.go
+│   │   ├── migrations.go
+│   │   └── repository.go
+│   │
+│   ├── api/
+│   │   ├── handlers.go
+│   │   ├── middleware.go
+│   │   └── routes.go
+│   │
+│   └── config/
+│       └── config.go
+│
+├── migrations/
+│
+├── web/
+│
+├── configs/
+│
+├── go.mod
+└── README.md
