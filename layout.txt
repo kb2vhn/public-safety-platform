@@ -1,3 +1,5 @@
+somethign like this.
+
 cad-platform/
 │
 ├── cmd/
