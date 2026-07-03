@@ -1,6 +1,6 @@
 somethign like this.
 
-cad-platform/
+core/
 │
 ├── cmd/
 │   └── cad-server/
@@ -12,6 +12,7 @@ cad-platform/
 │   │   ├── local.go
 │   │   ├── service.go
 │   │   └── middleware.go
+|   |   |__ users/
 │   │
 │   ├── cad/
 │   │   ├── incidents.go
@@ -41,6 +42,24 @@ cad-platform/
 │   │
 │   └── config/
 │       └── config.go
+|   |
+│   ├── agencies/
+│   ├── personnel/
+│   ├── units/
+│   ├── cad/
+│   ├── incidents/
+│   ├── reports/
+│   ├── evidence/
+│   ├── attachments/
+│   ├── audit/
+│   ├── notifications/
+│   ├── gis/
+│   ├── permissions/
+│   ├── scheduling/
+│   ├── database/
+│   ├── api/
+│   └── config/
+│
 │
 ├── migrations/
 │
