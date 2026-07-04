@@ -1,0 +1,17 @@
+Postgresql 
+- Closely adhears to SQL standard
+- Ablilty to support semi-structrued data with features link JSON, JSONB
+- Ability to use geographic data handling (will most likely use PostGis)
+- Full-text Search
+- No license issues for DEV or Production side
+- No hidden cost like some other products
+- Well documented
+- Comprehensive system for managing users, roles and permissions for access and modifying of data
+- Supports encryption
+- Supports Windows, Mac, many Linux Distributions, BSDs, and Docker. (not locked into one OS or server type)
+- Scalability both vertically and horizontally.
+
+- High Availability (some platforms this requires muti-vendor lockin to only one OS type or one storage type) the following site is some of the HA abilities https://www.pgedge.com/blog/postgresql-high-availability-strategies-tools-best-practice?utm_term=high%20availability%20postgres&utm_campaign=Multi-Master+Keyword+Search&utm_source=google&utm_medium=ppc&hsa_acc=7527569200&hsa_cam=20252943055&hsa_grp=150142363659&hsa_ad=661052529535&hsa_src=g&hsa_tgt=kwd-364122684239&hsa_kw=high%20availability%20postgres&hsa_mt=b&hsa_net=adwords&hsa_ver=3&gad_source=1&gad_campaignid=20252943055&gbraid=0AAAAApfdpUDrOgeq1aUsSW7ryjgbFSQwi&gclid=Cj0KCQjw3qLSBhDaARIsAFTiVh5nnSx4cu8JoQI_vv9vZnDO8wLOz4vWA2mCXVuvCTJegMPpq-QEhD0aApZHEALw_wcB
+
+*** HA will be another area to explore not just for DATA but for the entire system. ***
+
