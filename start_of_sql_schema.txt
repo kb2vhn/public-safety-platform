@@ -5,7 +5,7 @@ Currently the dev-box for this is a very low power system. This is on purpose.
     32gb EMMC HD
     and a Intel Celeron 3215U
     
-    The idea is that if the core can run on this then when moving it to a real environment there will be room to grow. This system will be running everything over the slow WiFi of this system this will give a good understanding of many aspects of the program over time.
+    The idea is that if the core can run well on this then when moving it to a real environment there will be room to grow. This system will be running everything over the slow WiFi of this system. This will give a good understanding of many aspects of the program over time.
     I do have a moderately powered R720 that this will be moved to running Proxmox most likely as the Hypervisor. I can then allocate much more resources to the system to stress test before release.  
 
 Ideas for the Sql of the project, nothing definitive just some quick thoughts.
