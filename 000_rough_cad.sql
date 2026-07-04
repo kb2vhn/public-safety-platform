@@ -35,3 +35,15 @@ CREATE TABLE users (
 	active BOOLEAN DEFAULT TRUE,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-----------------------------------
+-- Stations
+-----------------------------------
+CREATE TABLE stations (
+    station_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    agency_id UUID REFERENCES agencies(agency_id),
+    name VARCHAR(100),
+    address TEXT
+);
+
+
