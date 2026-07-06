@@ -1,4 +1,5 @@
-Schema Blueprintsql
+—-Schema Blueprintsql
+—- This is implementing the Two-Person Concept. This is just the SQL portion the *.go still needs to be further thought out and tested. This gives a begining stage to the SQL.
 -- Enable standard UUID generation for secure, non-sequential primary keys
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
