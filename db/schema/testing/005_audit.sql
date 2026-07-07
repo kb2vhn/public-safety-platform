@@ -1,31 +1,44 @@
 -- ============================================================
--- 005_audit.sql
+-- 005_audit_event_stream.sql
 --
 -- Public Safety Platform
 --
 -- Purpose:
 --
--- Provides immutable, cryptographically verifiable audit
--- logging for all security and operational events.
+-- Unified immutable forensic event stream.
+--
+-- Combines:
+--
+--   1. Security Audit
+--   2. Application Execution Trace
+--   3. Performance Telemetry
+--   4. Incident Reconstruction
+--
 --
 -- Security Principle:
 --
--- If an action cannot be proven, it did not happen.
---
--- Every security-relevant action must be:
---
--- - attributable
--- - timestamped
--- - associated with identity
--- - associated with device
--- - associated with session
--- - cryptographically chained
+-- If an action cannot be proven,
+-- it did not happen.
 --
 --
--- Audit records are append-only.
+-- Every event must be:
 --
--- They are never updated.
--- They are never deleted.
+--   - attributable
+--   - timestamped
+--   - identity bound
+--   - device bound
+--   - session bound
+--   - cryptographically chained
+--   - execution traceable
+--
+--
+-- Records are append only.
+--
+-- NEVER:
+--
+-- UPDATE
+-- DELETE
+-- TRUNCATE
 --
 --
 -- Dependencies:
@@ -50,52 +63,146 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TYPE audit_event_type AS ENUM (
 
+    ------------------------------------------------------------
+    -- Application Lifecycle
+    ------------------------------------------------------------
+
+    'APPLICATION_STARTED',
+    'APPLICATION_STOPPED',
+    'SYSTEM_FAILURE',
+    'SYSTEM_RECOVERY',
+
+
+    ------------------------------------------------------------
+    -- Execution Trace
+    ------------------------------------------------------------
+
+    'REQUEST_RECEIVED',
+    'REQUEST_COMPLETED',
+
+    'FUNCTION_STARTED',
+    'FUNCTION_COMPLETED',
+    'FUNCTION_FAILED',
+
+
+    ------------------------------------------------------------
     -- Identity
+    ------------------------------------------------------------
 
     'PERSON_CREATED',
     'IDENTITY_VERIFIED',
+
     'ACCOUNT_CREATED',
     'ACCOUNT_DISABLED',
 
 
-    -- Device
+    ------------------------------------------------------------
+    -- Device Trust
+    ------------------------------------------------------------
 
     'DEVICE_REGISTERED',
+
     'DEVICE_CERTIFICATE_CREATED',
     'DEVICE_CERTIFICATE_REVOKED',
+
     'DEVICE_ATTESTATION_FAILED',
 
 
+    ------------------------------------------------------------
+    -- Authentication
+    ------------------------------------------------------------
+
+    'LOGIN_REQUEST',
+
+    'TLS_HANDSHAKE_COMPLETE',
+
+    'CERTIFICATE_VALIDATED',
+
+    'FAILED_AUTHENTICATION',
+
+    'FAILED_CERTIFICATE_VALIDATION',
+
+
+    ------------------------------------------------------------
     -- Authorization
+    ------------------------------------------------------------
 
     'ACCESS_REQUEST_CREATED',
+
     'ACCESS_APPROVED',
+
     'ACCESS_DENIED',
+
     'ACCESS_REVOKED',
 
+    'PRIVILEGE_ESCALATION_ATTEMPT',
 
-    -- Operational
+
+
+    ------------------------------------------------------------
+    -- Operational Authority
+    ------------------------------------------------------------
 
     'ROLE_ASSIGNED',
+
     'ROLE_REMOVED',
+
     'SHIFT_ACTIVATED',
+
     'SHIFT_TERMINATED',
 
+    'SUPERVISOR_APPROVAL',
 
-    -- Sessions
+
+
+    ------------------------------------------------------------
+    -- Session Management
+    ------------------------------------------------------------
 
     'SESSION_CREATED',
+
     'SESSION_RENEWED',
+
     'SESSION_EXPIRED',
+
     'SESSION_REVOKED',
 
 
-    -- Security
 
-    'FAILED_AUTHENTICATION',
-    'FAILED_CERTIFICATE_VALIDATION',
+    ------------------------------------------------------------
+    -- PKI
+    ------------------------------------------------------------
+
+    'CERTIFICATE_GENERATED',
+
+    'CERTIFICATE_EXPIRED',
+
+    'CERTIFICATE_REVOKED',
+
+
+
+    ------------------------------------------------------------
+    -- Database Security
+    ------------------------------------------------------------
+
+    'DATABASE_CONNECTION_CREATED',
+
+    'DATABASE_ROLE_CREATED',
+
+    'DATABASE_ROLE_REMOVED',
+
+    'DATABASE_QUERY_EXECUTED',
+
+
+
+    ------------------------------------------------------------
+    -- Policy
+    ------------------------------------------------------------
+
     'POLICY_VIOLATION',
-    'PRIVILEGE_ESCALATION_ATTEMPT',
+
+    'CONFIGURATION_CHANGED',
+
     'AUDIT_TAMPERING_ATTEMPT'
 
 );
@@ -103,14 +210,9 @@ CREATE TYPE audit_event_type AS ENUM (
 
 
 -- ============================================================
--- IMMUTABLE AUDIT EVENT LEDGER
+-- IMMUTABLE FORENSIC EVENT STREAM
 --
--- IMPORTANT:
---
--- INSERT ONLY
---
--- No UPDATE
--- No DELETE
+-- Application execution and security events live together.
 --
 -- ============================================================
 
@@ -121,62 +223,162 @@ CREATE TABLE audit_events (
         DEFAULT uuid_generate_v4(),
 
 
-    event_type audit_event_type
-        NOT NULL,
 
+    ------------------------------------------------------------
+    -- TRACE CORRELATION
+    --
+    -- Allows reconstruction of complete workflows
+    ------------------------------------------------------------
+
+    trace_id UUID NOT NULL,
+
+    request_id UUID NOT NULL,
+
+
+
+    ------------------------------------------------------------
+    -- EVENT TIME
+    ------------------------------------------------------------
 
     event_time TIMESTAMPTZ
         NOT NULL DEFAULT now(),
 
 
-    -- Person performing action
+
+    ------------------------------------------------------------
+    -- APPLICATION EXECUTION CONTEXT
+    --
+    -- Tracks exact Go execution location
+    ------------------------------------------------------------
+
+    service_name VARCHAR(100)
+        NOT NULL,
+
+
+    package_name VARCHAR(255),
+
+
+    function_name VARCHAR(255),
+
+
+    source_file VARCHAR(255),
+
+
+    source_line INTEGER,
+
+
+
+    ------------------------------------------------------------
+    -- CLASSIFICATION
+    ------------------------------------------------------------
+
+    event_type audit_event_type
+        NOT NULL,
+
+
+    event_category VARCHAR(50)
+        NOT NULL,
+
+
+    severity VARCHAR(20)
+        NOT NULL DEFAULT 'INFO',
+
+
+
+    ------------------------------------------------------------
+    -- SECURITY IDENTITY
+    ------------------------------------------------------------
 
     actor_person_id UUID
         REFERENCES persons(person_id),
 
 
-    -- Device used
-
     device_id UUID
         REFERENCES devices(device_id),
 
-
-    -- Active session
 
     session_id UUID
         REFERENCES active_sessions(session_id),
 
 
-    -- Object affected
+
+    ------------------------------------------------------------
+    -- Cryptographic Identity
+    ------------------------------------------------------------
+
+    signer_certificate_thumbprint VARCHAR(255),
+
+
+    database_role VARCHAR(255),
+
+
+
+    ------------------------------------------------------------
+    -- TARGET OBJECT
+    ------------------------------------------------------------
 
     target_type VARCHAR(100),
+
 
     target_id UUID,
 
 
-    -- Description
 
-    event_description TEXT
+    ------------------------------------------------------------
+    -- EXECUTION RESULT
+    ------------------------------------------------------------
+
+    success BOOLEAN
         NOT NULL,
 
 
-    -- Additional structured information
+    error_code VARCHAR(100),
+
+
+    error_message TEXT,
+
+
+
+    ------------------------------------------------------------
+    -- PERFORMANCE
+    ------------------------------------------------------------
+
+    execution_time_ms INTEGER,
+
+
+
+    ------------------------------------------------------------
+    -- EXTENDED EVENT DATA
+    --
+    -- Examples:
+    --
+    -- LDAP server
+    -- certificate serial
+    -- IP address
+    -- SQL operation
+    -- security decisions
+    -- hardware validation
+    --
+    ------------------------------------------------------------
 
     event_data JSONB
         NOT NULL,
 
 
-    -- Cryptographic chain
+
+    ------------------------------------------------------------
+    -- CRYPTOGRAPHIC HASH CHAIN
+    --
+    -- Each event proves previous history existed.
+    --
+    ------------------------------------------------------------
 
     previous_event_hash BYTEA,
+
 
     event_hash BYTEA
         NOT NULL,
 
-
-    -- Certificate identity
-
-    signer_certificate_thumbprint VARCHAR(255),
 
 
     created_at TIMESTAMPTZ
@@ -215,6 +417,9 @@ CREATE TABLE security_alerts (
         REFERENCES persons(person_id),
 
 
+    analyst_notes TEXT,
+
+
     created_at TIMESTAMPTZ
         NOT NULL DEFAULT now()
 
@@ -223,9 +428,9 @@ CREATE TABLE security_alerts (
 
 
 -- ============================================================
--- HASH VALIDATION RECORDS
+-- HASH VALIDATION
 --
--- Periodically validates integrity of audit chain.
+-- Periodically validates the audit chain.
 --
 -- ============================================================
 
@@ -266,7 +471,7 @@ CREATE TABLE audit_integrity_checks (
 -- ============================================================
 -- RETENTION POLICY
 --
--- Retention varies by jurisdiction.
+-- Jurisdiction controlled retention
 -- ============================================================
 
 
@@ -295,10 +500,9 @@ CREATE TABLE audit_retention_policy (
 
 
 -- ============================================================
--- DATABASE SECURITY BOUNDARY
+-- DATABASE SECURITY ROLES
 --
--- The application is NOT the owner of audit data.
---
+-- Application never owns audit data.
 -- ============================================================
 
 
@@ -312,34 +516,38 @@ CREATE ROLE audit_break_glass NOLOGIN;
 
 
 
--- Ownership would be assigned by deployment process:
+-- ============================================================
+-- OWNERSHIP
+--
+-- Assigned during deployment:
 --
 -- ALTER TABLE audit_events OWNER TO audit_owner;
+--
+-- ============================================================
 
 
 
 -- ============================================================
--- APPLICATION AUDIT WRITER
+-- APPLICATION WRITER
 --
--- Application can create history.
---
--- Application cannot rewrite history.
+-- Can create history.
+-- Cannot modify history.
 -- ============================================================
 
 
-GRANT INSERT, SELECT
+GRANT INSERT
 ON audit_events
 TO audit_writer;
 
 
-REVOKE UPDATE, DELETE
+REVOKE UPDATE, DELETE, TRUNCATE
 ON audit_events
 FROM audit_writer;
 
 
 
 -- ============================================================
--- AUDITOR ACCESS
+-- AUDITOR
 -- ============================================================
 
 
@@ -348,23 +556,23 @@ ON audit_events
 TO audit_reader;
 
 
-REVOKE INSERT, UPDATE, DELETE
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE
 ON audit_events
 FROM audit_reader;
 
 
 
 -- ============================================================
--- BREAK GLASS
+-- BREAK GLASS ACCESS
 --
--- Emergency investigation only.
+-- Emergency only.
 --
 -- Requires:
 --
--- - MFA
--- - approval
--- - alert generation
--- - time limit
+-- MFA
+-- approval
+-- alert creation
+-- time limit
 --
 -- ============================================================
 
@@ -380,47 +588,64 @@ TO audit_break_glass;
 -- ============================================================
 
 
-CREATE INDEX idx_audit_events_time
+CREATE INDEX idx_audit_event_time
 ON audit_events(event_time);
 
 
-CREATE INDEX idx_audit_events_actor
+
+CREATE INDEX idx_audit_trace
+ON audit_events(trace_id);
+
+
+
+CREATE INDEX idx_audit_request
+ON audit_events(request_id);
+
+
+
+CREATE INDEX idx_audit_actor
 ON audit_events(actor_person_id);
 
 
-CREATE INDEX idx_audit_events_device
+
+CREATE INDEX idx_audit_device
 ON audit_events(device_id);
 
 
-CREATE INDEX idx_audit_events_session
+
+CREATE INDEX idx_audit_session
 ON audit_events(session_id);
 
 
-CREATE INDEX idx_audit_events_type
+
+CREATE INDEX idx_audit_function
+ON audit_events(function_name);
+
+
+
+CREATE INDEX idx_audit_type
 ON audit_events(event_type);
 
 
 
-CREATE INDEX idx_security_alerts_status
+CREATE INDEX idx_audit_failures
+ON audit_events(success)
+WHERE success = false;
+
+
+
+CREATE INDEX idx_security_alert_status
 ON security_alerts(status);
 
 
 
 -- ============================================================
--- PROTECTION AGAINST ACCIDENTAL DAMAGE
+-- FINAL PROTECTION
 --
--- These should be applied by deployment owner.
---
--- Application roles should never own these tables.
---
+-- Application accounts cannot destroy evidence.
 -- ============================================================
 
 
-REVOKE UPDATE, DELETE
-ON audit_events
-FROM PUBLIC;
-
-
-REVOKE TRUNCATE
+REVOKE UPDATE, DELETE, TRUNCATE
 ON audit_events
 FROM PUBLIC;
