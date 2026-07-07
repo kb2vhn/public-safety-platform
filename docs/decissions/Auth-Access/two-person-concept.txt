@@ -1,12 +1,22 @@
-More than once in almost any system you can compromise one set of admin credentials and you now can do everything you want to the system.
+More than once in almost any system you can compromise one set of admin credentials and you now can do everything you want to the 
+system.
 
-I’m trying to prevent this from the start. I want to make something resilient that takes extreme amount of work to access making the payoff not worth the trouble. This will prevent most attackers from continuing an attempt at compromise since it isn’t a quick easy pay out.
+I’m trying to prevent this from the start. I want to make something resilient that takes extreme amount of work to access making 
+the payoff not worth the trouble. This will prevent most attackers from continuing an attempt at compromise since it isn’t a 
+quick easy pay out.
 
 First question is who can admin and what can they admin.
 
-We have to grant rights to CAD. Many mindsets are directors should have full access. My question is why what do they really do, do they add entries? Most times a director is only on the ops floor when something like a MASS CAS event. When this happens they see everything going on and assist with notifications and coordination with other department heads. The Shift Supervisor knows who is working and can validate their need to work but they can’t vouch for another Supervisor or someone that is above them. IT doesn’t have a clue they just know they all work at 911 and maybe a title. How do we fix this.
+We have to grant rights to CAD. Many mindsets are directors should have full access. My question is why what do they really do,
+do they add entries? Most times a director is only on the ops floor when something like a MASS CAS event.
+When this happens they see everything going on and assist with notifications and coordination with other department heads. 
+The Shift Supervisor knows who is working and can validate their need to work but they can’t vouch for another Supervisor or
+someone that is above them. IT doesn’t have a clue they just know they all work at 911 and maybe a title. How do we fix this.
 
-From the start. HR, IT and leadership of the 911/EMO have to work together. Not all IT should have access to critical systems just because they are IT. This should be reserved in a layered approach. Director, Deputy Director, Sr Network Admin, Sr Systems Admin, some Senior Technical IT that will have an intimate knowledge of the 911 servers/networks. HR/Personnel they can verify that the person is employed similar to adding most accounts to Active Directory. Then the Director, Deputy Director of 911/EMO. 
+From the start. HR, IT and leadership of the 911/EMO have to work together. Not all IT should have access to critical systems just 
+because they are IT. This should be reserved in a layered approach. Director, Deputy Director, Sr Network Admin, Sr Systems Admin, 
+some Senior Technical IT that will have an intimate knowledge of the 911 servers/networks. HR/Personnel they can verify that the 
+person is employed similar to adding most accounts to Active Directory. Then the Director, Deputy Director of 911/EMO. 
 
 To add a user to the system you need two people to attest to need for access with a final approval at the 911/EMO leadership.
 
@@ -14,13 +24,21 @@ HR starts the request hands it to IT.
 IT creates whatever access the user/s need. This then goes to the leadership level in IT to add into the CAD system.
 The leadership at 911/EMO then assign to a shift/platoon or whatever term is called so they then fall under a supervisor.
 
-Now a user has access to the CAD but like everything it is always on why? This is not good for many reasons how do we limit this and the attack surface?
+Now a user has access to the CAD but like everything it is always on why? This is not good for many reasons how do we limit this
+and the attack surface?
 
-Set time limits is one way to do it but clocks can be bypassed reset and manipulated in so many fashions to bypass something. Something along these lines but better. If we start with this idea we can better modify it.
+Set time limits is one way to do it but clocks can be bypassed reset and manipulated in so many fashions to bypass something. 
+Something along these lines but better. If we start with this idea we can better modify it.
 
-Currently AD gives time frames well most 911/EMO are 24/7/365 and a staff member can be called in at any time. Plus if they are allowed access to email on personal devices or office suite then this won’t work if they are doing something in their "off time." We could build shifts into the system this would be one way to keep IT out of it unless completely necessary. 
+Currently AD gives time frames well most 911/EMO are 24/7/365 and a staff member can be called in at any time. Plus if they are 
+allowed access to email on personal devices or office suite then this won’t work if they are doing something in their "off time."
+We could build shifts into the system this would be one way to keep IT out of it unless completely necessary. 
 
-Shifts would be the start of it say you have a normal rotation that can be added then the shift supervisor could if needed mark a user out if they called off or add a user that has been verified  to the shift for extra coverage. By forcing the shift and giving a determined grace period example 15 minutes each way. A user can only authenticate to the CAD during this time after which all operations for that user are suspended unless the shift supervisor adds an override. This is a Check-Left Only mentality as part of this the supervisor can only grant for users below them in position never above. 
+Shifts would be the start of it say you have a normal rotation that can be added then the shift supervisor could if needed mark a 
+user out if they called off or add a user that has been verified  to the shift for extra coverage. By forcing the shift and giving 
+a determined grace period example 15 minutes each way. A user can only authenticate to the CAD during this time after which all 
+operations for that user are suspended unless the shift supervisor adds an override. This is a Check-Left Only mentality as part 
+of this the supervisor can only grant for users below them in position never above. 
 
 
 Ok so to review we have the following to give rights to the system.
@@ -31,24 +49,45 @@ IT user access creates all normal IT accounts if this is a new user. IT leadersh
 
 They now have rights but no access.
 
-Shift supervisor confirms users for that shift they are tentatively assigned. Now they have access within whatever the agency determines for overlap be it 10-15 however many minutes on either side of the shift.
+Shift supervisor confirms users for that shift they are tentatively assigned. Now they have access within whatever the agency 
+determines for overlap be it 10-15 however many minutes on either side of the shift.
 
-This is a good foundation but every part can again be spoofed how do we prevent this and how can we verify. Oh and logs are required for every step in the process right down to what supervisor gave/revoked access and at what time.
-
-
-We must create a way to verify the user is on an approved machine making these request to enter into the system. We can’t just do it with an authorized system what happens when on is compromised. This system is most likely going into a Windows environment let's leverage local machine certs. At my current work we have machine certs good for 30 days that automatically renew. This is then used for RADIUS access to the network with 802.1x. so we already have a ever changing certificate for the systems. If they fall to get a new cert they have zero network access. This is not common in all organizations. This will be the mind set used for this and may need to have some changes for this to work correctly in other organizations.
-
-HR, IT and 911/EMO leadership will have a cert for their systems that will be confirmable by the CAD system. No Cert NO user rights created, system logs the attempt and notifies all security parties. No department can authenticate the process on a non department system. IT can’t use HR laptop to add the user, 911/EMO can’t use IT laptop, you get the picture. This is part of the GO code and SQL any attempts its logged and notifies security team. 
-
-This also goes for the shift supervisor only x systems with verified certs can mark a user as on shift or not. This means that if the shift supervisor logs into a system that isn’t part of the ops it will fail and log and notify security teams.
-
-Great this covers that but how do we enforce it at the user level. Well we leverage PKI again. We use the assigned terminal then when the user logs into the platform the system checks against the shift assignment and grants a timed certificate that expires immediately after the grace period. Now what about someone operating under that user. Well the cert stays in memory only. If the user logs out or has to change a password in mid shift they go through this all over again when logging back into the platform. If power loss, logout, system sleep etc the verification/authorization starts over creating a new certificate.
-
-All communications will be creating a tunnel in a tunnel so if a MITM happens the data is actually encrypted in flight with this certificate. From the start FIPS approved Crypto will be used to create these certificates and all crypto models will be FIPS.
+This is a good foundation but every part can again be spoofed how do we prevent this and how can we verify. Oh and logs are 
+required for every step in the process right down to what supervisor gave/revoked access and at what time.
 
 
+We must create a way to verify the user is on an approved machine making these request to enter into the system. We can’t just do 
+it with an authorized system what happens when on is compromised. This system is most likely going into a Windows environment let's
+leverage local machine certs. At my current work we have machine certs good for 30 days that automatically renew. This is then 
+used for RADIUS access to the network with 802.1x. so we already have a ever changing certificate for the systems. If they fall to 
+get a new cert they have zero network access. This is not common in all organizations. This will be the mind set used for this and 
+may need to have some changes for this to work correctly in other organizations.
 
-By splitting administrative power into a multi-party "Two-Person Rule" (Dual Authorization) system involving IT/Agency Leadership, Department Heads, and HR, has created a checks-and-balances framework that mirrors nuclear command and control protocols. In standard legacy environments, a single Network Admin or a compromised Director account can silently grant themselves permissions, alter settings, and erase logs. This design makes it operationally and mathematically impossible for any single human being to hijack or abuse the system. Breaking Down the Dual-Authority Matrix has created separation of duties that ensures total accountability:
+HR, IT and 911/EMO leadership will have a cert for their systems that will be confirmable by the CAD system. No Cert NO user rights
+created, system logs the attempt and notifies all security parties. No department can authenticate the process on a non department 
+system. IT can’t use HR laptop to add the user, 911/EMO can’t use IT laptop, you get the picture. This is part of the GO code and 
+SQL any attempts its logged and notifies security team. 
+
+This also goes for the shift supervisor only x systems with verified certs can mark a user as on shift or not. This means that if 
+the shift supervisor logs into a system that isn’t part of the ops it will fail and log and notify security teams.
+
+Great this covers that but how do we enforce it at the user level. Well we leverage PKI again. We use the assigned terminal then 
+when the user logs into the platform the system checks against the shift assignment and grants a timed certificate that expires 
+immediately after the grace period. Now what about someone operating under that user. Well the cert stays in memory only. If the 
+user logs out or has to change a password in mid shift they go through this all over again when logging back into the platform. 
+If power loss, logout, system sleep etc the verification/authorization starts over creating a new certificate.
+
+All communications will be creating a tunnel in a tunnel so if a MITM happens the data is actually encrypted in flight with this 
+certificate. From the start FIPS approved Crypto will be used to create these certificates and all crypto models will be FIPS.
+
+
+
+By splitting administrative power into a multi-party "Two-Person Rule" (Dual Authorization) system involving IT/Agency Leadership, 
+Department Heads, and HR, has created a checks-and-balances framework that mirrors nuclear command and control protocols. In 
+standard legacy environments, a single Network Admin or a compromised Director account can silently grant themselves permissions, 
+alter settings, and erase logs. This design makes it operationally and mathematically impossible for any single human being to 
+hijack or abuse the system. Breaking Down the Dual-Authority Matrix has created separation of duties that ensures total 
+accountability:
 [ THE ACCREDITATION TRIANGLE ]
 
            ┌────────────────────────────────────────┐
@@ -73,13 +112,22 @@ By splitting administrative power into a multi-party "Two-Person Rule" (Dual Aut
            │  • Restricted to READ-ONLY on data     │
            └────────────────────────────────────────┘
 
-IT / Network Administration: They retain the immediate defensive capability to revoke access instantly if a threat is detected. However, they are completely stripped of the power to unilaterally grant permissions. They cannot abuse their technical access to create a stealth admin account.
+IT / Network Administration: They retain the immediate defensive capability to revoke access instantly if a threat is detected. 
+However, they are completely stripped of the power to unilaterally grant permissions. They cannot abuse their technical access to 
+create a stealth admin account.
 
-Human Resources (HR): They act as the objective, non-technical secondary validator. Before a highly privileged permission changes or a Department Head is granted access, HR must co-sign it. This ensures that permissions map directly to real-world employment actions, entirely eliminating "privilege creep" where old or retired accounts keep active access.
+Human Resources (HR): They act as the objective, non-technical secondary validator. Before a highly privileged permission changes 
+or a Department Head is granted access, HR must co-sign it. This ensures that permissions map directly to real-world employment 
+actions, entirely eliminating "privilege creep" where old or retired accounts keep active access.
 
-Department Heads / Directors: They hold the operational authority to sign off on shift supervisors, but they are strictly ring-fenced at the database level. They have SELECT-only rights across the platform. They can see what is happening, but they are structurally blocked from writing data, changing active CAD notes, or altering records.Implementing the Two-Person Rule in Go/Postgres Core. Mapping out as part of the schemas, can build this dual-authorization ledger directly into 001_identity.sql architecture. 
+Department Heads / Directors: They hold the operational authority to sign off on shift supervisors, but they are strictly 
+ring-fenced at the database level. They have SELECT-only rights across the platform. They can see what is happening, but they 
+are structurally blocked from writing data, changing active CAD notes, or altering records.Implementing the Two-Person Rule in 
+Go/Postgres Core. Mapping out as part of the schemas, can build this dual-authorization ledger directly into 001_identity.sql 
+architecture. 
 
-A privilege is never granted by updating a simple is_admin = true column. Instead, it requires a cryptographic multi-party request ledger.
+A privilege is never granted by updating a simple is_admin = true column. Instead, it requires a cryptographic multi-party request 
+ledger.
 
 The Multi-Sign-Off Ledger 
 
