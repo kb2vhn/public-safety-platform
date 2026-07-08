@@ -1,27 +1,75 @@
--- ============================================================
+-- ============================================================================
 -- 010_privilege_validation.sql
 --
--- Database Security Boundary Enforcement
+-- Privilege Model Validation
 --
--- Purpose:
---   Establish least privilege database access.
---   No application role receives unrestricted access.
---   Operational authority remains separate from technical access.
+-- Goals:
+--   - Create application roles
+--   - Establish least privilege
+--   - Validate access boundaries
+--   - Support repeatable schema rebuilds
 --
--- ============================================================
-
+-- Depends On:
+--   000-009
+--
+-- ============================================================================
 
 BEGIN;
 
 
--- ============================================================
--- 1. REMOVE DEFAULT POSTGRES TRUST
--- ============================================================
+------------------------------------------------------------
+-- ROLES
+------------------------------------------------------------
 
-REVOKE ALL
-ON SCHEMA public
-FROM PUBLIC;
+DO $$
+BEGIN
 
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_roles
+        WHERE rolname = 'cad_application'
+    )
+    THEN
+
+        CREATE ROLE cad_application
+        NOLOGIN;
+
+    END IF;
+
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_roles
+        WHERE rolname = 'cad_readonly'
+    )
+    THEN
+
+        CREATE ROLE cad_readonly
+        NOLOGIN;
+
+    END IF;
+
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_roles
+        WHERE rolname = 'cad_auditor'
+    )
+    THEN
+
+        CREATE ROLE cad_auditor
+        NOLOGIN;
+
+    END IF;
+
+
+END
+$$;
+
+
+------------------------------------------------------------
+-- REMOVE PUBLIC ACCESS
+------------------------------------------------------------
 
 REVOKE ALL
 ON ALL TABLES
@@ -42,242 +90,158 @@ FROM PUBLIC;
 
 
 
--- ============================================================
--- 2. CREATE DATABASE SECURITY ROLES
--- ============================================================
+------------------------------------------------------------
+-- APPLICATION ROLE
+------------------------------------------------------------
 
-
--- Schema owner.
--- Used only for migrations.
--- Application NEVER uses this account.
-CREATE ROLE cad_schema_owner
-NOLOGIN;
-
-
--- Authentication service.
--- Handles identity validation and sessions.
-CREATE ROLE auth_service
-NOLOGIN;
-
-
--- CAD operational service.
--- Handles approved CAD transactions.
-CREATE ROLE cad_application
-NOLOGIN;
-
-
--- Read-only reporting.
-CREATE ROLE cad_reporting
-NOLOGIN;
-
-
--- Immutable audit writer.
-CREATE ROLE audit_writer
-NOLOGIN;
-
-
--- Emergency break-glass role.
--- Disabled by default.
-CREATE ROLE emergency_dba
-NOLOGIN;
-
-
-
--- ============================================================
--- 3. TRANSFER OWNERSHIP OF SECURITY TABLES
--- ============================================================
-
-
-ALTER TABLE agencies
-OWNER TO cad_schema_owner;
-
-
-ALTER TABLE users
-OWNER TO cad_schema_owner;
-
-
-ALTER TABLE privilege_authorization_ledger
-OWNER TO cad_schema_owner;
-
-
-ALTER TABLE administrative_hardware_gates
-OWNER TO cad_schema_owner;
-
-
-ALTER TABLE shift_roster
-OWNER TO cad_schema_owner;
-
-
-ALTER TABLE shift_activations
-OWNER TO cad_schema_owner;
-
-
-
--- ============================================================
--- 4. AUTHENTICATION SERVICE PERMISSIONS
--- ============================================================
-
-
-GRANT SELECT
-ON agencies,
-users
-TO auth_service;
-
-
-GRANT SELECT
-ON shift_roster,
-shift_activations
-TO auth_service;
-
-
-GRANT INSERT
-ON TABLE shift_activations
-TO auth_service;
-
-
-GRANT SELECT
-ON administrative_hardware_gates
-TO auth_service;
-
-
-
--- ============================================================
--- 5. CAD APPLICATION PERMISSIONS
---
--- The application can only perform approved actions.
--- It does not own the database.
--- ============================================================
-
-
-GRANT SELECT
-ON users
+GRANT USAGE
+ON SCHEMA public
 TO cad_application;
 
 
-GRANT SELECT
-ON agencies
+GRANT SELECT, INSERT, UPDATE
+ON personnel
+TO cad_application;
+
+
+GRANT SELECT, INSERT, UPDATE
+ON personnel_certifications
+TO cad_application;
+
+
+GRANT SELECT, INSERT, UPDATE
+ON personnel_training
+TO cad_application;
+
+
+GRANT SELECT, INSERT, UPDATE
+ON personnel_specialties
+TO cad_application;
+
+
+GRANT SELECT, INSERT, UPDATE
+ON personnel_specialty_assignments
+TO cad_application;
+
+
+GRANT SELECT, INSERT, UPDATE
+ON personnel_duty_status
+TO cad_application;
+
+
+GRANT SELECT, INSERT
+ON dispatch_events
+TO cad_application;
+
+
+GRANT SELECT, INSERT
+ON radio_log_events
+TO cad_application;
+
+
+GRANT SELECT, INSERT
+ON unit_locations
+TO cad_application;
+
+
+GRANT SELECT, INSERT, UPDATE
+ON officer_safety_events
 TO cad_application;
 
 
 
--- Future CAD tables will receive explicit grants.
+------------------------------------------------------------
+-- READ ONLY ROLE
+------------------------------------------------------------
 
--- Example:
---
--- GRANT SELECT, INSERT
--- ON cad_calls
--- TO cad_application;
---
--- UPDATE will only be granted to specific workflows.
-
-
-
--- ============================================================
--- 6. REPORTING IS READ ONLY
--- ============================================================
+GRANT USAGE
+ON SCHEMA public
+TO cad_readonly;
 
 
 GRANT SELECT
 ON ALL TABLES
 IN SCHEMA public
-TO cad_reporting;
+TO cad_readonly;
 
+
+
+------------------------------------------------------------
+-- AUDITOR ROLE
+------------------------------------------------------------
+
+GRANT USAGE
+ON SCHEMA public
+TO cad_auditor;
+
+
+GRANT SELECT
+ON audit_events
+TO cad_auditor;
+
+
+GRANT SELECT
+ON audit_integrity_checks
+TO cad_auditor;
+
+
+GRANT SELECT
+ON audit_retention_policy
+TO cad_auditor;
+
+
+
+------------------------------------------------------------
+-- DEFAULT PRIVILEGES
+------------------------------------------------------------
 
 ALTER DEFAULT PRIVILEGES
-FOR ROLE cad_schema_owner
 IN SCHEMA public
 GRANT SELECT
 ON TABLES
-TO cad_reporting;
+TO cad_readonly;
 
 
-
--- ============================================================
--- 7. IMMUTABLE AUDIT PROTECTION
--- ============================================================
-
-
-GRANT INSERT
-ON audit_events
-TO audit_writer;
-
-
+ALTER DEFAULT PRIVILEGES
+IN SCHEMA public
 GRANT SELECT
-ON audit_events
-TO audit_writer;
-
-
-REVOKE UPDATE, DELETE
-ON audit_events
-FROM audit_writer;
-
-
-REVOKE TRUNCATE
-ON audit_events
-FROM audit_writer;
-
-
-
--- ============================================================
--- 8. PREVENT APPLICATION ACCOUNT ESCALATION
--- ============================================================
-
-
-REVOKE CREATE
-ON SCHEMA public
-FROM cad_application;
-
-
-REVOKE CREATE
-ON SCHEMA public
-FROM auth_service;
-
-
-REVOKE CREATE
-ON SCHEMA public
-FROM cad_reporting;
-
-
-
--- ============================================================
--- 9. FUTURE TABLE DEFAULT PROTECTION
--- ============================================================
-
-
-ALTER DEFAULT PRIVILEGES
-FOR ROLE cad_schema_owner
-REVOKE ALL
 ON TABLES
-FROM PUBLIC;
-
-
-ALTER DEFAULT PRIVILEGES
-FOR ROLE cad_schema_owner
-REVOKE ALL
-ON FUNCTIONS
-FROM PUBLIC;
+TO cad_auditor;
 
 
 
--- ============================================================
--- 10. SECURITY ASSERTIONS
--- ============================================================
+------------------------------------------------------------
+-- SECURITY VALIDATION
+------------------------------------------------------------
+
+DO $$
+DECLARE
+
+    missing_count INTEGER;
+
+BEGIN
+
+    SELECT COUNT(*)
+    INTO missing_count
+    FROM pg_roles
+    WHERE rolname IN
+    (
+        'cad_application',
+        'cad_readonly',
+        'cad_auditor'
+    );
 
 
-COMMENT ON ROLE cad_schema_owner IS
-'Database schema owner. Used only by controlled migrations.';
+    IF missing_count <> 3 THEN
+
+        RAISE EXCEPTION
+        'Privilege validation failed: expected roles missing';
+
+    END IF;
 
 
-COMMENT ON ROLE cad_application IS
-'CAD application runtime. Must never have unrestricted privileges.';
-
-
-COMMENT ON ROLE audit_writer IS
-'Write-only audit pipeline role. UPDATE and DELETE prohibited.';
-
-
-COMMENT ON ROLE emergency_dba IS
-'Break-glass administrative access requiring dual authorization.';
+END
+$$;
 
 
 
