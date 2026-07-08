@@ -1,125 +1,203 @@
+-- ============================================================
 -- 006_cad_core.sql
--- Public Safety CAD Operational Foundation
+--
+-- Public Safety Platform
+--
+-- CAD Operational Core
 --
 -- Design principles:
--- 1. Operational records are append-oriented
--- 2. Every action is tied to an authenticated user/session
--- 3. History is preserved through event timelines
--- 4. No "magic updates" that erase operational truth
+--
+-- 1. Incidents are operational truth
+-- 2. Events are append-only
+-- 3. Human identity comes from persons
+-- 4. Authentication comes from sessions
+-- 5. Authorization is handled upstream
+-- 6. Operational history is never destroyed
+--
+-- ============================================================
+
+
+BEGIN;
+
+
+------------------------------------------------------------
+-- EXTENSIONS
+------------------------------------------------------------
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 
 
 ------------------------------------------------------------
 -- CALL PRIORITY
 ------------------------------------------------------------
 
-CREATE TYPE call_priority AS ENUM (
-    'EMERGENCY',
-    'HIGH',
-    'NORMAL',
-    'LOW',
-    'INFORMATIONAL'
-);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_type
+        WHERE typname='call_priority'
+    )
+    THEN
+
+    CREATE TYPE call_priority AS ENUM
+    (
+        'EMERGENCY',
+        'HIGH',
+        'NORMAL',
+        'LOW',
+        'INFORMATIONAL'
+    );
+
+    END IF;
+END
+$$;
+
 
 
 ------------------------------------------------------------
 -- CALL STATUS
 ------------------------------------------------------------
 
-CREATE TYPE call_status AS ENUM (
-    'RECEIVED',
-    'QUEUED',
-    'DISPATCHED',
-    'ENROUTE',
-    'ON_SCENE',
-    'TRANSPORTING',
-    'CLEARED',
-    'CLOSED'
-);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_type
+        WHERE typname='call_status'
+    )
+    THEN
+
+    CREATE TYPE call_status AS ENUM
+    (
+        'RECEIVED',
+        'QUEUED',
+        'DISPATCHED',
+        'ENROUTE',
+        'ON_SCENE',
+        'TRANSPORTING',
+        'CLEARED',
+        'CLOSED'
+    );
+
+    END IF;
+END
+$$;
+
 
 
 ------------------------------------------------------------
 -- INCIDENT TYPE
 ------------------------------------------------------------
 
-CREATE TYPE incident_type AS ENUM (
-    'LAW_ENFORCEMENT',
-    'FIRE',
-    'EMS',
-    'RESCUE',
-    'HAZMAT',
-    'PUBLIC_SERVICE',
-    'OTHER'
-);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_type
+        WHERE typname='incident_type'
+    )
+    THEN
+
+    CREATE TYPE incident_type AS ENUM
+    (
+        'LAW_ENFORCEMENT',
+        'FIRE',
+        'EMS',
+        'RESCUE',
+        'HAZMAT',
+        'PUBLIC_SERVICE',
+        'OTHER'
+    );
+
+    END IF;
+END
+$$;
 
 
 
 ------------------------------------------------------------
 -- LOCATIONS
 ------------------------------------------------------------
--- Actual GIS expansion should use PostGIS later.
--- This keeps the initial relational foundation.
 
-CREATE TABLE locations (
+CREATE TABLE IF NOT EXISTS locations
+(
 
-    location_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    location_id UUID PRIMARY KEY
+        DEFAULT gen_random_uuid(),
 
     address_line1 VARCHAR(200),
+
     address_line2 VARCHAR(200),
 
     city VARCHAR(100),
+
     state VARCHAR(50),
+
     postal_code VARCHAR(20),
 
     latitude NUMERIC(10,7),
+
     longitude NUMERIC(10,7),
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
 
 
 ------------------------------------------------------------
--- CALLER INFORMATION
+-- CALLERS
 ------------------------------------------------------------
 
-CREATE TABLE callers (
+CREATE TABLE IF NOT EXISTS callers
+(
 
-    caller_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    caller_id UUID PRIMARY KEY
+        DEFAULT gen_random_uuid(),
 
     first_name VARCHAR(100),
+
     last_name VARCHAR(100),
 
     phone_number VARCHAR(30),
 
     notes TEXT,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
 
 
 ------------------------------------------------------------
--- CAD INCIDENT MASTER RECORD
+-- CAD INCIDENT MASTER
 ------------------------------------------------------------
 
-CREATE TABLE cad_incidents (
+CREATE TABLE IF NOT EXISTS cad_incidents
+(
 
-    incident_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    incident_id UUID PRIMARY KEY
+        DEFAULT gen_random_uuid(),
+
 
     agency_id UUID NOT NULL
         REFERENCES agencies(agency_id),
 
+
     incident_number BIGSERIAL UNIQUE,
+
 
     incident_type incident_type NOT NULL,
 
-    priority call_priority NOT NULL DEFAULT 'NORMAL',
 
-    status call_status NOT NULL DEFAULT 'RECEIVED',
+    priority call_priority NOT NULL
+        DEFAULT 'NORMAL',
+
+
+    status call_status NOT NULL
+        DEFAULT 'RECEIVED',
 
 
     location_id UUID
@@ -130,13 +208,15 @@ CREATE TABLE cad_incidents (
         REFERENCES callers(caller_id),
 
 
-    received_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    received_at TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
+
 
     closed_at TIMESTAMPTZ,
 
 
     created_by UUID NOT NULL
-        REFERENCES users(user_id),
+        REFERENCES persons(person_id),
 
 
     created_session UUID
@@ -147,40 +227,16 @@ CREATE TABLE cad_incidents (
 
 
 ------------------------------------------------------------
--- UNITS
-------------------------------------------------------------
--- Patrol cars, ambulances, fire apparatus, etc.
-
-CREATE TABLE operational_units (
-
-    unit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    agency_id UUID NOT NULL
-        REFERENCES agencies(agency_id),
-
-    unit_identifier VARCHAR(50) NOT NULL,
-
-    unit_type VARCHAR(50) NOT NULL,
-
-    active BOOLEAN NOT NULL DEFAULT true,
-
-
-    UNIQUE(
-        agency_id,
-        unit_identifier
-    )
-
-);
-
-
-
-------------------------------------------------------------
 -- INCIDENT ASSIGNMENTS
+--
+-- Units already exist from 002.
 ------------------------------------------------------------
 
-CREATE TABLE incident_assignments (
+CREATE TABLE IF NOT EXISTS incident_assignments
+(
 
-    assignment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    assignment_id UUID PRIMARY KEY
+        DEFAULT gen_random_uuid(),
 
 
     incident_id UUID NOT NULL
@@ -192,10 +248,15 @@ CREATE TABLE incident_assignments (
 
 
     assigned_by UUID NOT NULL
-        REFERENCES users(user_id),
+        REFERENCES persons(person_id),
 
 
-    assigned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    assigned_session UUID
+        REFERENCES sessions(session_id),
+
+
+    assigned_at TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
 
 
     cleared_at TIMESTAMPTZ
@@ -206,43 +267,45 @@ CREATE TABLE incident_assignments (
 
 ------------------------------------------------------------
 -- CAD EVENT TIMELINE
+--
+-- Immutable operational history
 ------------------------------------------------------------
--- THIS IS THE HEART OF THE SYSTEM
---
--- Never delete.
--- Never rewrite.
---
--- Every operational action becomes an event.
 
-CREATE TABLE cad_event_timeline (
+CREATE TABLE IF NOT EXISTS cad_event_timeline
+(
 
-    event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id UUID PRIMARY KEY
+        DEFAULT gen_random_uuid(),
 
 
     incident_id UUID NOT NULL
         REFERENCES cad_incidents(incident_id),
 
 
-    event_type VARCHAR(100) NOT NULL,
+    event_type VARCHAR(100)
+        NOT NULL,
 
 
-    event_data JSONB NOT NULL,
+    event_data JSONB
+        NOT NULL,
 
 
     created_by UUID NOT NULL
-        REFERENCES users(user_id),
+        REFERENCES persons(person_id),
 
 
     created_session UUID
         REFERENCES sessions(session_id),
 
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-
     previous_hash BYTEA,
 
-    event_hash BYTEA NOT NULL
+
+    event_hash BYTEA NOT NULL,
+
+
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
@@ -251,11 +314,12 @@ CREATE TABLE cad_event_timeline (
 ------------------------------------------------------------
 -- DISPATCH NOTES
 ------------------------------------------------------------
--- Separate from timeline because notes need searching
 
-CREATE TABLE dispatch_notes (
+CREATE TABLE IF NOT EXISTS dispatch_notes
+(
 
-    note_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    note_id UUID PRIMARY KEY
+        DEFAULT gen_random_uuid(),
 
 
     incident_id UUID NOT NULL
@@ -263,13 +327,18 @@ CREATE TABLE dispatch_notes (
 
 
     author_id UUID NOT NULL
-        REFERENCES users(user_id),
+        REFERENCES persons(person_id),
+
+
+    session_id UUID
+        REFERENCES sessions(session_id),
 
 
     note_text TEXT NOT NULL,
 
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
@@ -279,32 +348,34 @@ CREATE TABLE dispatch_notes (
 -- INDEXES
 ------------------------------------------------------------
 
-CREATE INDEX idx_incident_status
+CREATE INDEX IF NOT EXISTS idx_incident_status
 ON cad_incidents(status);
 
 
-CREATE INDEX idx_incident_priority
+CREATE INDEX IF NOT EXISTS idx_incident_priority
 ON cad_incidents(priority);
 
 
-CREATE INDEX idx_incident_number
+CREATE INDEX IF NOT EXISTS idx_incident_number
 ON cad_incidents(incident_number);
 
 
-CREATE INDEX idx_timeline_incident
-ON cad_event_timeline(incident_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_timeline_incident
+ON cad_event_timeline
+(
+    incident_id,
+    created_at
+);
 
 
-CREATE INDEX idx_assignment_incident
+CREATE INDEX IF NOT EXISTS idx_assignment_incident
 ON incident_assignments(incident_id);
 
 
 
 ------------------------------------------------------------
--- DATABASE PROTECTION
+-- PROTECT OPERATIONAL HISTORY
 ------------------------------------------------------------
-
--- Operational users should never modify history directly.
 
 REVOKE UPDATE, DELETE
 ON cad_event_timeline
@@ -316,10 +387,4 @@ ON cad_incidents
 FROM PUBLIC;
 
 
--- Future application roles will receive controlled access.
-
--- Example:
---
--- GRANT INSERT, SELECT
--- ON cad_event_timeline
--- TO cad_application_service;
+COMMIT;

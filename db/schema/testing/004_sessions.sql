@@ -334,7 +334,96 @@ CREATE TABLE session_risk_assessments (
 
 );
 
+------------------------------------------------------------
+-- CANONICAL USER SESSIONS
+--
+-- This is the authoritative runtime identity session.
+--
+-- A session represents:
+--
+--   Who
+--   Authenticated how
+--   From what device
+--   When
+--
+-- CAD operations reference this table.
+--
+------------------------------------------------------------
 
+CREATE TABLE IF NOT EXISTS sessions
+(
+
+    session_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
+
+
+    identity_id UUID NOT NULL
+        REFERENCES identities(identity_id),
+
+
+    device_id UUID
+        REFERENCES devices(device_id),
+
+
+    session_state session_state NOT NULL
+        DEFAULT 'ACTIVE',
+
+
+    authentication_method VARCHAR(100)
+        NOT NULL,
+
+
+    started_at TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
+
+
+    expires_at TIMESTAMPTZ,
+
+
+    ended_at TIMESTAMPTZ,
+
+
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
+
+
+    CONSTRAINT valid_session_dates
+    CHECK
+    (
+        expires_at IS NULL
+        OR expires_at > started_at
+    )
+
+);
+
+
+
+------------------------------------------------------------
+-- SESSION INDEXES
+------------------------------------------------------------
+
+CREATE INDEX IF NOT EXISTS idx_sessions_identity
+ON sessions(identity_id);
+
+
+
+CREATE INDEX IF NOT EXISTS idx_sessions_device
+ON sessions(device_id);
+
+
+
+CREATE INDEX IF NOT EXISTS idx_sessions_state
+ON sessions(session_state);
+
+
+
+------------------------------------------------------------
+-- SESSION PROTECTION
+------------------------------------------------------------
+
+REVOKE UPDATE, DELETE
+ON sessions
+FROM PUBLIC;
 
 ------------------------------------------------------------
 -- INDEXES

@@ -28,131 +28,142 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 
----------------------------------------------------------------
--- 2. Remove Default PostgreSQL Trust
----------------------------------------------------------------
-
-REVOKE ALL
-ON DATABASE current_database()
-FROM PUBLIC;
-
-
 
 ---------------------------------------------------------------
--- 3. Create Security Roles
+-- 2. Create Security Roles
 --
--- These are PostgreSQL roles, not CAD roles.
--- CAD roles live in application tables.
+-- PostgreSQL roles are NOT CAD roles.
+-- CAD authorization exists in application tables.
 ---------------------------------------------------------------
 
 
 -- Database owner
--- Used only during migrations.
--- Never used by applications.
+-- No login.
+-- Used for object ownership.
 
 DO $$
 BEGIN
+
     IF NOT EXISTS (
-        SELECT FROM pg_roles WHERE rolname='cad_database_owner'
-    ) THEN
+        SELECT FROM pg_roles
+        WHERE rolname='cad_database_owner'
+    )
+    THEN
+
         CREATE ROLE cad_database_owner NOLOGIN;
+
     END IF;
+
 END
 $$;
 
 
 
----------------------------------------------------------------
--- Read-only transaction execution
----------------------------------------------------------------
+-- Read executor
 
 DO $$
 BEGIN
+
     IF NOT EXISTS (
-        SELECT FROM pg_roles WHERE rolname='cad_read_executor'
-    ) THEN
+        SELECT FROM pg_roles
+        WHERE rolname='cad_read_executor'
+    )
+    THEN
+
         CREATE ROLE cad_read_executor NOLOGIN;
+
     END IF;
+
 END
 $$;
 
 
 
----------------------------------------------------------------
--- Write transaction execution
----------------------------------------------------------------
+-- Write executor
 
 DO $$
 BEGIN
+
     IF NOT EXISTS (
-        SELECT FROM pg_roles WHERE rolname='cad_write_executor'
-    ) THEN
+        SELECT FROM pg_roles
+        WHERE rolname='cad_write_executor'
+    )
+    THEN
+
         CREATE ROLE cad_write_executor NOLOGIN;
+
     END IF;
+
 END
 $$;
 
 
 
----------------------------------------------------------------
 -- Audit writer
---
--- Can INSERT only.
--- Cannot update history.
----------------------------------------------------------------
 
 DO $$
 BEGIN
+
     IF NOT EXISTS (
-        SELECT FROM pg_roles WHERE rolname='cad_audit_writer'
-    ) THEN
+        SELECT FROM pg_roles
+        WHERE rolname='cad_audit_writer'
+    )
+    THEN
+
         CREATE ROLE cad_audit_writer NOLOGIN;
+
     END IF;
+
 END
 $$;
 
 
 
----------------------------------------------------------------
 -- Migration role
----------------------------------------------------------------
 
 DO $$
 BEGIN
+
     IF NOT EXISTS (
-        SELECT FROM pg_roles WHERE rolname='cad_migration'
-    ) THEN
+        SELECT FROM pg_roles
+        WHERE rolname='cad_migration'
+    )
+    THEN
+
         CREATE ROLE cad_migration LOGIN;
+
     END IF;
+
 END
 $$;
 
 
 
 ---------------------------------------------------------------
--- 4. Application login identities
+-- 3. Application API Identity
 --
--- These should authenticate using certificates.
--- Password authentication should not exist.
+-- Authenticated by certificate.
+-- No passwords.
 ---------------------------------------------------------------
 
 
 DO $$
 BEGIN
 
-IF NOT EXISTS (
-SELECT FROM pg_roles WHERE rolname='cad_api_gateway'
-)
-THEN
+    IF NOT EXISTS (
+        SELECT FROM pg_roles
+        WHERE rolname='cad_api_gateway'
+    )
+    THEN
 
-CREATE ROLE cad_api_gateway
-LOGIN
-NOSUPERUSER
-NOCREATEDB
-NOCREATEROLE
-NOINHERIT;
+        CREATE ROLE cad_api_gateway
+        LOGIN
+        NOSUPERUSER
+        NOCREATEDB
+        NOCREATEROLE
+        NOINHERIT;
 
-END IF;
+    END IF;
 
 END
 $$;
@@ -160,7 +171,46 @@ $$;
 
 
 ---------------------------------------------------------------
--- 5. Membership Rules
+-- 4. Remove Default PostgreSQL Trust
+---------------------------------------------------------------
+
+
+DO $$
+BEGIN
+
+    EXECUTE format(
+        'REVOKE ALL ON DATABASE %I FROM PUBLIC',
+        current_database()
+    );
+
+END
+$$;
+
+
+
+---------------------------------------------------------------
+-- 5. Database Ownership Boundary
+--
+-- Database owned by NOLOGIN role.
+--
+---------------------------------------------------------------
+
+
+DO $$
+BEGIN
+
+    EXECUTE format(
+        'ALTER DATABASE %I OWNER TO cad_database_owner',
+        current_database()
+    );
+
+END
+$$;
+
+
+
+---------------------------------------------------------------
+-- 6. Application Permissions
 ---------------------------------------------------------------
 
 
@@ -178,7 +228,7 @@ TO cad_api_gateway;
 
 
 ---------------------------------------------------------------
--- 6. Remove Dangerous Defaults
+-- 7. Public Schema Protection
 ---------------------------------------------------------------
 
 
@@ -186,11 +236,6 @@ REVOKE ALL
 ON SCHEMA public
 FROM PUBLIC;
 
-
-
----------------------------------------------------------------
--- 7. Schema Ownership
----------------------------------------------------------------
 
 
 ALTER SCHEMA public
@@ -201,35 +246,36 @@ OWNER TO cad_database_owner;
 ---------------------------------------------------------------
 -- 8. Audit Protection
 --
--- The database itself enforces:
---
--- INSERT  allowed
--- UPDATE   denied
--- DELETE   denied
---
+-- Application cannot rewrite history.
 ---------------------------------------------------------------
 
 
 DO $$
 BEGIN
 
-IF EXISTS (
-SELECT FROM pg_tables
-WHERE tablename='audit_events'
+IF EXISTS
+(
+    SELECT
+    FROM pg_tables
+    WHERE tablename='audit_events'
 )
+
 THEN
 
-REVOKE UPDATE, DELETE
-ON audit_events
-FROM cad_api_gateway;
+
+    REVOKE UPDATE, DELETE
+    ON audit_events
+    FROM cad_api_gateway;
 
 
-GRANT INSERT, SELECT
-ON audit_events
-TO cad_audit_writer;
+
+    GRANT INSERT, SELECT
+    ON audit_events
+    TO cad_audit_writer;
 
 
 END IF;
+
 
 END
 $$;
@@ -239,12 +285,13 @@ $$;
 ---------------------------------------------------------------
 -- 9. Default Privilege Protection
 --
--- Future tables inherit security.
+-- Future objects inherit security.
 ---------------------------------------------------------------
 
 
 ALTER DEFAULT PRIVILEGES
 FOR ROLE cad_database_owner
+
 REVOKE ALL
 ON TABLES
 FROM PUBLIC;
@@ -253,14 +300,26 @@ FROM PUBLIC;
 
 ALTER DEFAULT PRIVILEGES
 FOR ROLE cad_database_owner
+
 GRANT SELECT
 ON TABLES
 TO cad_read_executor;
 
 
 
+ALTER DEFAULT PRIVILEGES
+FOR ROLE cad_database_owner
+
+GRANT USAGE, SELECT
+ON SEQUENCES
+TO cad_read_executor;
+
+
+
 ---------------------------------------------------------------
--- 10. Prevent Function Abuse
+-- 10. Function Protection
+--
+-- Prevent arbitrary function execution.
 ---------------------------------------------------------------
 
 
@@ -272,27 +331,39 @@ FROM PUBLIC;
 
 
 ---------------------------------------------------------------
--- 11. Security Logging Preparation
+-- 11. Database Security Events
+--
+-- Records PostgreSQL security events.
 ---------------------------------------------------------------
 
 
 CREATE TABLE IF NOT EXISTS security_database_events
 (
-    event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    event_id UUID PRIMARY KEY
+        DEFAULT gen_random_uuid(),
+
 
     event_time TIMESTAMPTZ
         NOT NULL DEFAULT now(),
 
+
     database_user TEXT
         NOT NULL DEFAULT current_user,
 
+
     client_address INET,
+
 
     event_type TEXT
         NOT NULL,
 
+
     event_detail JSONB
+
+
 );
+
 
 
 ALTER TABLE security_database_events
@@ -305,9 +376,22 @@ ON security_database_events
 FROM PUBLIC;
 
 
+
 GRANT INSERT
 ON security_database_events
 TO cad_audit_writer;
+
+
+
+---------------------------------------------------------------
+-- 12. Final Protection
+---------------------------------------------------------------
+
+
+REVOKE TRUNCATE
+ON ALL TABLES
+IN SCHEMA public
+FROM PUBLIC;
 
 
 

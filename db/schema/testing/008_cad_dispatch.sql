@@ -1,82 +1,133 @@
+-- ============================================================
 -- 008_cad_dispatch.sql
 --
--- CAD Dispatch Operations
+-- Public Safety CAD Dispatch Operations
 --
--- Provides:
---   - Unit management
---   - Dispatch queue
---   - Unit status tracking
---   - AVL location tracking
---   - Acknowledgements
---   - Officer safety events
+-- Depends on:
+--
+-- 000_trust_foundation
+-- 001_device_trust
+-- 002_operational_authority
+-- 003_authorization
+-- 004_sessions
+-- 005_audit_event_stream
+-- 006_cad_core
+-- 007_cad_security
 --
 -- Design:
--- Current State + Immutable History
+--
+-- Current State + Immutable Operational History
+--
+-- Principles:
+--
+-- 1. Dispatch actions are attributable
+-- 2. Agency isolation enforced
+-- 3. Historical events are append only
+-- 4. Current state optimized for speed
+-- 5. Future PostGIS/AVL expansion supported
+--
+-- ============================================================
+
+
+BEGIN;
 
 
 ------------------------------------------------------------
--- UNIT OPERATIONAL STATUS
+-- EXTENSIONS
 ------------------------------------------------------------
 
-CREATE TYPE unit_status AS ENUM (
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+
+
+------------------------------------------------------------
+-- ENUMS
+------------------------------------------------------------
+
+
+DO $$
+BEGIN
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM pg_type
+    WHERE typname = 'unit_status'
+)
+THEN
+
+CREATE TYPE unit_status AS ENUM
+(
     'AVAILABLE',
-
     'ASSIGNED',
-
     'ENROUTE',
-
     'ON_SCENE',
-
     'TRANSPORTING',
-
     'BUSY',
-
     'OUT_OF_SERVICE',
-
     'EMERGENCY'
-
 );
 
+END IF;
+
+END
+$$;
 
 
-------------------------------------------------------------
--- DISPATCH ACTION TYPES
-------------------------------------------------------------
 
-CREATE TYPE dispatch_action AS ENUM (
+DO $$
+BEGIN
 
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM pg_type
+    WHERE typname = 'dispatch_action'
+)
+THEN
+
+CREATE TYPE dispatch_action AS ENUM
+(
     'ASSIGN_UNIT',
-
     'CANCEL_ASSIGNMENT',
-
     'ACKNOWLEDGE',
-
     'ENROUTE',
-
     'ARRIVED',
-
     'CLEAR',
-
     'REQUEST_BACKUP',
-
     'EMERGENCY_BUTTON'
-
 );
 
+END IF;
+
+END
+$$;
+
 
 
 ------------------------------------------------------------
--- UNIT STATUS CURRENT STATE
+-- CURRENT UNIT STATUS
+--
+-- Fast lookup table.
+--
+-- History stored separately.
 ------------------------------------------------------------
---
--- This is the fast lookup table.
---
--- History belongs in dispatch_events.
 
-CREATE TABLE unit_current_status (
 
-    unit_id UUID PRIMARY KEY
+CREATE TABLE IF NOT EXISTS unit_current_status
+(
+
+    unit_status_id UUID
+        PRIMARY KEY
+        DEFAULT gen_random_uuid(),
+
+
+    agency_id UUID NOT NULL
+        REFERENCES agencies(agency_id),
+
+
+    unit_id UUID NOT NULL
+        UNIQUE
         REFERENCES operational_units(unit_id),
 
 
@@ -89,7 +140,7 @@ CREATE TABLE unit_current_status (
 
 
     updated_by UUID
-        REFERENCES users(user_id),
+        REFERENCES persons(person_id),
 
 
     updated_at TIMESTAMPTZ NOT NULL
@@ -101,14 +152,21 @@ CREATE TABLE unit_current_status (
 
 ------------------------------------------------------------
 -- DISPATCH QUEUE
-------------------------------------------------------------
 --
--- Calls waiting for assignment.
+-- Incidents waiting for assignment.
+------------------------------------------------------------
 
-CREATE TABLE dispatch_queue (
 
-    queue_id UUID PRIMARY KEY
+CREATE TABLE IF NOT EXISTS dispatch_queue
+(
+
+    queue_id UUID
+        PRIMARY KEY
         DEFAULT gen_random_uuid(),
+
+
+    agency_id UUID NOT NULL
+        REFERENCES agencies(agency_id),
 
 
     incident_id UUID NOT NULL
@@ -133,17 +191,24 @@ CREATE TABLE dispatch_queue (
 
 
 ------------------------------------------------------------
--- UNIT DISPATCH EVENTS
+-- DISPATCH EVENTS
+--
+-- Immutable operational timeline.
+--
+-- Radio/actions/assignments.
 ------------------------------------------------------------
---
--- Every radio/action event.
---
--- Never overwrite.
 
-CREATE TABLE dispatch_events (
 
-    dispatch_event_id UUID PRIMARY KEY
+CREATE TABLE IF NOT EXISTS dispatch_events
+(
+
+    dispatch_event_id UUID
+        PRIMARY KEY
         DEFAULT gen_random_uuid(),
+
+
+    agency_id UUID NOT NULL
+        REFERENCES agencies(agency_id),
 
 
     incident_id UUID NOT NULL
@@ -158,7 +223,11 @@ CREATE TABLE dispatch_events (
 
 
     created_by UUID NOT NULL
-        REFERENCES users(user_id),
+        REFERENCES persons(person_id),
+
+
+    created_session UUID
+        REFERENCES sessions(session_id),
 
 
     event_data JSONB NOT NULL,
@@ -170,6 +239,7 @@ CREATE TABLE dispatch_events (
 
     previous_hash BYTEA,
 
+
     event_hash BYTEA NOT NULL
 
 );
@@ -177,15 +247,22 @@ CREATE TABLE dispatch_events (
 
 
 ------------------------------------------------------------
--- UNIT ASSIGNMENT HISTORY
-------------------------------------------------------------
+-- ASSIGNMENT HISTORY
 --
--- Tracks who assigned what and when.
+-- Never overwrite.
+------------------------------------------------------------
 
-CREATE TABLE unit_assignment_history (
 
-    history_id UUID PRIMARY KEY
+CREATE TABLE IF NOT EXISTS unit_assignment_history
+(
+
+    history_id UUID
+        PRIMARY KEY
         DEFAULT gen_random_uuid(),
+
+
+    agency_id UUID NOT NULL
+        REFERENCES agencies(agency_id),
 
 
     unit_id UUID NOT NULL
@@ -197,7 +274,11 @@ CREATE TABLE unit_assignment_history (
 
 
     assigned_by UUID NOT NULL
-        REFERENCES users(user_id),
+        REFERENCES persons(person_id),
+
+
+    assigned_session UUID
+        REFERENCES sessions(session_id),
 
 
     assigned_at TIMESTAMPTZ NOT NULL
@@ -211,20 +292,22 @@ CREATE TABLE unit_assignment_history (
 
 
 ------------------------------------------------------------
--- AVL LOCATION TRACKING
-------------------------------------------------------------
+-- AVL LOCATION HISTORY
 --
 -- Future PostGIS expansion.
---
--- Designed for:
---   - GPS
---   - MDT location
---   - Vehicle telemetry
+------------------------------------------------------------
 
-CREATE TABLE unit_locations (
 
-    location_event_id UUID PRIMARY KEY
+CREATE TABLE IF NOT EXISTS unit_locations
+(
+
+    location_event_id UUID
+        PRIMARY KEY
         DEFAULT gen_random_uuid(),
+
+
+    agency_id UUID NOT NULL
+        REFERENCES agencies(agency_id),
 
 
     unit_id UUID NOT NULL
@@ -250,18 +333,18 @@ CREATE TABLE unit_locations (
 ------------------------------------------------------------
 -- OFFICER SAFETY EVENTS
 ------------------------------------------------------------
---
--- Examples:
---
--- Emergency button
--- Man down
--- No movement timer
--- Backup request
 
-CREATE TABLE officer_safety_events (
 
-    safety_event_id UUID PRIMARY KEY
+CREATE TABLE IF NOT EXISTS officer_safety_events
+(
+
+    safety_event_id UUID
+        PRIMARY KEY
         DEFAULT gen_random_uuid(),
+
+
+    agency_id UUID NOT NULL
+        REFERENCES agencies(agency_id),
 
 
     unit_id UUID NOT NULL
@@ -283,7 +366,10 @@ CREATE TABLE officer_safety_events (
 
 
     acknowledged_by UUID
-        REFERENCES users(user_id),
+        REFERENCES persons(person_id),
+
+
+    acknowledged_at TIMESTAMPTZ,
 
 
     created_at TIMESTAMPTZ NOT NULL
@@ -294,15 +380,20 @@ CREATE TABLE officer_safety_events (
 
 
 ------------------------------------------------------------
--- DISPATCHER NOTES / RADIO LOG
+-- RADIO LOG
 ------------------------------------------------------------
---
--- Separate high-volume operational feed.
 
-CREATE TABLE radio_log_events (
 
-    radio_event_id UUID PRIMARY KEY
+CREATE TABLE IF NOT EXISTS radio_log_events
+(
+
+    radio_event_id UUID
+        PRIMARY KEY
         DEFAULT gen_random_uuid(),
+
+
+    agency_id UUID NOT NULL
+        REFERENCES agencies(agency_id),
 
 
     incident_id UUID
@@ -314,7 +405,7 @@ CREATE TABLE radio_log_events (
 
 
     sender_id UUID
-        REFERENCES users(user_id),
+        REFERENCES persons(person_id),
 
 
     message TEXT NOT NULL,
@@ -331,34 +422,153 @@ CREATE TABLE radio_log_events (
 -- INDEXES
 ------------------------------------------------------------
 
-CREATE INDEX idx_dispatch_queue_priority
+
+CREATE INDEX IF NOT EXISTS idx_dispatch_queue_priority
 ON dispatch_queue(priority, queued_at);
 
 
 
-CREATE INDEX idx_unit_status
-ON unit_current_status(status);
-
-
-
-CREATE INDEX idx_dispatch_events_incident
+CREATE INDEX IF NOT EXISTS idx_dispatch_events_incident
 ON dispatch_events(incident_id, created_at);
 
 
 
-CREATE INDEX idx_avl_unit_time
+CREATE INDEX IF NOT EXISTS idx_dispatch_unit
+ON dispatch_events(unit_id);
+
+
+
+CREATE INDEX IF NOT EXISTS idx_unit_locations_history
 ON unit_locations(unit_id, recorded_at);
 
 
 
-CREATE INDEX idx_safety_active
+CREATE INDEX IF NOT EXISTS idx_safety_active
 ON officer_safety_events(acknowledged)
 WHERE acknowledged = false;
 
 
 
 ------------------------------------------------------------
--- SECURITY HARDENING
+-- ENABLE RLS
+------------------------------------------------------------
+
+
+ALTER TABLE unit_current_status ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE dispatch_queue ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE dispatch_events ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE unit_assignment_history ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE unit_locations ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE officer_safety_events ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE radio_log_events ENABLE ROW LEVEL SECURITY;
+
+
+
+------------------------------------------------------------
+-- RLS POLICIES
+------------------------------------------------------------
+
+
+CREATE POLICY dispatch_unit_status_access
+ON unit_current_status
+FOR ALL
+USING
+(
+    agency_id = security.current_agency()
+)
+WITH CHECK
+(
+    agency_id = security.current_agency()
+);
+
+
+
+CREATE POLICY dispatch_queue_access
+ON dispatch_queue
+FOR ALL
+USING
+(
+    agency_id = security.current_agency()
+)
+WITH CHECK
+(
+    agency_id = security.current_agency()
+);
+
+
+
+CREATE POLICY dispatch_events_access
+ON dispatch_events
+FOR SELECT
+USING
+(
+    agency_id = security.current_agency()
+);
+
+
+
+CREATE POLICY dispatch_events_insert
+ON dispatch_events
+FOR INSERT
+WITH CHECK
+(
+    agency_id = security.current_agency()
+);
+
+
+
+CREATE POLICY assignment_history_access
+ON unit_assignment_history
+FOR SELECT
+USING
+(
+    agency_id = security.current_agency()
+);
+
+
+
+CREATE POLICY location_access
+ON unit_locations
+FOR SELECT
+USING
+(
+    agency_id = security.current_agency()
+);
+
+
+
+CREATE POLICY safety_event_access
+ON officer_safety_events
+FOR ALL
+USING
+(
+    agency_id = security.current_agency()
+)
+WITH CHECK
+(
+    agency_id = security.current_agency()
+);
+
+
+
+CREATE POLICY radio_event_access
+ON radio_log_events
+FOR SELECT
+USING
+(
+    agency_id = security.current_agency()
+);
+
+
+
+------------------------------------------------------------
+-- IMMUTABILITY
 ------------------------------------------------------------
 
 
@@ -368,22 +578,27 @@ FROM PUBLIC;
 
 
 REVOKE DELETE
-ON officer_safety_events
+ON unit_assignment_history
 FROM PUBLIC;
 
 
 REVOKE DELETE
-ON radio_log_events
+ON unit_locations
 FROM PUBLIC;
-
 
 
 ------------------------------------------------------------
 -- APPLICATION ACCESS
 ------------------------------------------------------------
 
+
 GRANT SELECT, INSERT, UPDATE
 ON unit_current_status
+TO cad_application;
+
+
+GRANT SELECT, INSERT
+ON dispatch_queue
 TO cad_application;
 
 
@@ -410,3 +625,7 @@ TO cad_application;
 GRANT SELECT, INSERT
 ON radio_log_events
 TO cad_application;
+
+
+
+COMMIT;

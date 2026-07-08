@@ -1,3 +1,4 @@
+-- ============================================================
 -- 000_trust_foundation.sql
 --
 -- Public Safety Platform
@@ -11,6 +12,22 @@
 -- is sufficient to grant operational access.
 --
 -- Access decisions are based on independent attestations.
+--
+-- This file owns:
+--
+--   agencies
+--   persons
+--   identities
+--   trust authorities
+--   devices
+--   device certificates
+--   trust attestations
+--   trust events
+--
+-- ============================================================
+
+
+BEGIN;
 
 
 ------------------------------------------------------------
@@ -21,30 +38,19 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 
 ------------------------------------------------------------
--- TRUST AUTHORITIES
---
--- Separate organizations/people who can attest to facts.
---
--- HR:
---    "This person exists and is employed."
---
--- IT:
---    "This identity and device are valid."
---
--- OPERATIONS:
---    "This person is authorized operationally."
---
--- SECURITY:
---    "This activity is safe or must be stopped."
+-- TRUST AUTHORITY TYPES
 ------------------------------------------------------------
 
 CREATE TYPE trust_authority_type AS ENUM (
+
     'IDENTITY_AUTHORITY',
     'TECHNICAL_AUTHORITY',
     'OPERATIONAL_AUTHORITY',
     'SHIFT_AUTHORITY',
     'SECURITY_AUTHORITY'
+
 );
+
 
 
 ------------------------------------------------------------
@@ -53,45 +59,53 @@ CREATE TYPE trust_authority_type AS ENUM (
 
 CREATE TABLE agencies (
 
-    agency_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    agency_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
 
-    agency_name VARCHAR(200) NOT NULL UNIQUE,
+    agency_name VARCHAR(200)
+        NOT NULL UNIQUE,
 
-    ori_number VARCHAR(9) UNIQUE,
+    ori_number VARCHAR(9)
+        UNIQUE,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
 
 
 ------------------------------------------------------------
--- PEOPLE
+-- PERSONS
 --
--- Represents the human being.
+-- Human identity.
 --
--- This is NOT an account.
--- This is NOT authentication.
--- This is NOT authorization.
+-- NOT authentication.
+-- NOT authorization.
+-- NOT database login.
 ------------------------------------------------------------
 
 CREATE TABLE persons (
 
-    person_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    person_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
 
     agency_id UUID NOT NULL
         REFERENCES agencies(agency_id),
 
     employee_number VARCHAR(100),
 
-    legal_name VARCHAR(200) NOT NULL,
+    legal_name VARCHAR(200)
+        NOT NULL,
 
     employment_status VARCHAR(50)
         NOT NULL DEFAULT 'ACTIVE',
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
 
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
@@ -100,29 +114,30 @@ CREATE TABLE persons (
 ------------------------------------------------------------
 -- EXTERNAL IDENTITIES
 --
--- Links this person to authentication providers.
+-- Authentication providers:
 --
--- Examples:
--- Active Directory
--- Entra ID
+-- AD
 -- LDAP
--- Future systems
---
--- The platform does not care what provider exists.
+-- Entra
+-- Future providers
 ------------------------------------------------------------
 
 CREATE TABLE identities (
 
-    identity_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    identity_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
 
     person_id UUID NOT NULL
         REFERENCES persons(person_id),
 
-    provider_name VARCHAR(100) NOT NULL,
+    provider_name VARCHAR(100)
+        NOT NULL,
 
-    provider_identifier VARCHAR(255) NOT NULL,
+    provider_identifier VARCHAR(255)
+        NOT NULL,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
 
     UNIQUE(provider_name, provider_identifier)
 
@@ -136,16 +151,20 @@ CREATE TABLE identities (
 
 CREATE TABLE trust_authorities (
 
-    authority_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    authority_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
 
     agency_id UUID NOT NULL
         REFERENCES agencies(agency_id),
 
-    authority_type trust_authority_type NOT NULL,
+    authority_type trust_authority_type
+        NOT NULL,
 
-    authority_name VARCHAR(200) NOT NULL,
+    authority_name VARCHAR(200)
+        NOT NULL,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
@@ -154,25 +173,25 @@ CREATE TABLE trust_authorities (
 ------------------------------------------------------------
 -- DEVICES
 --
--- A trusted workstation.
+-- Represents a trusted workstation.
 --
--- A device proves:
---
+-- Device proves:
 -- "I am CAD-CONSOLE-05"
 --
--- It does NOT prove:
---
--- "John is allowed to dispatch."
+-- Device does NOT prove:
+-- "John may dispatch."
 ------------------------------------------------------------
 
 CREATE TABLE devices (
 
-    device_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    device_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
 
     agency_id UUID NOT NULL
         REFERENCES agencies(agency_id),
 
-    hostname VARCHAR(100) NOT NULL,
+    hostname VARCHAR(100)
+        NOT NULL,
 
     device_serial VARCHAR(200),
 
@@ -181,7 +200,8 @@ CREATE TABLE devices (
     device_status VARCHAR(50)
         NOT NULL DEFAULT 'ACTIVE',
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
 
     UNIQUE(agency_id, hostname)
 
@@ -191,18 +211,12 @@ CREATE TABLE devices (
 
 ------------------------------------------------------------
 -- DEVICE CERTIFICATES
---
--- Machine identity.
---
--- Supports:
--- 802.1x
--- TLS authentication
--- Machine certificates
 ------------------------------------------------------------
 
 CREATE TABLE device_certificates (
 
-    certificate_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    certificate_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
 
     device_id UUID NOT NULL
         REFERENCES devices(device_id),
@@ -210,15 +224,20 @@ CREATE TABLE device_certificates (
     certificate_thumbprint VARCHAR(255)
         NOT NULL UNIQUE,
 
-    issuer VARCHAR(255) NOT NULL,
+    issuer VARCHAR(255)
+        NOT NULL,
 
-    issued_at TIMESTAMPTZ NOT NULL,
+    issued_at TIMESTAMPTZ
+        NOT NULL,
 
-    expires_at TIMESTAMPTZ NOT NULL,
+    expires_at TIMESTAMPTZ
+        NOT NULL,
 
-    revoked BOOLEAN NOT NULL DEFAULT false,
+    revoked BOOLEAN
+        NOT NULL DEFAULT false,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
 
     CONSTRAINT valid_certificate_dates
     CHECK (expires_at > issued_at)
@@ -229,17 +248,12 @@ CREATE TABLE device_certificates (
 
 ------------------------------------------------------------
 -- TRUST ATTESTATIONS
---
--- The heart of the model.
---
--- Nobody grants trust.
---
--- Authorities provide facts.
 ------------------------------------------------------------
 
 CREATE TABLE trust_attestations (
 
-    attestation_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    attestation_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
 
     subject_person_id UUID
         REFERENCES persons(person_id),
@@ -250,31 +264,37 @@ CREATE TABLE trust_attestations (
     authority_id UUID NOT NULL
         REFERENCES trust_authorities(authority_id),
 
-    statement_type VARCHAR(100) NOT NULL,
+    statement_type VARCHAR(100)
+        NOT NULL,
 
-    statement_value JSONB NOT NULL,
+    statement_value JSONB
+        NOT NULL,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
 
 
 ------------------------------------------------------------
--- IMMUTABLE SECURITY EVENTS
+-- TRUST EVENTS
 --
--- Future append-only audit chain.
+-- Append-only foundation security events.
 ------------------------------------------------------------
 
 CREATE TABLE trust_events (
 
-    event_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
 
     previous_event_hash BYTEA,
 
-    event_hash BYTEA NOT NULL,
+    event_hash BYTEA
+        NOT NULL,
 
-    event_type VARCHAR(100) NOT NULL,
+    event_type VARCHAR(100)
+        NOT NULL,
 
     actor_person_id UUID
         REFERENCES persons(person_id),
@@ -282,9 +302,11 @@ CREATE TABLE trust_events (
     device_id UUID
         REFERENCES devices(device_id),
 
-    event_data JSONB NOT NULL,
+    event_data JSONB
+        NOT NULL,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
@@ -312,3 +334,15 @@ ON trust_attestations(subject_device_id);
 
 CREATE INDEX idx_events_time
 ON trust_events(created_at);
+
+
+CREATE INDEX idx_events_actor
+ON trust_events(actor_person_id);
+
+
+CREATE INDEX idx_events_device
+ON trust_events(device_id);
+
+
+
+COMMIT;

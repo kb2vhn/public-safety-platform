@@ -3,385 +3,291 @@
 --
 -- Public Safety Platform
 --
+-- Device Trust Enhancement Layer
+--
+-- Depends on:
+--
+-- 000_trust_foundation.sql
+--
 -- Purpose:
--- Establish trusted machine identity and device attestation.
 --
--- Security Principle:
+-- Extend the foundational device identity model.
 --
--- A trusted device is not a trusted user.
+-- A device identity proves:
 --
--- Device certificates prove:
---     "This machine is authorized."
+-- "This is an approved CAD workstation."
 --
--- They do NOT prove:
---     "This person may access CAD."
+-- It does NOT prove:
 --
--- Human authorization occurs separately.
+-- "This user may perform this action."
 --
--- Dependencies:
---     000_trust_foundation.sql
+-- Authorization happens elsewhere.
 --
 -- ============================================================
 
 
-------------------------------------------------------------
--- DEVICE STATES
-------------------------------------------------------------
+BEGIN;
 
-CREATE TYPE device_status AS ENUM (
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+
+
+-- ============================================================
+-- DEVICE TRUST STATES
+-- ============================================================
+
+
+DO $$
+BEGIN
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM pg_type
+    WHERE typname = 'device_trust_state'
+)
+THEN
+
+CREATE TYPE device_trust_state AS ENUM
+(
+    'UNKNOWN',
     'PENDING',
-    'ACTIVE',
+    'TRUSTED',
     'QUARANTINED',
-    'DISABLED',
-    'RETIRED'
+    'REVOKED'
 );
 
+END IF;
+
+END
+$$;
 
 
-------------------------------------------------------------
--- DEVICE TYPES
+
+-- ============================================================
+-- DEVICE TRUST PROFILE
 --
--- Allows policy decisions based on function.
+-- Additional security posture information.
 --
--- Examples:
---
--- CAD_CONSOLE
--- SUPERVISOR_TERMINAL
--- ADMIN_WORKSTATION
--- SERVER
--- JUMP_HOST
--- MOBILE_COMMAND
---
-------------------------------------------------------------
-
-CREATE TABLE device_types (
-
-    device_type_id UUID PRIMARY KEY
-        DEFAULT uuid_generate_v4(),
-
-    type_name VARCHAR(100) NOT NULL UNIQUE,
-
-    description TEXT NOT NULL,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-
-);
+-- ============================================================
 
 
-
-------------------------------------------------------------
--- DEVICES
---
--- Represents a physical/logical endpoint.
---
--- Examples:
---
--- CAD-OPS-01
--- CAD-OPS-02
--- ADMIN-JUMP-01
---
-------------------------------------------------------------
-
-CREATE TABLE devices (
+CREATE TABLE IF NOT EXISTS device_trust_profile
+(
 
     device_id UUID PRIMARY KEY
-        DEFAULT uuid_generate_v4(),
-
-    agency_id UUID NOT NULL
-        REFERENCES agencies(agency_id),
-
-    device_type_id UUID NOT NULL
-        REFERENCES device_types(device_type_id),
-
-    hostname VARCHAR(100) NOT NULL,
-
-    asset_tag VARCHAR(100),
-
-    serial_number VARCHAR(200),
-
-    status device_status NOT NULL DEFAULT 'PENDING',
-
-    location VARCHAR(200),
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-    UNIQUE(agency_id, hostname)
-
-);
+        REFERENCES devices(device_id)
+        ON DELETE CASCADE,
 
 
+    trust_state device_trust_state
+        NOT NULL DEFAULT 'UNKNOWN',
 
-------------------------------------------------------------
--- DEVICE CERTIFICATE AUTHORITY
---
--- Tracks which CA issued machine certificates.
---
--- Supports:
---
--- Internal Microsoft CA
--- Linux CA
--- Hardware security module backed CA
---
-------------------------------------------------------------
 
-CREATE TABLE certificate_authorities (
+    operating_system VARCHAR(100),
 
-    ca_id UUID PRIMARY KEY
-        DEFAULT uuid_generate_v4(),
 
-    agency_id UUID NOT NULL
-        REFERENCES agencies(agency_id),
+    operating_system_version VARCHAR(100),
 
-    ca_name VARCHAR(200) NOT NULL,
 
-    issuer_subject TEXT NOT NULL,
+    security_agent_present BOOLEAN
+        NOT NULL DEFAULT false,
 
-    fingerprint VARCHAR(255) NOT NULL UNIQUE,
 
-    trusted BOOLEAN NOT NULL DEFAULT true,
+    encryption_enabled BOOLEAN
+        NOT NULL DEFAULT false,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+
+    last_attestation TIMESTAMPTZ,
+
+
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
+
+
+    updated_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
 
 
-------------------------------------------------------------
--- DEVICE CERTIFICATES
+-- ============================================================
+-- DEVICE CERTIFICATE VALIDATION HISTORY
 --
--- Machine identity.
+-- Certificates prove machine identity.
 --
--- Example:
+-- This records every validation attempt.
 --
--- CAD-OPS-01 certificate
---
--- Valid:
--- 30 days
---
--- Auto-renewed:
--- Yes
---
-------------------------------------------------------------
+-- ============================================================
 
-CREATE TABLE device_certificates (
 
-    certificate_id UUID PRIMARY KEY
+CREATE TABLE IF NOT EXISTS device_certificate_validations
+(
+
+    validation_id UUID PRIMARY KEY
         DEFAULT uuid_generate_v4(),
+
 
     device_id UUID NOT NULL
         REFERENCES devices(device_id),
 
-    ca_id UUID NOT NULL
-        REFERENCES certificate_authorities(ca_id),
 
-    certificate_subject TEXT NOT NULL,
-
-    certificate_thumbprint VARCHAR(255)
-        NOT NULL UNIQUE,
-
-    issued_at TIMESTAMPTZ NOT NULL,
-
-    expires_at TIMESTAMPTZ NOT NULL,
-
-    revoked BOOLEAN NOT NULL DEFAULT false,
-
-    revoked_at TIMESTAMPTZ,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    certificate_id UUID
+        REFERENCES device_certificates(certificate_id),
 
 
-    CONSTRAINT certificate_validity_check
-    CHECK (expires_at > issued_at)
+    validation_result VARCHAR(50)
+        NOT NULL,
+
+
+    validation_reason TEXT,
+
+
+    validated_by VARCHAR(255),
+
+
+    validation_time TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
 
 
-------------------------------------------------------------
--- DEVICE NETWORK TRUST
+-- ============================================================
+-- DEVICE SECURITY EVENTS
 --
--- Optional additional validation.
---
--- Example:
---
--- CAD consoles must originate from:
---
--- 10.20.30.0/24
---
-------------------------------------------------------------
-
-CREATE TABLE device_network_assignments (
-
-    network_assignment_id UUID PRIMARY KEY
-        DEFAULT uuid_generate_v4(),
-
-    device_id UUID NOT NULL
-        REFERENCES devices(device_id),
-
-    allowed_network CIDR NOT NULL,
-
-    description VARCHAR(200),
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-
-);
-
-
-
-------------------------------------------------------------
--- DEVICE OWNERSHIP / ASSIGNMENT
---
--- Tracks responsibility.
---
--- NOT authorization.
---
--- Example:
---
--- This terminal belongs to Communications.
---
-------------------------------------------------------------
-
-CREATE TABLE device_assignments (
-
-    assignment_id UUID PRIMARY KEY
-        DEFAULT uuid_generate_v4(),
-
-    device_id UUID NOT NULL
-        REFERENCES devices(device_id),
-
-    assigned_unit VARCHAR(200),
-
-    assigned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-    retired_at TIMESTAMPTZ
-
-);
-
-
-
-------------------------------------------------------------
--- DEVICE ATTESTATIONS
---
--- Proof statements about the device.
+-- Operational security telemetry.
 --
 -- Examples:
 --
--- "Certificate valid"
--- "EDR healthy"
--- "OS patched"
--- "Located on CAD network"
+-- Certificate rejected
+-- Malware detected
+-- Device removed
+-- Trust revoked
 --
-------------------------------------------------------------
-
-CREATE TABLE device_attestations (
-
-    attestation_id UUID PRIMARY KEY
-        DEFAULT uuid_generate_v4(),
-
-    device_id UUID NOT NULL
-        REFERENCES devices(device_id),
-
-    authority_id UUID NOT NULL
-        REFERENCES trust_authorities(authority_id),
-
-    attestation_type VARCHAR(100) NOT NULL,
-
-    attestation_data JSONB NOT NULL,
-
-    valid_from TIMESTAMPTZ NOT NULL,
-
-    valid_until TIMESTAMPTZ,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-
-);
+-- ============================================================
 
 
-
-------------------------------------------------------------
--- DEVICE POLICY REQUIREMENTS
---
--- Defines what a device must satisfy.
---
--- Example:
---
--- CAD Console:
---     certificate required
---     EDR required
---     network restricted
---
-------------------------------------------------------------
-
-CREATE TABLE device_security_requirements (
-
-    requirement_id UUID PRIMARY KEY
-        DEFAULT uuid_generate_v4(),
-
-    device_type_id UUID NOT NULL
-        REFERENCES device_types(device_type_id),
-
-    requirement_name VARCHAR(150) NOT NULL,
-
-    requirement_value JSONB NOT NULL,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-
-);
-
-
-
-------------------------------------------------------------
--- DEVICE EVENTS
---
--- Lifecycle tracking.
---
--- Enrollment
--- Certificate Renewal
--- Disable
--- Revoke
---
-------------------------------------------------------------
-
-CREATE TABLE device_events (
+CREATE TABLE IF NOT EXISTS device_security_events
+(
 
     event_id UUID PRIMARY KEY
         DEFAULT uuid_generate_v4(),
 
+
     device_id UUID NOT NULL
         REFERENCES devices(device_id),
 
-    event_type VARCHAR(100) NOT NULL,
 
-    event_data JSONB NOT NULL,
+    event_type VARCHAR(100)
+        NOT NULL,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+
+    severity VARCHAR(50)
+        NOT NULL,
+
+
+    event_data JSONB
+        NOT NULL,
+
+
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
 
 
-------------------------------------------------------------
+-- ============================================================
+-- DEVICE TRUST CHANGE HISTORY
+--
+-- Append-only history of trust state changes.
+--
+-- ============================================================
+
+
+CREATE TABLE IF NOT EXISTS device_trust_history
+(
+
+    history_id UUID PRIMARY KEY
+        DEFAULT uuid_generate_v4(),
+
+
+    device_id UUID NOT NULL
+        REFERENCES devices(device_id),
+
+
+    previous_state device_trust_state,
+
+
+    new_state device_trust_state
+        NOT NULL,
+
+
+    changed_by UUID
+        REFERENCES persons(person_id),
+
+
+    change_reason TEXT
+        NOT NULL,
+
+
+    changed_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
+
+);
+
+
+
+-- ============================================================
 -- INDEXES
-------------------------------------------------------------
+-- ============================================================
 
 
-CREATE INDEX idx_device_hostname
-ON devices(hostname);
+CREATE INDEX IF NOT EXISTS idx_device_trust_state
+ON device_trust_profile(trust_state);
 
 
-CREATE INDEX idx_device_status
-ON devices(status);
+
+CREATE INDEX IF NOT EXISTS idx_device_validation_device
+ON device_certificate_validations(device_id);
 
 
-CREATE INDEX idx_certificate_thumbprint
-ON device_certificates(certificate_thumbprint);
+
+CREATE INDEX IF NOT EXISTS idx_device_security_events_device
+ON device_security_events(device_id);
 
 
-CREATE INDEX idx_certificate_expiration
-ON device_certificates(expires_at);
+
+CREATE INDEX IF NOT EXISTS idx_device_security_events_time
+ON device_security_events(created_at);
 
 
-CREATE INDEX idx_device_attestation_lookup
-ON device_attestations(device_id, valid_until);
+
+CREATE INDEX IF NOT EXISTS idx_device_trust_history_device
+ON device_trust_history(device_id);
+
+
+
+-- ============================================================
+-- SECURITY
+--
+-- Application does not own trust.
+--
+-- ============================================================
+
+
+REVOKE UPDATE, DELETE
+ON device_security_events
+FROM PUBLIC;
+
+
+REVOKE UPDATE, DELETE
+ON device_trust_history
+FROM PUBLIC;
+
+
+
+COMMIT;
