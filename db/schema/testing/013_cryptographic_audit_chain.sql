@@ -3,17 +3,11 @@
 --
 -- Cryptographic Audit Integrity Layer
 --
--- Purpose:
---   Creates an append-only cryptographic chain for all
---   security-sensitive events.
---
--- Design Principles:
---   - No user can alter historical events
---   - Every event depends on the previous event hash
---   - Tampering breaks the chain
---   - Audit writers are separated from readers
+-- Public Safety Platform
 --
 -- ============================================================
+
+BEGIN;
 
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
@@ -23,131 +17,168 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Cryptographic audit event chain
 -- ============================================================
 
-CREATE TABLE cryptographic_audit_chain (
 
-    audit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS cryptographic_audit_chain
+(
 
-    sequence_number BIGSERIAL NOT NULL UNIQUE,
+    audit_id UUID PRIMARY KEY
+        DEFAULT gen_random_uuid(),
 
-    event_time TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    sequence_number BIGSERIAL
+        NOT NULL UNIQUE,
+
+
+    event_time TIMESTAMPTZ
+        NOT NULL DEFAULT now(),
+
 
     -- Identity responsible for action
-    actor_user_id UUID REFERENCES users(user_id),
 
-    -- Device/session identity
-    session_id UUID,
-
-    device_id UUID,
-
-    agency_id UUID REFERENCES agencies(agency_id),
+    identity_id UUID
+        REFERENCES identities(identity_id),
 
 
-    -- Event classification
-
-    event_type VARCHAR(100) NOT NULL,
-
-    event_category VARCHAR(50) NOT NULL,
+    person_id UUID
+        REFERENCES persons(person_id),
 
 
-    -- What occurred
+    -- Session/device context
+
+    session_id UUID
+        REFERENCES sessions(session_id),
+
+
+    device_id UUID
+        REFERENCES devices(device_id),
+
+
+    agency_id UUID
+        REFERENCES agencies(agency_id),
+
+
+
+    event_type VARCHAR(100)
+        NOT NULL,
+
+
+    event_category VARCHAR(50)
+        NOT NULL,
+
+
 
     object_type VARCHAR(100),
 
+
     object_id UUID,
 
-    action VARCHAR(100) NOT NULL,
+
+    action VARCHAR(100)
+        NOT NULL,
 
 
-    -- Security context
 
     source_ip INET,
 
+
     machine_certificate_fingerprint VARCHAR(128),
+
 
     user_certificate_fingerprint VARCHAR(128),
 
 
-    -- Full event payload
 
-    event_payload JSONB NOT NULL,
+    event_payload JSONB
+        NOT NULL,
 
 
-    -- Hash chain
 
     previous_hash BYTEA,
 
-    event_hash BYTEA NOT NULL,
+
+    event_hash BYTEA
+        NOT NULL,
 
 
-    -- Optional external signing
 
     signature BYTEA,
 
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ
+        NOT NULL DEFAULT now()
 
 );
 
 
 
 -- ============================================================
--- Prevent duplicate sequence insertion
+-- Indexes
 -- ============================================================
 
-CREATE UNIQUE INDEX idx_audit_sequence
-ON cryptographic_audit_chain(sequence_number);
+
+CREATE INDEX IF NOT EXISTS idx_audit_identity
+ON cryptographic_audit_chain(identity_id);
 
 
 
--- ============================================================
--- Fast forensic searches
--- ============================================================
-
-CREATE INDEX idx_audit_actor
-ON cryptographic_audit_chain(actor_user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_person
+ON cryptographic_audit_chain(person_id);
 
 
-CREATE INDEX idx_audit_event_type
+
+CREATE INDEX IF NOT EXISTS idx_audit_event_type
 ON cryptographic_audit_chain(event_type);
 
 
-CREATE INDEX idx_audit_time
+
+CREATE INDEX IF NOT EXISTS idx_audit_time
 ON cryptographic_audit_chain(event_time);
 
 
 
 -- ============================================================
--- Calculate event hash
---
--- Hash includes:
---
--- previous event hash
--- event metadata
--- payload
---
--- Changing ANY value breaks the chain
+-- Generate SHA512 hash
 -- ============================================================
 
+
 CREATE OR REPLACE FUNCTION generate_audit_hash()
+
 RETURNS TRIGGER
+
 LANGUAGE plpgsql
+
 AS $$
 
 BEGIN
 
-    NEW.event_hash :=
-        digest(
-            COALESCE(encode(NEW.previous_hash,'hex'),'') ||
-            NEW.event_time::text ||
-            COALESCE(NEW.actor_user_id::text,'') ||
-            NEW.event_type ||
-            NEW.action ||
-            NEW.event_payload::text,
-            'sha512'
-        );
+
+NEW.event_hash :=
+digest(
+
+    COALESCE(encode(NEW.previous_hash,'hex'),'') ||
+
+    NEW.event_time::text ||
+
+    COALESCE(NEW.identity_id::text,'') ||
+
+    COALESCE(NEW.person_id::text,'') ||
+
+    COALESCE(NEW.session_id::text,'') ||
+
+    NEW.event_type ||
+
+    NEW.action ||
+
+    NEW.event_payload::text,
 
 
-    RETURN NEW;
+    'sha512'
+
+);
+
+
+RETURN NEW;
+
 
 END;
 
@@ -155,7 +186,7 @@ $$;
 
 
 
-CREATE TRIGGER trg_generate_audit_hash
+CREATE OR REPLACE TRIGGER trg_generate_audit_hash
 
 BEFORE INSERT
 
@@ -168,8 +199,9 @@ EXECUTE FUNCTION generate_audit_hash();
 
 
 -- ============================================================
--- Automatically link events together
+-- Attach previous hash
 -- ============================================================
+
 
 CREATE OR REPLACE FUNCTION attach_previous_audit_hash()
 
@@ -181,27 +213,28 @@ AS $$
 
 DECLARE
 
-    last_hash BYTEA;
+last_hash BYTEA;
+
 
 BEGIN
 
 
-    SELECT event_hash
-    INTO last_hash
+SELECT event_hash
 
-    FROM cryptographic_audit_chain
+INTO last_hash
 
-    ORDER BY sequence_number DESC
+FROM cryptographic_audit_chain
 
-    LIMIT 1;
+ORDER BY sequence_number DESC
 
-
-
-    NEW.previous_hash := last_hash;
+LIMIT 1;
 
 
 
-    RETURN NEW;
+NEW.previous_hash := last_hash;
+
+
+RETURN NEW;
 
 
 END;
@@ -210,7 +243,7 @@ $$;
 
 
 
-CREATE TRIGGER trg_attach_previous_hash
+CREATE OR REPLACE TRIGGER trg_attach_previous_hash
 
 BEFORE INSERT
 
@@ -223,11 +256,7 @@ EXECUTE FUNCTION attach_previous_audit_hash();
 
 
 -- ============================================================
--- Audit chain verification function
---
--- Used by security monitoring systems
---
--- Returns false if any event was altered
+-- Verify chain integrity
 -- ============================================================
 
 
@@ -239,14 +268,13 @@ LANGUAGE plpgsql
 
 AS $$
 
-
 DECLARE
 
-    current_record RECORD;
+current_record RECORD;
 
-    expected_hash BYTEA;
+expected_hash BYTEA;
 
-    previous BYTEA := NULL;
+previous BYTEA := NULL;
 
 
 BEGIN
@@ -254,40 +282,54 @@ BEGIN
 
 FOR current_record IN
 
-    SELECT *
+SELECT *
 
-    FROM cryptographic_audit_chain
+FROM cryptographic_audit_chain
 
-    ORDER BY sequence_number
+ORDER BY sequence_number
 
 
 LOOP
 
 
-    expected_hash :=
-        digest(
+expected_hash := digest(
 
-            COALESCE(encode(previous,'hex'),'') ||
-            current_record.event_time::text ||
-            COALESCE(current_record.actor_user_id::text,'') ||
-            current_record.event_type ||
-            current_record.action ||
-            current_record.event_payload::text,
+COALESCE(encode(previous,'hex'),'') ||
 
-            'sha512'
+current_record.event_time::text ||
 
-        );
+COALESCE(current_record.identity_id::text,'') ||
 
+COALESCE(current_record.person_id::text,'') ||
 
-    IF expected_hash <> current_record.event_hash THEN
+COALESCE(current_record.session_id::text,'') ||
 
-        RETURN FALSE;
+current_record.event_type ||
 
-    END IF;
+current_record.action ||
+
+current_record.event_payload::text,
 
 
+'sha512'
 
-    previous := current_record.event_hash;
+
+);
+
+
+
+IF expected_hash <> current_record.event_hash
+
+THEN
+
+RETURN FALSE;
+
+END IF;
+
+
+
+previous := current_record.event_hash;
+
 
 
 END LOOP;
@@ -303,85 +345,90 @@ $$;
 
 
 -- ============================================================
--- SECURITY HARDENING
---
--- Normal application users cannot modify audit history
+-- Security hardening
 -- ============================================================
 
 
 REVOKE UPDATE, DELETE
+
 ON cryptographic_audit_chain
+
 FROM PUBLIC;
 
 
 
-REVOKE UPDATE, DELETE
-ON cryptographic_audit_chain
-FROM application_users;
-
-
-
 -- ============================================================
--- Dedicated audit writer role
+-- Audit roles
 -- ============================================================
 
+
+DO $$
+
+BEGIN
+
+IF NOT EXISTS
+(
+SELECT 1
+FROM pg_roles
+WHERE rolname='audit_writer'
+)
+
+THEN
 
 CREATE ROLE audit_writer;
 
-
-GRANT INSERT
-ON cryptographic_audit_chain
-TO audit_writer;
+END IF;
 
 
+IF NOT EXISTS
+(
+SELECT 1
+FROM pg_roles
+WHERE rolname='audit_reader'
+)
 
-GRANT SELECT
-ON cryptographic_audit_chain
-TO audit_writer;
-
-
-
--- Readers can investigate but never modify
+THEN
 
 CREATE ROLE audit_reader;
 
+END IF;
+
+
+END
+
+$$;
+
+
+
+GRANT INSERT, SELECT
+
+ON cryptographic_audit_chain
+
+TO audit_writer;
+
+
 
 GRANT SELECT
+
 ON cryptographic_audit_chain
+
 TO audit_reader;
 
 
 
--- Explicitly prevent destructive actions
-
 REVOKE UPDATE, DELETE
+
 ON cryptographic_audit_chain
+
 FROM audit_writer;
 
 
 
 REVOKE UPDATE, DELETE
+
 ON cryptographic_audit_chain
+
 FROM audit_reader;
-
-
-
--- ============================================================
--- Security event examples
---
--- Examples:
---
--- LOGIN_SUCCESS
--- LOGIN_FAILURE
--- PRIVILEGE_GRANTED
--- PRIVILEGE_REVOKED
--- SHIFT_APPROVED
--- CAD_RECORD_CREATED
--- CAD_RECORD_MODIFIED
--- ADMIN_ACCESS_REQUESTED
--- EMERGENCY_OVERRIDE_USED
---
--- ============================================================
 
 
 
@@ -400,3 +447,7 @@ COMMENT ON COLUMN cryptographic_audit_chain.event_hash IS
 COMMENT ON COLUMN cryptographic_audit_chain.previous_hash IS
 
 'Hash pointer to previous audit event.';
+
+
+
+COMMIT;
