@@ -3,7 +3,10 @@ BEGIN;
 CREATE SCHEMA IF NOT EXISTS security;
 
 
-CREATE TABLE IF NOT EXISTS security.session_context
+DROP TABLE IF EXISTS security.session_context CASCADE;
+
+
+CREATE TABLE security.session_context
 (
     session_id UUID PRIMARY KEY
         REFERENCES sessions(session_id),
@@ -18,57 +21,98 @@ CREATE TABLE IF NOT EXISTS security.session_context
         REFERENCES agencies(agency_id),
 
     created_at TIMESTAMPTZ
-        DEFAULT now()
+        NOT NULL DEFAULT now()
 );
 
 
-CREATE INDEX IF NOT EXISTS idx_session_context_person
+
+CREATE INDEX idx_session_context_person
 ON security.session_context(person_id);
 
 
-CREATE INDEX IF NOT EXISTS idx_session_context_agency
+
+CREATE INDEX idx_session_context_agency
 ON security.session_context(agency_id);
 
 
 
 CREATE OR REPLACE FUNCTION security.current_identity()
+
 RETURNS UUID
+
 LANGUAGE sql
+
 STABLE
+
 AS
 $$
-    SELECT identity_id
-    FROM security.session_context
-    WHERE session_id =
-        current_setting('app.session_id',true)::uuid;
+
+SELECT identity_id
+
+FROM security.session_context
+
+WHERE session_id =
+(
+    current_setting(
+        'app.session_id',
+        true
+    )::uuid
+);
+
 $$;
 
 
 
 CREATE OR REPLACE FUNCTION security.current_person()
+
 RETURNS UUID
+
 LANGUAGE sql
+
 STABLE
+
 AS
 $$
-    SELECT person_id
-    FROM security.session_context
-    WHERE session_id =
-        current_setting('app.session_id',true)::uuid;
+
+SELECT person_id
+
+FROM security.session_context
+
+WHERE session_id =
+(
+    current_setting(
+        'app.session_id',
+        true
+    )::uuid
+);
+
 $$;
 
 
 
 CREATE OR REPLACE FUNCTION security.current_agency()
+
 RETURNS UUID
+
 LANGUAGE sql
+
 STABLE
+
 AS
 $$
-    SELECT agency_id
-    FROM security.session_context
-    WHERE session_id =
-        current_setting('app.session_id',true)::uuid;
+
+SELECT agency_id
+
+FROM security.session_context
+
+WHERE session_id =
+(
+    current_setting(
+        'app.session_id',
+        true
+    )::uuid
+);
+
 $$;
 
 
