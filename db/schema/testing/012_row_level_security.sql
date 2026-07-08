@@ -1,39 +1,30 @@
 -- ============================================================================
--- 011_row_level_security.sql
+-- 012_row_level_security.sql
 --
 -- PostgreSQL Row Level Security Enforcement
 --
 -- Public Safety Platform
 --
--- Applies security boundaries to:
+-- Depends on:
 --
---   Identity
---   Agency
---   CAD Operations
---   Dispatch
---   Personnel
---   Device Trust
+--   007_cad_security.sql
+--   011_identity_database_binding.sql
 --
--- Design:
+-- Security model:
 --
---   Authentication happens outside PostgreSQL.
---
---   Go API validates:
---
+--   Go API authenticates:
 --       mTLS
 --       device trust
 --       session
 --       authorization
 --
---   Then establishes:
+--   Application sets:
+--       app.session_id
 --
---       app.user_id
---       app.agency_id
---       app.role
---
---   PostgreSQL enforces:
---
---       Who can see what.
+--   PostgreSQL resolves:
+--       identity
+--       person
+--       agency
 --
 -- ============================================================================
 
@@ -56,29 +47,7 @@ STABLE
 
 AS $$
 
-    SELECT NULLIF(
-        current_setting('app.user_id', true),
-        ''
-    )::uuid;
-
-$$;
-
-
-
-CREATE OR REPLACE FUNCTION security.current_agency_id()
-
-RETURNS UUID
-
-LANGUAGE sql
-
-STABLE
-
-AS $$
-
-    SELECT NULLIF(
-        current_setting('app.agency_id', true),
-        ''
-    )::uuid;
+    SELECT security.current_person();
 
 $$;
 
@@ -103,13 +72,6 @@ $$;
 
 
 
--- ============================================================================
--- HELPER FUNCTIONS
---
--- These prevent duplicated policy logic.
--- ============================================================================
-
-
 CREATE OR REPLACE FUNCTION security.is_sys_admin()
 
 RETURNS BOOLEAN
@@ -120,9 +82,7 @@ STABLE
 
 AS $$
 
-    SELECT security.current_role()
-    =
-    'SYS_ADMIN';
+    SELECT security.current_role() = 'SYS_ADMIN';
 
 $$;
 
@@ -142,7 +102,7 @@ AS $$
 
     SELECT
         target_agency =
-        security.current_agency_id()
+        security.current_agency()
 
         OR
 
@@ -184,10 +144,8 @@ USING
 
 
 
-COMMIT;
-
 -- ============================================================================
--- PERSON IDENTITY SECURITY
+-- PERSONS
 -- ============================================================================
 
 
@@ -199,11 +157,11 @@ ALTER TABLE persons
 FORCE ROW LEVEL SECURITY;
 
 
-DROP POLICY IF EXISTS persons_agency_access
+DROP POLICY IF EXISTS persons_self_access
 ON persons;
 
 
-CREATE POLICY persons_agency_access
+CREATE POLICY persons_self_access
 
 ON persons
 
@@ -211,13 +169,12 @@ FOR SELECT
 
 USING
 (
-    security.is_sys_admin()
+    person_id =
+    security.current_person()
 
     OR
 
-    person_id =
-    security.current_user_id()
-
+    security.is_sys_admin()
 );
 
 
@@ -247,8 +204,8 @@ FOR SELECT
 
 USING
 (
-    person_id =
-    security.current_user_id()
+    identity_id =
+    security.current_identity()
 
     OR
 
@@ -282,8 +239,8 @@ FOR SELECT
 
 USING
 (
-    user_id =
-    security.current_user_id()
+    identity_id =
+    security.current_identity()
 
     OR
 
@@ -343,8 +300,6 @@ WITH CHECK
 
 
 
--- No deletion of CAD incidents
-
 DROP POLICY IF EXISTS cad_incident_no_delete
 ON cad_incidents;
 
@@ -392,8 +347,7 @@ USING
     OR
 
     assigned_by =
-    security.current_user_id()
-
+    security.current_person()
 );
 
 
@@ -427,9 +381,8 @@ USING
 
     OR
 
-    created_by =
-    security.current_user_id()
-
+    author_id =
+    security.current_person()
 );
 
 
@@ -460,6 +413,20 @@ FOR SELECT
 USING
 (
     security.is_sys_admin()
+
+    OR
+
+    EXISTS
+    (
+        SELECT 1
+        FROM cad_incidents c
+
+        WHERE c.incident_id =
+              cad_event_timeline.incident_id
+
+        AND c.agency_id =
+              security.current_agency()
+    )
 );
 
 
@@ -478,3 +445,8 @@ USING
 (
     false
 );
+
+
+
+COMMIT;
+
