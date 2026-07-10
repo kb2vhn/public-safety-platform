@@ -4,135 +4,172 @@
 
 The Public Safety Platform is a modular, security-first operational platform designed to support the needs of modern public safety organizations.
 
-The platform is built around a foundational principle:
+The platform is not built as a single application.
 
-> Operational decisions must be explainable, attributable, reproducible, and independently verifiable.
+It is designed as a collection of shared capabilities and operational modules built on a common trusted foundation.
 
-Rather than building isolated applications, the platform provides shared capabilities that allow public safety modules such as Computer Aided Dispatch (CAD), Records Management System (RMS), Evidence Management, Personnel, Fleet, Fire, EMS, and future services to operate on a common trusted foundation.
+Computer Aided Dispatch (CAD) is the first operational module, not the definition of the platform.
 
-CAD is the first operational module, not the definition of the platform.
+The long-term goal is to provide a dependable foundation for public safety operations including:
+
+* CAD
+* RMS
+* Evidence and Property
+* Personnel Operations
+* Fleet Management
+* Fire and EMS Operations
+* Future public safety services
+
+---
+
+# Project Vision
+
+Build software that is secure, understandable, observable, and dependable enough that I would trust my own local community to rely on it during an emergency.
+
+The ultimate measure of success is not the number of features implemented, but whether the people who depend on the system can trust it when it matters most.
 
 ---
 
 # Architectural Philosophy
 
-The Public Safety Platform separates responsibilities into three primary areas:
+The Public Safety Platform is built around four principles:
 
-## Platform Foundation
+## Trust
 
-The platform establishes trust, identity, authorization, operational validation, and decision accountability.
+Every operational action must be evaluated against appropriate identity, device, authority, and policy requirements.
 
-## Platform Services
+## Accountability
 
-Shared services provide reusable capabilities such as workflow, notifications, reporting, attachments, GIS, and integrations.
+Important decisions must be attributable to:
 
-## Operational Modules
+* Who requested the action
+* What authority existed
+* When it occurred
+* Why it was allowed or denied
 
-Modules provide agency-specific business functionality such as dispatch, reports, evidence, fleet, and personnel management.
+## Observability
 
-The platform provides capabilities.
+The platform must record meaningful operational events that allow administrators, investigators, and organizations to understand what occurred.
 
-Modules provide operational workflows.
+## Dependability
 
-Agencies provide configuration and policy.
-
----
-
-# Core Design Principles
-
-## Layered Trust
-
-No single credential, device, approval, role, or authentication event is sufficient to establish operational authority.
-
-The platform evaluates multiple independent trust layers:
-
-```
-Cryptographic Trust
-        |
-Device Trust
-        |
-Identity Authentication
-        |
-Operational Authorization
-        |
-Operational Validation
-        |
-Approval Framework
-        |
-Session Establishment
-        |
-Authorization Decision
-        |
-Operational Action
-```
-
-Each layer contributes information required to establish overall operational assurance.
+The system must remain understandable and reliable under the conditions where public safety organizations depend on it most.
 
 ---
 
-# Operational Authorization and Validation
+# Platform Architecture
 
-Authentication answers:
+The platform is organized into three major layers:
 
-> Who are you?
+```text
+                    Public Safety Platform
 
-Operational Authorization answers:
+                            |
 
-> Has the organization authorized you to perform this role?
+        ┌───────────────────┼───────────────────┐
 
-Operational Validation answers:
+        │                   │                   │
 
-> Are the conditions that allowed this authorization still true?
+ Platform Foundation  Platform Services  Operational Modules
+
+```
+
+---
+
+# Platform Foundation
+
+The foundation establishes the trusted environment that all modules use.
+
+The foundation provides:
+
+* Identity
+* Device Trust
+* Organizations
+* Operational Authorization
+* Authorization
+* Approval Framework
+* Decision Engine
+* Decision Record Repository
+* Sessions
+* Policy Evaluation
+* Configuration
+* Cryptographic Audit
+
+The foundation answers:
+
+> Can this operation be trusted and evaluated?
+
+---
+
+# Operational Resources
+
+Operational Resources represents the people, equipment, vehicles, and organizational structures required for public safety operations.
+
+It answers:
+
+> What resources exist, what are they capable of, and what is their current operational state?
 
 Examples:
 
-* Is the user assigned to duty?
-* Has supervisory validation occurred?
-* Is the assignment active?
-* Is the authority within its approved time period?
-* Has the authority been revoked?
-* Are additional approvals required?
+* Personnel
+* Units
+* Assignments
+* Qualifications
+* Certifications
+* Vehicles
+* Equipment
+* Availability
+* Resource status
+
+Operational Resources provides the capability layer used by CAD, RMS, Fire, EMS, and future modules.
 
 ---
 
-# Approval Framework
+# Operational Modules
 
-Sensitive operations may require independent approval workflows.
+Modules provide domain-specific functionality while consuming shared platform capabilities.
 
-The platform does not hard-code a specific approval model.
+```text
+000-099  Platform Foundation
 
-Instead, the Approval Framework supports configurable approval requirements.
+100-199  Operational Resources
 
-Examples:
+200-299  CAD
 
-* Single approval
-* Supervisor approval
-* Independent approval
-* Dual authorization
-* Multi-stage approval
-* Emergency authorization
-* Time-limited approval
+300-399  RMS
 
-The goal is not to create special cases, but to provide a reusable framework for organizational policy.
+400-499  Evidence / Property
+
+500-599  Personnel Management Extensions
+
+600-699  Fleet Management Extensions
+
+700-799  Fire / EMS Specific
+
+800-899  Future Modules
+
+900-999  Deployment / Bootstrap
+```
+
+Each module has clear ownership boundaries and does not recreate platform capabilities.
 
 ---
 
 # Decision Engine
 
-All security-sensitive and operational authorization decisions are evaluated through the Decision Engine.
+All important platform decisions are evaluated through the Decision Engine.
 
 The Decision Engine evaluates:
 
 * Identity
 * Device trust
-* Operational authorization
+* Operational authority
 * Operational validation
 * Approval requirements
-* Authority grants
 * Policy requirements
 * Session state
 
-The result of every decision is recorded.
+Every decision produces a record.
 
 ---
 
@@ -140,11 +177,13 @@ The result of every decision is recorded.
 
 The Decision Record Repository is the authoritative record of platform decisions.
 
-Every decision produces a complete record containing:
+Every successful and failed decision is recorded.
+
+A Decision Record contains:
 
 * Decision ID
 * Timestamp
-* Operation requested
+* Operation
 * Result
 * Identity context
 * Device context
@@ -155,9 +194,13 @@ Every decision produces a complete record containing:
 * Engine versions
 * Justification Chain
 
-Both successful and failed decisions are recorded.
+The platform records not only:
 
-The platform records not only what happened, but why the decision occurred.
+> What happened?
+
+but also:
+
+> Why did it happen?
 
 ---
 
@@ -167,33 +210,27 @@ The Justification Chain provides a complete explanation of the factors used to r
 
 Example:
 
-```
-Decision ID:
-9f8e...
+```text
+Decision:
+
+ALLOW
 
 Operation:
+
 Approve Evidence Transfer
 
-Decision:
-ALLOW
 
 Justification:
 
 ✓ Certificate Chain Valid
-  Certificate Thumbprint Recorded
 
 ✓ Device Trusted
-  Device Certificate Thumbprint Recorded
 
 ✓ Identity Authenticated
-  SID / UID / SPN Recorded
 
 ✓ Operational Authorization Active
-  Assignment:
-  Fire Dispatch Supervisor
 
 ✓ Operational Validation Passed
-  Supervisor confirmed on-duty status
 
 ✓ Approval Framework Satisfied
 
@@ -203,11 +240,13 @@ Justification:
 
 ✓ Authorization Passed
 
+
 Decision Evaluation Time:
+
 4.7 ms
 ```
 
-Every decision is attributable and reconstructable.
+Both successful and failed evaluations are preserved.
 
 ---
 
@@ -215,178 +254,139 @@ Every decision is attributable and reconstructable.
 
 The platform maintains the authoritative operational record.
 
-External systems consume exported representations of platform records through the Platform Provider Streaming Service.
+External systems consume exported representations through the Platform Provider Streaming Service.
 
-The platform does not allow external systems to define its internal data model.
-
-Supported integrations may include:
+The service translates canonical platform records into formats appropriate for:
 
 * Graylog
 * Security Onion
 * Elastic Stack
 * Splunk
-* SIEM platforms
-* Log aggregation platforms
-* Custom agency systems
-
-The streaming service translates canonical platform records into destination-specific formats.
+* Other SIEM and logging platforms
 
 Architecture:
 
-```
+```text
 Decision Record Repository
 
-        |
+            |
 
 Platform Provider Streaming Service
 
-        |
+            |
 
-+---------------+---------------+
-|               |               |
++-------------+-------------+-------------+
 
-Graylog      Elastic        Splunk
+Graylog     Elastic      Splunk
 
-Security     SIEM           Future
-Onion        Systems        Providers
+Security    SIEM         Future
+Onion       Systems      Providers
 ```
 
----
-
-# Database Architecture
-
-The database is organized into modular ranges.
-
-```
-000-099  Platform Foundation
-
-100-199  CAD
-
-200-299  RMS
-
-300-399  Personnel
-
-400-499  Fleet
-
-500-599  Jail
-
-600-699  Evidence / Property
-
-700-799  Fire / EMS
-
-800-899  Future Modules
-
-900-999  Deployment / Bootstrap
-```
-
-Each module maintains clear boundaries and consumes shared platform services rather than recreating them.
-
----
-
-# Current Platform Foundation
-
-Initial foundation components:
-
-```
-000 Platform Foundation
-
-010 Device Trust
-
-020 Identity
-
-030 Organizations
-
-040 Operational Authorization
-
-050 Authorization
-
-060 Session Management
-
-070 Configuration
-
-080 Platform Validation
-
-090 Cryptographic Audit
-```
+External systems provide analysis and monitoring capabilities but do not replace the platform as the system of record.
 
 ---
 
 # Security Model
 
-The platform follows a defense-in-depth approach:
+The platform follows a layered trust approach.
 
-* Enterprise PKI integration
+Security decisions may include:
+
 * Certificate chain validation
-* Short-lived device certificates
-* Device trust evaluation
+* Device trust validation
 * Identity verification
-* Operational authority validation
-* Approval framework enforcement
-* Fine-grained authorization
-* Immutable decision records
-* Cryptographically verifiable auditing
+* Operational authorization
+* Operational validation
+* Approval Framework requirements
+* Session validation
+* Authorization evaluation
 
-The platform consumes established organizational PKI infrastructure rather than becoming a certificate authority.
+The platform is designed to integrate with an organization's existing PKI infrastructure.
+
+The platform does not require organizations to replace established certificate authorities.
 
 ---
 
-# Development Philosophy
+# Development Principles
 
-This project prioritizes:
+The platform follows these principles:
 
 * Security by design
 * Least privilege
 * Separation of duties
-* Explainable decisions
 * Modular architecture
+* Clear ownership boundaries
 * Vendor independence
-* Long-term maintainability
+* Explainable decisions
+* Immutable decision history
 * Operational usability
 
-The goal is to build a system that supports public safety personnel rather than creating additional operational friction.
-
 ---
 
-# Project Status
+# Current Development Focus
 
-This project is actively under development.
+Current development is focused on:
 
-Current focus:
-
-* Platform Trust Foundation
+* Platform Foundation
 * Identity architecture
-* Device trust model
-* Operational authorization
-* Authorization framework
-* Decision recording
+* Device Trust
+* Operational Resources
+* Authorization Framework
+* Decision Engine
+* Decision Record Repository
 * Database architecture
 
-Future modules:
-
-* CAD
-* RMS
-* Evidence Management
-* Personnel Management
-* Fleet Management
-* Additional public safety services
+Future development will expand operational modules on top of this foundation.
 
 ---
 
-# Vision
+# Documentation
 
-The Public Safety Platform is designed to provide a trusted foundation where every operational decision can be understood, verified, and defended.
+Architecture documentation:
+
+```text
+docs/
+ └── architecture/
+
+     platform-boundaries.md
+
+     module-responsibilities.md
+
+     future architecture documents
+```
+
+Database design:
+
+```text
+db/
+ └── schema/
+```
+
+Decision records:
+
+```text
+docs/
+ └── decisions/
+```
+
+---
+
+# Final Goal
+
+The Public Safety Platform exists to create a trusted operational foundation where every important action can be understood, verified, and defended.
 
 The system should answer:
 
-> Who performed the action?
+* Who performed the action?
+* What authority allowed it?
+* What conditions existed at the time?
+* What policies were evaluated?
+* Why was the decision allowed or denied?
 
-> What authority allowed it?
+A public safety system should not only function.
 
-> What conditions existed at the time?
-
-> What policies were evaluated?
-
-> Why did the platform allow or deny the action?
+It should be trusted.
 
 Every important decision should have an explanation.
 Build software that is secure, understandable, observable, and dependable enough that I would trust my own local community to rely on it during an emergency.
