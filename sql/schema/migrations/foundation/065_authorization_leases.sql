@@ -33,14 +33,14 @@ END;
 $dependency_check$;
 
 
-CREATE TABLE authorization.authorization_leases (
+CREATE TABLE access_control.authorization_leases (
     authorization_lease_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     lease_secret_hash bytea NOT NULL,
-    session_id uuid NOT NULL REFERENCES authorization.sessions(session_id),
+    session_id uuid NOT NULL REFERENCES access_control.sessions(session_id),
     identity_id uuid NOT NULL REFERENCES identity.identities(identity_id),
     device_id uuid REFERENCES trust.devices(device_id),
     service_id uuid REFERENCES service.platform_services(service_id),
-    purpose_definition_id uuid REFERENCES authorization.purpose_definitions(purpose_definition_id),
+    purpose_definition_id uuid REFERENCES access_control.purpose_definitions(purpose_definition_id),
     scope_reference text NOT NULL,
     issued_at timestamptz NOT NULL DEFAULT clock_timestamp(),
     expires_at timestamptz NOT NULL,
@@ -50,12 +50,12 @@ CREATE TABLE authorization.authorization_leases (
     correlation_id uuid NOT NULL,
     CONSTRAINT authorization_leases_validity_ck CHECK (expires_at > issued_at)
 );
-CREATE UNIQUE INDEX authorization_leases_secret_hash_uq ON authorization.authorization_leases(lease_secret_hash);
-CREATE INDEX authorization_leases_active_idx ON authorization.authorization_leases(identity_id,service_id,status,expires_at);
+CREATE UNIQUE INDEX authorization_leases_secret_hash_uq ON access_control.authorization_leases(lease_secret_hash);
+CREATE INDEX authorization_leases_active_idx ON access_control.authorization_leases(identity_id,service_id,status,expires_at);
 
-CREATE TABLE authorization.lease_authority_grants (
-    authorization_lease_id uuid NOT NULL REFERENCES authorization.authorization_leases(authorization_lease_id),
-    authority_grant_id uuid NOT NULL REFERENCES authorization.authority_grants(authority_grant_id),
+CREATE TABLE access_control.lease_authority_grants (
+    authorization_lease_id uuid NOT NULL REFERENCES access_control.authorization_leases(authorization_lease_id),
+    authority_grant_id uuid NOT NULL REFERENCES access_control.authority_grants(authority_grant_id),
     PRIMARY KEY(authorization_lease_id,authority_grant_id)
 );
 

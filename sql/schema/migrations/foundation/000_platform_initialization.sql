@@ -38,7 +38,7 @@ CREATE SCHEMA IF NOT EXISTS organization;
 CREATE SCHEMA IF NOT EXISTS service;
 CREATE SCHEMA IF NOT EXISTS attestation;
 CREATE SCHEMA IF NOT EXISTS approval;
-CREATE SCHEMA IF NOT EXISTS authorization;
+CREATE SCHEMA IF NOT EXISTS access_control;
 CREATE SCHEMA IF NOT EXISTS decision;
 CREATE SCHEMA IF NOT EXISTS governance;
 CREATE SCHEMA IF NOT EXISTS compliance;
@@ -55,7 +55,7 @@ DECLARE
 BEGIN
     FOREACH v_schema IN ARRAY ARRAY[
         'foundation_meta'::name,'trust'::name,'identity'::name,'organization'::name,
-        'service'::name,'attestation'::name,'approval'::name,'authorization'::name,
+        'service'::name,'attestation'::name,'approval'::name,'access_control'::name,
         'decision'::name,'governance'::name,'compliance'::name,'risk'::name,
         'resilience'::name,'performance'::name,'observability'::name,'integration'::name,
         'security_validation'::name
@@ -111,7 +111,7 @@ VALUES
 ('service','services_and_federation','FOUNDATION','Services, deployments, participation, federation, and configuration.','000_platform_initialization'),
 ('attestation','attestations_and_eligibility','FOUNDATION','Attestation authorities, attestations, and access eligibility.','000_platform_initialization'),
 ('approval','approval_framework','FOUNDATION','Approval policies, requests, stages, and actions.','000_platform_initialization'),
-('authorization','authority_and_authorization','FOUNDATION','Authority, purpose, sessions, assertions, and leases.','000_platform_initialization'),
+('access_control','authority_and_authorization','FOUNDATION','Authority, purpose, sessions, assertions, and leases.','000_platform_initialization'),
 ('decision','decision_records','FOUNDATION','Decision Records, evaluations, chains, and integrity metadata.','000_platform_initialization'),
 ('governance','data_and_document_governance','FOUNDATION','Classification, ownership, custody, documents, policy, and lineage.','000_platform_initialization'),
 ('compliance','compliance_and_controls','FOUNDATION','Controls, profiles, implementations, evidence, assessments, and findings.','000_platform_initialization'),

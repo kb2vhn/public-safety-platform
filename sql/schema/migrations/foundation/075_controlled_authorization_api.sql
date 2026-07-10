@@ -33,7 +33,7 @@ END;
 $dependency_check$;
 
 
-CREATE FUNCTION authorization.verify_lease_secret(
+CREATE FUNCTION access_control.verify_lease_secret(
     p_authorization_lease_id uuid,
     p_plaintext_secret text
 )
@@ -44,7 +44,7 @@ SET search_path = pg_catalog, authorization
 AS $$
     SELECT EXISTS (
         SELECT 1
-        FROM authorization.authorization_leases l
+        FROM access_control.authorization_leases l
         WHERE l.authorization_lease_id = p_authorization_lease_id
           AND l.status = 'ACTIVE'
           AND clock_timestamp() < l.expires_at
@@ -52,7 +52,7 @@ AS $$
     );
 $$;
 
-CREATE FUNCTION authorization.revoke_lease(
+CREATE FUNCTION access_control.revoke_lease(
     p_authorization_lease_id uuid,
     p_reason text
 )
@@ -61,7 +61,7 @@ LANGUAGE plpgsql
 SET search_path = pg_catalog, authorization
 AS $$
 BEGIN
-    UPDATE authorization.authorization_leases
+    UPDATE access_control.authorization_leases
        SET status='REVOKED',
            revoked_at=clock_timestamp(),
            revocation_reason=p_reason

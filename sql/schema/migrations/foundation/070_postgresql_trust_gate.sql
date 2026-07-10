@@ -33,13 +33,13 @@ END;
 $dependency_check$;
 
 
-CREATE TABLE authorization.trust_assertions (
+CREATE TABLE access_control.trust_assertions (
     trust_assertion_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     assertion_id text NOT NULL UNIQUE,
     trust_provider_id uuid NOT NULL REFERENCES trust.trust_providers(trust_provider_id),
     identity_id uuid NOT NULL REFERENCES identity.identities(identity_id),
     device_id uuid REFERENCES trust.devices(device_id),
-    session_id uuid REFERENCES authorization.sessions(session_id),
+    session_id uuid REFERENCES access_control.sessions(session_id),
     audience text NOT NULL,
     environment_key text NOT NULL,
     issued_at timestamptz NOT NULL,
@@ -53,10 +53,10 @@ CREATE TABLE authorization.trust_assertions (
     status text NOT NULL DEFAULT 'RECEIVED',
     CONSTRAINT trust_assertions_validity_ck CHECK (expires_at > issued_at)
 );
-CREATE UNIQUE INDEX trust_assertions_nonce_uq ON authorization.trust_assertions(nonce_hash);
-CREATE INDEX trust_assertions_status_expiry_idx ON authorization.trust_assertions(status,expires_at);
+CREATE UNIQUE INDEX trust_assertions_nonce_uq ON access_control.trust_assertions(nonce_hash);
+CREATE INDEX trust_assertions_status_expiry_idx ON access_control.trust_assertions(status,expires_at);
 
-CREATE FUNCTION authorization.assert_trust_assertion_available(p_assertion_id text)
+CREATE FUNCTION access_control.assert_trust_assertion_available(p_assertion_id text)
 RETURNS uuid
 LANGUAGE plpgsql
 SET search_path = pg_catalog, authorization
@@ -64,7 +64,7 @@ AS $$
 DECLARE
     v_id uuid;
 BEGIN
-    UPDATE authorization.trust_assertions
+    UPDATE access_control.trust_assertions
        SET status='CONSUMED', consumed_at=clock_timestamp()
      WHERE assertion_id=p_assertion_id
        AND status='RECEIVED'

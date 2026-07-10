@@ -42,7 +42,7 @@ SELECT
 FROM pg_proc p
 JOIN pg_namespace n ON n.oid=p.pronamespace
 WHERE p.prosecdef
-  AND n.nspname IN ('foundation_meta','trust','identity','organization','service','attestation','approval','authorization','decision','governance','compliance','risk','resilience','performance','observability','integration');
+  AND n.nspname IN ('foundation_meta','trust','identity','organization','service','attestation','approval','access_control','decision','governance','compliance','risk','resilience','performance','observability','integration');
 
 CREATE VIEW security_validation.public_schema_privileges AS
 SELECT
@@ -50,12 +50,12 @@ SELECT
     has_schema_privilege('public', n.oid, 'USAGE') AS public_usage,
     has_schema_privilege('public', n.oid, 'CREATE') AS public_create
 FROM pg_namespace n
-WHERE n.nspname IN ('foundation_meta','trust','identity','organization','service','attestation','approval','authorization','decision','governance','compliance','risk','resilience','performance','observability','integration','security_validation');
+WHERE n.nspname IN ('foundation_meta','trust','identity','organization','service','attestation','approval','access_control','decision','governance','compliance','risk','resilience','performance','observability','integration','security_validation');
 
 CREATE VIEW security_validation.foundation_table_counts AS
 SELECT schemaname, count(*)::bigint AS table_count
 FROM pg_tables
-WHERE schemaname IN ('foundation_meta','trust','identity','organization','service','attestation','approval','authorization','decision','governance','compliance','risk','resilience','performance','observability','integration')
+WHERE schemaname IN ('foundation_meta','trust','identity','organization','service','attestation','approval','access_control','decision','governance','compliance','risk','resilience','performance','observability','integration')
 GROUP BY schemaname;
 
 CREATE VIEW security_validation.migration_summary AS

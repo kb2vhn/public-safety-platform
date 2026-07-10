@@ -33,7 +33,7 @@ END;
 $dependency_check$;
 
 
-CREATE TABLE authorization.sessions (
+CREATE TABLE access_control.sessions (
     session_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     identity_id uuid NOT NULL REFERENCES identity.identities(identity_id),
     device_id uuid REFERENCES trust.devices(device_id),
@@ -47,7 +47,7 @@ CREATE TABLE authorization.sessions (
     correlation_id uuid NOT NULL DEFAULT gen_random_uuid(),
     CONSTRAINT sessions_validity_ck CHECK (expires_at > authenticated_at)
 );
-CREATE INDEX sessions_identity_active_idx ON authorization.sessions(identity_id,status,expires_at);
+CREATE INDEX sessions_identity_active_idx ON access_control.sessions(identity_id,status,expires_at);
 
 SELECT foundation_meta.register_migration(
     p_migration_id       => '060_sessions',
