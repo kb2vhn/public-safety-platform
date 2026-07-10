@@ -1,4 +1,26 @@
-schema/
+schema
+|
+├── testing
+│   Core development schema
+│   Used by developers
+│
+├── pre-release
+│   Candidate release schema
+│   Has passed testing
+│
+├── production
+│   Official vendor-supported releases
+│   Example:
+│       v1.0.0
+│       v1.1.0
+│
+├── current
+│   Agency-specific deployed schema
+│   Contains local modifications
+│
+└── bk
+    Archived snapshots
+
 
 000_trust_foundation.sql
         ✓ agencies
