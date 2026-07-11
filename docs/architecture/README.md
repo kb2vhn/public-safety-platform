@@ -16,6 +16,7 @@ The architecture is divided into:
 
 - [PostgreSQL Architecture](postgresql.md)
 - [Provider-Neutral Observability](provider-neutral-observability.md)
+- [Authorization Evaluation Contract](authorization-evaluation-contract.md)
 
 ### Platform Foundation
 
