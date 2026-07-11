@@ -91,8 +91,8 @@ The normal Foundation test command was:
 Accepted run evidence:
 
 ```text
-Run ID: foundation_20260711_172044_146677
-Completed: 2026-07-11T17:20:47-04:00
+Run ID: foundation_20260711_174057_147582
+Completed: 2026-07-11T17:41:00-04:00
 PostgreSQL server_version_num: 180004
 Overall result: PASS
 Runner exit status: 0
