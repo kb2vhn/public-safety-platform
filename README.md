@@ -117,11 +117,31 @@ The accepted Phase 0 SQL test baseline is:
 3 understood WARN
 ```
 
-This proves that the current migrations install coherently and that the
-implemented assertions pass.
+The accepted Phase 1 Authentication Assertion baseline is:
 
-It does not mean every documented Foundation control is already fully
-enforced.
+```text
+31 manifest migrations
+31 registered migrations
+10 sequential test files
+1 concurrency test file
+135 PASS
+0 FAIL
+3 understood WARN
+```
+
+Phase 1 proved controlled local verification, exact-context single-use
+consumption, terminal lifecycle behavior, and a real two-connection race in
+which exactly one consumer succeeded. The accepted boundary is tagged as
+`phase-1-authentication-assertion-complete-v1`.
+
+Phase 2 has started with the normative
+[Session Establishment, Step-Up, and Lifecycle Model](docs/architecture/foundation/session-establishment-step-up-and-lifecycle-model.md).
+It will implement atomic session establishment, atomic step-up completion,
+controlled activity and lifecycle transitions, and the required concurrency
+proofs without weakening Phase 1.
+
+These results prove only the properties covered by the accepted tests. They do
+not mean every documented Foundation control is already fully enforced.
 
 ## Staged Development Approach
 
@@ -319,6 +339,7 @@ Implemented behavior now includes:
 - Atomic Authentication Assertion consumption
 - Replay denial
 - Authentication Assertion revocation with history preservation
+- Authentication Assertion concurrent single-use proof
 - Authorization Lease secret hashing
 - Secret-only lease verification
 - Complete Authorization Lease context verification
@@ -332,7 +353,6 @@ Implemented behavior now includes:
 The following remain active Foundation work:
 
 - Trust-Provider-specific verifier-role and credential boundary enforcement
-- Authentication Assertion concurrent-consumption proof
 - Atomic session establishment from a verified Authentication Assertion
 - Complete session lifecycle APIs and concurrency behavior
 - Full approval independence and self-approval enforcement
@@ -409,6 +429,9 @@ Start with:
 - [Platform Foundation Documentation](docs/architecture/foundation/README.md)
 - [Foundation Terminology and Domain Neutrality](docs/architecture/foundation/foundation-terminology-and-domain-neutrality.md)
 - [Authorization Evaluation Contract](docs/architecture/foundation/authorization-evaluation-contract.md)
+- [Authentication Assertion Verification and Consumption Model](docs/architecture/foundation/authentication-assertion-verification-and-consumption-model.md)
+- [Phase 1 Authentication Assertion Acceptance](docs/architecture/foundation/phase-1-authentication-assertion-acceptance.md)
+- [Session Establishment, Step-Up, and Lifecycle Model](docs/architecture/foundation/session-establishment-step-up-and-lifecycle-model.md)
 - [PostgreSQL Architecture](docs/architecture/postgresql.md)
 - [External-System-Independent Observability](docs/architecture/external-system-independent-observability.md)
 - [Project Goals](docs/goals/README.md)

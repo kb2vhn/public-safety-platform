@@ -1,73 +1,71 @@
-# Platform Architecture
+# Platform Foundation Documentation
 
-> **Status:** Normative architecture under active refinement.
+> **Architecture status:** Normative and under active refinement.
+>
+> **SQL status:** Initial Foundation migrations `000–099` exist. Selected
+> controls are database-enforced and tested; structural presence does not imply
+> complete runtime, deployment, or operational enforcement.
 >
 > **Current implementation phase:** Phase 2 — Session Establishment, Step-Up,
 > and Lifecycle Enforcement.
->
-> The repository is pre-alpha and is not ready for production use.
 
 ## Purpose
 
-This directory contains architecture shared across the platform.
+The Platform Foundation is a domain-neutral layer for trust, identity,
+authentication inputs, sessions, authorization, approvals, accountable
+Decision Records, governance, compliance, lifecycle, resilience, resource
+governance, observability, and integration intent.
 
-The repository began with public safety as its first demanding operational
-focus. The Platform Foundation is intentionally domain-neutral and must remain
-usable by unrelated municipal, school, and institutional module families.
+Potential consumers include public safety, municipal administration, finance,
+human resources, records management, permitting, fleet and asset systems,
+utilities, education, and future integrated services.
 
-Architecture is separated into:
+The Foundation does not contain CAD incidents, RMS cases, evidence custody,
+payroll, procurement, Fire or EMS workflow, student records, permits, utility
+accounts, or other module-owned business records.
 
-- Cross-platform technology and provider decisions,
-- The domain-neutral Platform Foundation,
-- Future Shared Resources and module-family architecture,
-- Deployment, integration, provider-adapter, and user-interface architecture.
+## Non-Negotiable Principles
 
-## Dependency Direction
+1. Trust must be established before protected identity or authority is
+   accepted.
+2. A certificate, password, MFA result, Authentication Assertion, session,
+   role, approval, network location, or lease secret does not independently
+   grant access.
+3. Authentication establishes identity context; authorization establishes
+   bounded authority.
+4. Future Go services will gather evidence and coordinate workflows;
+   PostgreSQL will independently verify selected protected operations and
+   controlled state transitions.
+5. No ordinary identity, application account, administrator, or accumulated
+   role set may provide unrestricted platform authority.
+6. Required decision stages fail closed on `FAIL` or `NOT_EVALUATED`.
+7. Material decisions and lifecycle transitions must retain attributable,
+   reviewable records.
+8. Policies, agreements, controls, rules, and governed documents used in
+   decisions must be versioned and integrity-verifiable.
+9. Current state must not silently overwrite historical state.
+10. Shared infrastructure does not create centralized organizational
+    authority.
+11. Authorization is bounded by identity, organization, Platform Service,
+    Governed Purpose, Governed Operation, Protected Resource Target, Governed
+    Scope, Data Classification, policy, and authoritative time.
+12. External monitoring, integration, and delivery providers remain
+    replaceable.
+13. Workloads and resource consumption must be attributable and bounded.
+14. Availability, recovery, degraded operation, and compromise recovery must
+    be governed before production use.
+15. Domain-specific concepts belong in modules; the Foundation uses neutral
+    shared concepts and extension points.
 
-```text
-Project Goals and Technology Decisions
-                  ↓
-        Domain-Neutral Platform Foundation
-                  ↓
-      Platform Services and Shared Resources
-                  ↓
-              Module Families
-                  ↓
-External-System Adapters, Integrations, and User Interfaces
-```
+## Accepted Phase 1 Boundary
 
-A lower layer may consume an upper layer.
-
-An upper layer must not acquire a dependency on one specific lower-layer
-module, deployment product, monitoring product, external provider, or
-compliance framework.
-
-## Current Documents
-
-### Cross-Platform Decisions
-
-- [PostgreSQL Architecture](postgresql.md)
-- [External-System-Independent Observability](external-system-independent-observability.md)
-
-### Platform Foundation
-
-- [Platform Foundation Documentation](foundation/README.md)
-- [Domain-Neutral Foundation Principle](foundation/domain-neutral-foundation-principle.md)
-- [Foundation Terminology and Domain Neutrality](foundation/foundation-terminology-and-domain-neutrality.md)
-- [Authorization Evaluation Contract](foundation/authorization-evaluation-contract.md)
-- [Authentication Assertion Verification and Consumption Model](foundation/authentication-assertion-verification-and-consumption-model.md)
-- [Phase 1 Authentication Assertion Acceptance](foundation/phase-1-authentication-assertion-acceptance.md)
-- [Session Establishment, Step-Up, and Lifecycle Model](foundation/session-establishment-step-up-and-lifecycle-model.md)
-
-## Current Accepted Boundary
-
-Phase 1 is accepted at tag:
+Phase 1 is accepted at:
 
 ```text
 phase-1-authentication-assertion-complete-v1
 ```
 
-The accepted Phase 1 test evidence is:
+Accepted evidence:
 
 ```text
 31 manifest migrations
@@ -79,48 +77,117 @@ The accepted Phase 1 test evidence is:
 3 understood WARN
 ```
 
-Phase 2 begins from that exact boundary. Phase 2 must not weaken the accepted
-Authentication Assertion verification, exact-context, terminal-state, or
-single-use guarantees.
+Phase 1 established controlled local Authentication Assertion verification,
+rejection, expiration, revocation, exact-context consumption, terminal-state
+enforcement, and concurrent single-use behavior.
 
-## Relationship to SQL
+See:
 
-The authoritative Foundation migration order is maintained in:
+- [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
+- [Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md)
 
-```text
-sql/schema/manifests/foundation.manifest
-```
+## Current Phase 2 Boundary
 
-The active Foundation migrations are maintained in:
+Phase 2 begins with:
 
-```text
-sql/schema/migrations/foundation/
-```
+- [Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md)
 
-The self-contained SQL test framework is maintained in:
+Phase 2 will implement and test:
 
-```text
-sql/test-framework/
-```
+- Atomic session establishment from a verified
+  `SESSION_ESTABLISHMENT` assertion,
+- Atomic step-up completion from a verified `SESSION_STEP_UP` assertion,
+- Controlled activity recording,
+- Controlled locking and administrative unlocking,
+- Controlled expiration, revocation, and termination,
+- Exact session-state constraints and attributable session events,
+- Multi-connection concurrency proofs.
 
-Architecture documents define requirements. Migrations implement database
-structures and selected controls. Tests demonstrate selected properties.
+Phase 2 must not change or bypass the accepted Phase 1 assertion boundary.
 
-None of these replaces production deployment security, runtime enforcement,
-operational verification, protected backup and restore, trusted recovery,
-break-glass controls, or off-host integrity anchoring.
+## Documentation Groups
 
-## Status Language
+### Boundaries, Trust, Authentication, and Database Enforcement
 
-- **Normative** — required by the target architecture.
-- **Structurally implemented** — represented by database objects or migration
-  logic.
-- **Database-enforced** — actively protected by constraints, privileges,
-  controlled functions, locks, or other PostgreSQL controls.
-- **Runtime-enforced** — actively enforced by the production service.
-- **Operationally enforced** — supported by deployment, monitoring, backup,
-  recovery, and administrative procedure.
-- **Validated** — demonstrated by automated tests or documented operational
-  exercises.
+- [Foundation Terminology and Domain Neutrality](foundation-terminology-and-domain-neutrality.md)
+- [Platform Boundaries](platform-boundaries.md)
+- [Authentication and Authorization Evaluation](authentication-and-authorization-evaluation-model.md)
+- [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
+- [Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md)
+- [Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md)
+- [Database Security](database-security-model.md)
+- [Schema Naming Conventions](schema-naming-conventions.md)
+- [SQL Migration Map](sql-migration-map.md)
 
-No one status implies all other statuses.
+### Organizations, Services, Identity, and Eligibility
+
+- [Organization and Governed Scope](organization-and-governed-scope-model.md)
+- [Service Participation and Federation](service-participation-and-federation-model.md)
+- [Organizational Attestation and Access Eligibility](organizational-attestation-and-access-eligibility-model.md)
+
+### Approval and Authorization
+
+- [Authorization Evaluation Contract](authorization-evaluation-contract.md)
+- [Approval Framework](approval-framework.md)
+- [Authority and Authorization](authority-and-authorization-model.md)
+- [Authorization Lease](authorization-lease-model.md)
+- [Decision Record Repository](decision-record-repository.md)
+
+### Governance, Classification, and History
+
+- [Data Classification and Information Governance](data-classification-and-information-governance-model.md)
+- [Governed Document and Policy Versioning](governed-document-and-policy-versioning-model.md)
+- [Lifecycle Versioning and Historical Lineage](lifecycle-versioning-and-historical-lineage-model.md)
+
+### Compliance, Assurance, Findings, and Risk
+
+- [Compliance and Control Framework](compliance-and-control-framework.md)
+- [Common Security Control Catalog](common-security-control-catalog.md)
+- [Compliance Profile Versioning](compliance-profile-versioning-model.md)
+- [Control Implementation and Assurance Artifact Model](control-implementation-and-assurance-artifact-model.md)
+- [Security Finding, Exception, and Remediation](security-finding-exception-and-remediation-model.md)
+- [Risk Assessment and Treatment](risk-assessment-and-treatment-model.md)
+- [Threat and Abuse Case](threat-and-abuse-case-model.md)
+
+### Resilience, Performance, Experience, and Observability
+
+- [Resilience, Availability, and Recovery](resilience-availability-and-recovery-model.md)
+- [Performance, Efficiency, and Resource Governance](performance-efficiency-and-resource-governance-model.md)
+- [Client Experience and Accessibility](client-experience-and-accessibility-model.md)
+- [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)
+
+## Current Implementation Boundaries
+
+The `000–099` migrations establish the initial Foundation data model, selected
+controlled APIs, security inventories, and validation views.
+
+The following remain incomplete until separately implemented and tested:
+
+- Phase 2 session establishment, step-up, lifecycle, and concurrency controls,
+- Deterministic Authorization Policy selection and stage resolution,
+- Complete approval independence and self-approval enforcement,
+- Controlled Authorization Lease issuance and renewal,
+- Complete Decision Record consistency, finalization, and integrity controls,
+- Final production ownership and login-role topology,
+- Least-privileged runtime grants and controlled write paths,
+- Full append-only mutation protection,
+- Migration-checksum population and enforcement,
+- Production Go services,
+- External-System Adapters and delivery workers,
+- Off-host integrity anchoring and protected export,
+- Backup protection and restoration validation,
+- Break-glass procedures,
+- Trusted rebuild and compromise recovery.
+
+## Change Discipline
+
+A Foundation change should normally update:
+
+1. The governing architecture document,
+2. The applicable SQL migration or a new migration,
+3. The authoritative manifest when migration order changes,
+4. The SQL migration map,
+5. Positive and negative automated tests,
+6. Concurrency tests when state can be consumed or changed simultaneously,
+7. Operational or deployment documentation when the change crosses the
+   database boundary.
