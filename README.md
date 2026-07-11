@@ -12,6 +12,38 @@ Build software that is secure, understandable, observable, and dependable enough
 
 The ultimate measure of success is not the number of features implemented, but whether the people who depend on the system can trust it when it matters most.
 
+## Platform Scope and Long-Term Direction
+
+The Public Safety Platform repository began with public safety as its first operational focus. Public safety remains the planned first module family, but it does not define the limits of the Platform Foundation.
+
+The Platform Foundation is intended to be domain-neutral.
+
+It should provide the shared trust, identity, authorization, approval, decision-recording, governance, compliance, resilience, observability, integration, and resource-control capabilities required by many different operational systems.
+
+Future module families may include:
+
+* Public safety
+* Municipal administration
+* Finance and budgeting
+* Human resources
+* Permitting and licensing
+* Code enforcement
+* Property and asset management
+* Fleet and public works
+* Utility operations and billing
+* School and educational administration
+* Additional local-government or institutional services
+
+Domain-specific concepts belong in their applicable modules.
+
+The Foundation should contain only concepts that are broadly reusable across those modules or that are required to establish common trust and governance boundaries.
+
+Public safety concepts such as incidents, dispatch units, calls for service, evidence, cases, and legal jurisdiction must not become mandatory assumptions of the shared Foundation.
+
+Where different domains require a similar kind of boundary, the Foundation should use a neutral concept that modules can specialize. For example, the Foundation uses a governed scope rather than requiring every module to describe its authority boundary as a jurisdiction.
+
+The long-term objective is to create a secure and dependable platform upon which small municipalities, schools, and similar organizations can build or operate many different modules without recreating the security foundation for every application.
+
 ## Project Direction
 
 The Public Safety Platform is intended to become a modular operational platform for capabilities such as:
