@@ -1,0 +1,34 @@
+Public Safety Platform Foundation SQL Test Framework
+====================================================
+
+Copy the contents of this package into the root of the
+public-safety-platform repository.
+
+New files:
+
+  Makefile
+  sql/schema/scripts/test_foundation.sh
+  sql/tests/README.md
+  sql/tests/foundation-tests.manifest
+  sql/tests/framework/000_test_framework.sql
+  sql/tests/foundation/010_foundation_smoke.sql
+  sql/tests/foundation/020_schema_security.sql
+  sql/tests/foundation/030_function_security.sql
+  sql/tests/foundation/040_migration_registry_behavior.sql
+  sql/tests/foundation/050_catalog_integrity.sql
+  sql/tests/foundation/060_validation_views.sql
+  sql/tests/foundation/070_inventory_report.sql
+  sql/test-results/.gitignore
+
+Then run:
+
+  chmod +x sql/schema/scripts/test_foundation.sh
+  make test-sql
+
+Results will be written to:
+
+  sql/test-results/latest.log
+  sql/test-results/latest-summary.txt
+
+A failed test database is preserved by default and its name is printed in the
+log. Upload latest.log for review.
