@@ -329,8 +329,7 @@ sql/test-framework/
 Run it with:
 
 ```bash
-cd sql/test-framework
-make test-sql
+./sql/test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
 The framework will:
