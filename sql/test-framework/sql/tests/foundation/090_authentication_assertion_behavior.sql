@@ -197,7 +197,8 @@ BEGIN
         nonce_hash,
         payload_hash,
         signature_algorithm,
-        signature_value
+        signature_value,
+        received_at
     )
     VALUES (
         v_assertion_id,
@@ -221,7 +222,8 @@ BEGIN
             'sha256'
         ),
         'TEST-SIGNATURE',
-        decode(repeat('11', 32), 'hex')
+        decode(repeat('11', 32), 'hex'),
+        v_now - interval '30 seconds'
     );
 
     BEGIN
@@ -384,7 +386,8 @@ BEGIN
         nonce_hash,
         payload_hash,
         signature_algorithm,
-        signature_value
+        signature_value,
+        received_at
     )
     VALUES (
         v_revoked_assertion_id,
@@ -408,7 +411,8 @@ BEGIN
             'sha256'
         ),
         'TEST-SIGNATURE',
-        decode(repeat('22', 32), 'hex')
+        decode(repeat('22', 32), 'hex'),
+        v_now - interval '30 seconds'
     );
 
     PERFORM access_control.mark_authentication_assertion_verified(
