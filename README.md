@@ -255,7 +255,6 @@ The authoritative Foundation migration order is maintained in:
 ├── go/
 │   └── experiments/
 ├── sql/
-│   ├── past_scripts/
 │   ├── schema/
 │   │   ├── manifests/
 │   │   ├── migrations/
