@@ -1,7 +1,8 @@
 # Authentication Assertion Verification and Consumption Model
 
 > **Layer:** Platform Foundation  
-> **Status:** Normative Phase 1 implementation contract  
+> **Status:** Normative; Phase 1 implemented and accepted on 2026-07-11  
+> **Acceptance record:** [Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md)  
 > **Applies to:** Authentication Assertion receipt, verification, rejection,
 > expiration, revocation, exact-context consumption, and concurrency behavior  
 > **Does not define:** A production Go verifier, complete session lifecycle,
@@ -515,13 +516,14 @@ manual-only procedure.
 
 ## 20. Concurrency Test Harness
 
-The current SQL test manifest runs files sequentially through one `psql`
+The sequential SQL test manifest runs files through one `psql`
 connection at a time.
 
-Phase 1 therefore requires a small Bash-based concurrency layer within the
-existing self-contained SQL test framework.
+Phase 1 adds a Bash-based concurrency layer within the existing self-contained
+SQL test framework. The accepted implementation runs that layer from the
+normal Foundation test command.
 
-The preferred structure is:
+The accepted structure is:
 
 ```text
 sql/test-framework/sql/tests/
@@ -722,13 +724,58 @@ A successful Phase 1 run must not be interpreted as proof of:
 It proves only the Authentication Assertion boundary implemented and tested by
 this phase.
 
-## 27. Handoff to the Session Phase
+## 27. Accepted Phase 1 Evidence
+
+Phase 1 was accepted on 2026-07-11 from the normal Foundation test command.
+
+Accepted run:
+
+```text
+Run ID: foundation_20260711_172044_146677
+PostgreSQL server_version_num: 180004
+Manifest migrations: 31
+Registered migrations: 31
+Sequential test files: 10
+Concurrency test files: 1
+PASS: 135
+FAIL: 0
+WARN: 3
+Runner exit status: 0
+```
+
+The required concurrent-consumption result was:
+
+```text
+ready=2
+success=1
+denied=1
+unexpected=0
+final_status=CONSUMED
+consumed_at=1
+```
+
+The three warnings were understood pre-production limitations:
+
+1. Migration files do not yet populate stored registry checksums.
+2. Foundation-defined types retain direct `PUBLIC USAGE` grants that are
+   unreachable without schema `USAGE` but remain a defense-in-depth review.
+3. The applied-migration registry is documented as append-only but does not
+   yet have an enabled database trigger preventing owner-level mutation.
+
+These warnings do not weaken the tested Authentication Assertion invariants,
+but they remain unresolved Foundation work.
+
+The formal evidence and scope decision are recorded in
+[Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md).
+
+## 28. Handoff to the Session Phase
 
 After Phase 1 is accepted, the next session-focused phase may safely implement:
 
-- Atomic session establishment from a consumed
-  `SESSION_ESTABLISHMENT` assertion
-- Atomic step-up completion from a consumed `SESSION_STEP_UP` assertion
+- Atomic session establishment that consumes a valid `VERIFIED`
+  `SESSION_ESTABLISHMENT` assertion in the same transaction
+- Atomic step-up completion that consumes a valid `VERIFIED`
+  `SESSION_STEP_UP` assertion in the same transaction
 - Session activity recording
 - Inactivity enforcement
 - Lock and unlock

@@ -35,7 +35,7 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | `055` | `055_authority_purpose_and_authorization_policy.sql` | Authority, purpose, and authorization-policy versions |
 | `060` | `060_sessions.sql` | Operator and service sessions |
 | `065` | `065_authorization_leases.sql` | Short-lived, revocable authorization capabilities |
-| `070` | `070_postgresql_authentication_assertion_gate.sql` | Database-side authentication assertion gate |
+| `070` | `070_postgresql_authentication_assertion_gate.sql` | Authentication Assertion state machine, local verification gate, rejection, expiration, revocation, and exact-context single-use consumption |
 | `075` | `075_controlled_authorization_api.sql` | Controlled Authorization Lease verification and protected API foundations |
 | `080` | `080_decision_record_repository.sql` | Decision and evaluation records |
 | `082` | `082_data_classification_and_governance.sql` | Classification and information-governance structures |
@@ -83,10 +83,43 @@ sql/test-framework/
 └── sql/
     ├── schema/scripts/test_foundation.sh
     ├── tests/
+    │   ├── foundation-tests.manifest
+    │   ├── foundation-concurrency-tests.manifest
+    │   ├── foundation/
+    │   └── concurrency/
     └── test-results/
 ```
 
-It reads the live manifest and migrations from `sql/schema/`, installs test-only objects in a disposable database, and writes reviewable log and summary files beneath `sql/test-framework/sql/test-results/`.
+It reads the live manifest and migrations from `sql/schema/`, installs
+test-only objects in a disposable database, runs both sequential SQL tests and
+Bash-orchestrated multi-connection concurrency tests, and writes reviewable
+log and summary files beneath `sql/test-framework/sql/test-results/`.
+
+### Accepted Phase 1 Mapping
+
+The Authentication Assertion Phase 1 boundary is implemented principally by:
+
+```text
+sql/schema/migrations/foundation/070_postgresql_authentication_assertion_gate.sql
+sql/test-framework/sql/tests/foundation/090_authentication_assertion_behavior.sql
+sql/test-framework/sql/tests/foundation/100_authentication_assertion_phase1_behavior.sql
+sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
+```
+
+Accepted evidence:
+
+```text
+31 manifest migrations
+31 registered migrations
+10 sequential test files
+1 concurrency test file
+135 PASS
+0 FAIL
+3 understood WARN
+```
+
+See
+[Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md).
 
 ### Migration Completion Rule
 
@@ -119,3 +152,5 @@ The Foundation SQL test framework must test the requirements that can be demonst
 - [Schema Naming Conventions](schema-naming-conventions.md)
 - [Database Security](database-security-model.md)
 - [Platform Boundaries](platform-boundaries.md)
+- [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
+- [Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md)

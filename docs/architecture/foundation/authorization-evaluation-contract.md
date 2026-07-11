@@ -5,8 +5,10 @@
 > **Phase:** Central Authorization Completion Program — Phase 0.
 >
 > **Implementation status:** This document defines the contract that
-> migrations `050–080` and their behavioral tests must implement. Structural
-> presence does not imply complete enforcement.
+> migrations `050–080` and their behavioral tests must implement. The Phase 1
+> Authentication Assertion boundary is implemented and accepted; the wider
+> authorization contract remains incomplete. Structural presence does not
+> imply complete enforcement.
 
 ## Primary Rule
 
@@ -242,7 +244,11 @@ REVOKED
 Meanings:
 
 - `RECEIVED` — stored but not trusted for authorization.
-- `VERIFIED` — cryptographic and Trust-Provider validation completed.
+- `VERIFIED` — a controlled external verifier supplied attributable
+  provider-verification metadata, and PostgreSQL accepted all required local
+  Trust Provider, identity, optional device, optional Platform Service, and
+  applicable step-up-session conditions. This state does not claim that
+  PostgreSQL performed provider-specific cryptographic verification.
 - `CONSUMED` — used exactly once for its intended context.
 - `REJECTED` — validation failed.
 - `EXPIRED` — no longer valid due to authoritative time.
@@ -258,6 +264,13 @@ PostgreSQL.
 PostgreSQL must not treat an arbitrary runtime insert as verified.
 
 The transition to `VERIFIED` is a controlled verifier action.
+PostgreSQL independently enforces the local conditions it owns before
+accepting that transition.
+
+The complete accepted boundary is defined in
+[Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
+and evidenced by
+[Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md).
 
 ### Context Match
 
@@ -573,6 +586,7 @@ systems.
 ## Concurrency Contract
 
 - Exactly one transaction may consume a verified Authentication Assertion.
+  This invariant is implemented and has an accepted two-connection proof.
 - Exactly one concurrent operation may consume a `SINGLE_USE` lease.
 - A `LIMITED_USE` lease cannot exceed its usage limit.
 - Duplicate effective approval by one actor does not count twice.

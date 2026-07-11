@@ -32,7 +32,10 @@ Test framework:
     sql/test-framework/INSTALL.txt
     sql/test-framework/Makefile
     sql/test-framework/sql/schema/scripts/test_foundation.sh
-    sql/test-framework/sql/tests/
+    sql/test-framework/sql/tests/foundation-tests.manifest
+    sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
+    sql/test-framework/sql/tests/foundation/
+    sql/test-framework/sql/tests/concurrency/
     sql/test-framework/sql/test-results/
 
 The test-only sql_test schema is created only inside a disposable test
@@ -59,7 +62,9 @@ Initial Setup
 
 From the repository root:
 
-    chmod +x sql/test-framework/sql/schema/scripts/test_foundation.sh
+    chmod +x \
+        sql/test-framework/sql/schema/scripts/test_foundation.sh \
+        sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 
 Required Software
 -----------------
@@ -91,6 +96,7 @@ results directory, log file, temporary file, or disposable database:
     rm
     sed
     sha256sum
+    sleep
     tee
 
 When one or more commands are absent, the runner reports every missing
@@ -143,7 +149,7 @@ Package responsibilities:
 
     coreutils
         Provides basename, date, dirname, ln, mkdir, mktemp, rm,
-        sha256sum, and tee.
+        sha256sum, sleep, and tee.
 
     grep
         Provides grep.
@@ -285,7 +291,8 @@ The runner:
     2. Checks Bash compatibility.
     3. Checks every required command and reports all missing dependencies.
     4. Resolves the repository and test-framework paths.
-    5. Verifies the live manifest, test manifest, and assertion framework.
+    5. Verifies the live manifest, sequential-test manifest,
+       concurrency-test manifest, test paths, and assertion framework.
     6. Verifies PostgreSQL connectivity, version, and role privilege.
     7. Verifies the disposable database name and confirms it does not exist.
     8. Creates the results directory and timestamped log.
@@ -296,13 +303,39 @@ The runner:
    13. Applies every live Foundation migration in manifest order.
    14. Installs the test-only sql_test assertion framework.
    15. Loads expected migration names, paths, positions, and digests.
-   16. Reads and validates the Foundation test manifest.
-   17. Runs every listed Foundation SQL test.
-   18. Writes a complete result inventory.
-   19. Writes a compact text summary.
-   20. Evaluates the final pass or fail result.
-   21. Drops a successful database unless retention was requested.
-   22. Retains a failed database by default.
+   16. Reads and validates the Foundation sequential-test manifest.
+   17. Runs every listed Foundation sequential SQL test.
+   18. Reads and validates the Foundation concurrency-test manifest.
+   19. Runs every listed concurrency test against the same disposable database.
+   20. Records sequential and concurrency outcomes in sql_test.results.
+   21. Writes a complete result inventory.
+   22. Writes a compact text summary, including sequential and concurrency
+       test-file counts.
+   23. Evaluates the final pass or fail result.
+   24. Drops a successful database unless retention was requested.
+   25. Retains a failed database by default.
+
+Concurrency Test Behavior
+-------------------------
+
+Concurrency tests are listed in:
+
+    sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
+
+The current Authentication Assertion test uses independent `psql` processes
+and a PostgreSQL advisory-lock barrier. It proves that two eligible consumers
+cannot both consume the same verified assertion.
+
+The normal runner fails unless:
+
+    ready workers:       2
+    successful workers:  1
+    denied workers:      1
+    unexpected outcomes: 0
+    final status:        CONSUMED
+    consumed timestamps: 1
+
+No package beyond the direct-runner dependency set is required.
 
 Output Files
 ------------
@@ -342,6 +375,7 @@ The summary contains:
     Failed assertions
     Warnings
     Manifest and migration-registry totals
+    Sequential and concurrency test-file counts
 
 Review or Upload the Result
 ---------------------------
@@ -392,6 +426,8 @@ Troubleshooting
 Check runner syntax without creating a database:
 
     bash -n sql/test-framework/sql/schema/scripts/test_foundation.sh
+    bash -n \
+        sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 
 Display runner help:
 

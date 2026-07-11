@@ -51,9 +51,11 @@ sql/test-framework/
     │       └── test_foundation.sh
     ├── tests/
     │   ├── foundation-tests.manifest
+    │   ├── foundation-concurrency-tests.manifest
     │   ├── framework/
     │   │   └── 000_test_framework.sql
-    │   └── foundation/
+    │   ├── foundation/
+    │   └── concurrency/
     └── test-results/
 ```
 
@@ -85,10 +87,16 @@ The authoritative live migration order is read from:
 sql/schema/manifests/foundation.manifest
 ```
 
-The test execution order is read from:
+Sequential test execution order is read from:
 
 ```text
 sql/test-framework/sql/tests/foundation-tests.manifest
+```
+
+Concurrency test execution order is read from:
+
+```text
+sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
 ```
 
 The framework must remain at `sql/test-framework/` for this relative path resolution to remain valid.
@@ -120,7 +128,9 @@ Show runner options:
 Make the runner executable from the repository root:
 
 ```bash
-chmod +x sql/test-framework/sql/schema/scripts/test_foundation.sh
+chmod +x \
+  sql/test-framework/sql/schema/scripts/test_foundation.sh \
+  sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 ```
 
 ## Required Software
@@ -152,6 +162,7 @@ psql
 rm
 sed
 sha256sum
+sleep
 tee
 ```
 
@@ -166,7 +177,7 @@ On a minimal Arch Linux host, the required commands are provided by:
 | `bash` | Bash runner |
 | `postgresql-libs` | `psql`, `createdb`, and `dropdb` |
 | `gawk` | `awk` |
-| `coreutils` | `basename`, `date`, `dirname`, `ln`, `mkdir`, `mktemp`, `rm`, `sha256sum`, and `tee` |
+| `coreutils` | `basename`, `date`, `dirname`, `ln`, `mkdir`, `mktemp`, `rm`, `sha256sum`, `sleep`, and `tee` |
 | `grep` | `grep` |
 | `sed` | `sed` |
 
@@ -256,14 +267,19 @@ The runner:
 9. Applies every live Foundation migration in manifest order.
 10. Installs the test-only `sql_test` assertion framework.
 11. Loads expected migration names, positions, paths, and file digests.
-12. Reads the Foundation test manifest.
-13. Validates test paths and detects duplicate entries.
-14. Runs every listed Foundation SQL test.
-15. Writes a complete timestamped log.
-16. Writes a compact text summary.
-17. Evaluates the final pass or fail result.
-18. Drops a successful test database unless retention was requested.
-19. Preserves a failed test database by default.
+12. Reads the Foundation sequential-test manifest.
+13. Validates sequential test paths and detects duplicate entries.
+14. Runs every listed Foundation sequential SQL test.
+15. Reads the Foundation concurrency-test manifest.
+16. Validates concurrency test paths and detects duplicate entries.
+17. Runs every listed concurrency test against the same disposable database.
+18. Records sequential and concurrency outcomes in `sql_test.results`.
+19. Writes a complete timestamped log.
+20. Writes a compact text summary with sequential and concurrency test-file
+    counts.
+21. Evaluates the final pass or fail result.
+22. Drops a successful test database unless retention was requested.
+23. Preserves a failed test database by default.
 
 ## Database Retention Modes
 
@@ -438,15 +454,79 @@ The suite writes useful inventories to the full log, including:
 - Security-sensitive routine inventory
 - `PUBLIC` schema privilege posture
 
+### Authentication Assertion Phase 1 Behavior
+
+The accepted sequential suite proves:
+
+- Controlled verification requires valid local Trust Provider state
+- Effective Trust Provider revocation blocks verification
+- Identity state and validity are enforced
+- A supplied device must be trusted and unrevoked
+- A supplied Platform Service must be active and valid
+- Step-up sessions must be active, unexpired, not inactive, and exact-context
+  matched
+- Empty verifier attribution is rejected
+- Rejection, expiration, revocation, consumption, and terminal-state behavior
+  are enforced
+- Every represented context field must match during consumption
+- Sequential replay is denied
+- Controlled functions remain unavailable to `PUBLIC`
+- Controlled functions retain fixed trusted search paths
+
+### Authentication Assertion Concurrency
+
+The normal runner executes:
+
+```text
+concurrency/100_authentication_assertion_single_use.sh
+```
+
+The test starts two independent worker connections behind a PostgreSQL
+advisory-lock release barrier.
+
+The accepted result is:
+
+```text
+ready=2
+success=1
+denied=1
+unexpected=0
+final_status=CONSUMED
+consumed_at=1
+```
+
+This proves the tested Authentication Assertion can be consumed successfully
+by exactly one of two concurrent eligible transactions.
+
+### Accepted Phase 1 Baseline
+
+```text
+Run ID: foundation_20260711_172044_146677
+PostgreSQL server_version_num: 180004
+31 manifest migrations
+31 registered migrations
+10 sequential test files
+1 concurrency test file
+135 PASS
+0 FAIL
+3 understood WARN
+Runner exit status: 0
+```
+
+The formal acceptance record is:
+
+[`../../../../docs/architecture/foundation/phase-1-authentication-assertion-acceptance.md`](../../../../docs/architecture/foundation/phase-1-authentication-assertion-acceptance.md)
+
 ## Current Development Limits
 
 The Foundation SQL and test suite remain active work.
 
 The suite does not yet fully prove:
 
-- Authentication Assertion audience, environment, identity, device, and session binding
-- Single-use Authentication Assertion behavior under concurrency
-- Session expiration and revocation behavior
+- Atomic session establishment that consumes a valid `VERIFIED`
+  `SESSION_ESTABLISHMENT` Authentication Assertion in the same transaction
+- Complete session expiration, inactivity, locking, revocation, termination,
+  and concurrency behavior
 - Approval independence and self-approval prevention
 - Authorization Lease scope binding
 - Lease revocation, expiration, consumption, and replay behavior
@@ -561,11 +641,32 @@ Example:
 foundation/090_trust_assertion_behavior.sql
 ```
 
-Each test file should begin with:
+Each sequential test file should begin with:
 
 ```sql
 SELECT sql_test.begin_file('090_trust_assertion_behavior.sql');
 ```
+
+To add a concurrency test:
+
+1. Create an executable Bash file beneath:
+
+   ```text
+   sql/test-framework/sql/tests/concurrency/
+   ```
+
+2. Add its relative path to:
+
+   ```text
+   sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
+   ```
+
+3. Perform any test-specific command preflight before creating fixtures or
+   temporary files.
+4. Use independent PostgreSQL connections.
+5. Record every accepted invariant through `sql_test` assertion functions.
+6. Exit nonzero for harness failures that prevent assertions from being
+   recorded.
 
 ## Test Design Rules
 
@@ -603,19 +704,39 @@ Isolation between test files is still required.
 
 ## Concurrency Tests
 
-Controls involving consumption, replay protection, uniqueness, or state transitions should eventually include concurrent tests.
+The framework supports controlled Bash orchestration with multiple independent
+`psql` processes.
 
-Examples include:
+Concurrency test files are stored beneath:
 
-- Authentication Assertion single use
+```text
+sql/test-framework/sql/tests/concurrency/
+```
+
+Their execution order is listed in:
+
+```text
+sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
+```
+
+The Authentication Assertion single-use race is the first accepted
+multi-connection test.
+
+Later candidates include:
+
 - Authorization Lease consumption
 - Approval finalization
 - Outbox claiming
-- Provider delivery-state transitions
+- Delivery-state transitions
 
-Concurrency tests must demonstrate that only the permitted transaction succeeds and that the final state remains valid.
+Every concurrency test must demonstrate:
 
-SQL files alone may not be sufficient for race-condition testing. The framework may use controlled Bash orchestration with multiple `psql` processes when concurrency testing is introduced.
+1. All intended workers reached a known eligible barrier.
+2. Only the permitted number of transactions succeeded.
+3. Expected losers failed through the documented path.
+4. No unexpected database or controller error occurred.
+5. The final database state preserves the invariant.
+6. Outcomes are recorded in `sql_test.results`.
 
 ## Migration Checksums
 
@@ -656,7 +777,10 @@ dropdb     --maintenance-db=postgres     DATABASE_NAME
 Check Bash syntax without running the suite:
 
 ```bash
-bash -n     sql/test-framework/sql/schema/scripts/test_foundation.sh
+bash -n \
+  sql/test-framework/sql/schema/scripts/test_foundation.sh
+bash -n \
+  sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 ```
 
 Display available options:
