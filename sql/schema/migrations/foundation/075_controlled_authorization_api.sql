@@ -22,7 +22,7 @@
 -- Dependencies:
 --   - 000_platform_initialization.sql
 --   - 065_authorization_leases.sql
---   - 070_postgresql_trust_gate.sql
+--   - 070_postgresql_authentication_assertion_gate.sql
 --   - pgcrypto installed in the extensions schema
 -- ============================================================================
 
@@ -48,12 +48,12 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM foundation_meta.applied_migrations
-        WHERE migration_id = '070_postgresql_trust_gate'
+        WHERE migration_id = '070_postgresql_authentication_assertion_gate'
     ) THEN
         RAISE EXCEPTION
             USING
                 ERRCODE = 'object_not_in_prerequisite_state',
-                MESSAGE = 'Required migration 070_postgresql_trust_gate is not registered';
+                MESSAGE = 'Required migration 070_postgresql_authentication_assertion_gate is not registered';
     END IF;
 
     SELECT n.nspname

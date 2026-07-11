@@ -15,14 +15,8 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | Range | Purpose |
 |---|---|
 | `000–099` | Platform Foundation |
-| `100–199` | Operational Resources |
-| `200–299` | CAD |
-| `300–399` | RMS |
-| `400–499` | Evidence and Property |
-| `500–599` | Personnel extensions |
-| `600–699` | Fleet extensions |
-| `700–799` | Fire/EMS |
-| `800–899` | Future modules |
+| `100–199` | Shared resources and cross-module capabilities |
+| `200–899` | Module-owned migrations allocated by an approved module-range decision |
 | `900–999` | Deployment and bootstrap |
 
 ### Current Foundation Manifest
@@ -33,7 +27,7 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | `010` | `010_cryptographic_and_device_trust.sql` | Cryptographic identities, certificates, device trust, and revocation foundations |
 | `020` | `020_identity.sql` | Human and service identity foundations |
 | `025` | `025_identity_lifecycle.sql` | Identity lifecycle state and history |
-| `030` | `030_organizations_and_jurisdictions.sql` | Organizations, jurisdictions, and scoped relationships |
+| `030` | `030_organizations_and_governed_scopes.sql` | Organizations, governed scopes, and scoped relationships |
 | `035` | `035_platform_services_and_configuration.sql` | Platform services and governed configuration |
 | `040` | `040_service_participation_and_federation.sql` | Organization participation and federation |
 | `045` | `045_attestations_and_access_eligibility.sql` | Organizational attestations and eligibility |
@@ -41,7 +35,7 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | `055` | `055_authority_purpose_and_authorization_policy.sql` | Authority, purpose, and authorization-policy versions |
 | `060` | `060_sessions.sql` | Operator and service sessions |
 | `065` | `065_authorization_leases.sql` | Short-lived, revocable authorization capabilities |
-| `070` | `070_postgresql_trust_gate.sql` | Database-side trust assertion gate |
+| `070` | `070_postgresql_authentication_assertion_gate.sql` | Database-side authentication assertion gate |
 | `075` | `075_controlled_authorization_api.sql` | Controlled Authorization Lease verification and protected API foundations |
 | `080` | `080_decision_record_repository.sql` | Decision and evaluation records |
 | `082` | `082_data_classification_and_governance.sql` | Classification and information-governance structures |
@@ -56,8 +50,8 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | `093` | `093_workload_registry_performance_budgets_and_resource_governance.sql` | Workload ownership, budgets, and resource governance |
 | `094` | `094_client_and_deployment_performance_profiles.sql` | Client and deployment expectations |
 | `095` | `095_observability_health_and_operational_telemetry.sql` | Canonical telemetry and health |
-| `096` | `096_monitoring_subscriptions_and_provider_delivery_state.sql` | Provider-neutral subscriptions and delivery state |
-| `097` | `097_provider_integration_outbox.sql` | Transactional integration outbox |
+| `096` | `096_monitoring_subscriptions_and_delivery_state.sql` | Provider-neutral subscriptions and delivery state |
+| `097` | `097_external_integration_outbox.sql` | Transactional integration outbox |
 | `098` | `098_security_boundaries_and_role_separation.sql` | Role classes, incompatibility, and security-boundary posture |
 | `099` | `099_foundation_validation.sql` | Catalog inventories and Foundation validation views |
 

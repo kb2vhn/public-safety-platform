@@ -508,7 +508,7 @@ FROM (
         (
             'decision'::text,
             'supporting_records'::text,
-            'Supporting Justification Chain references must remain historical.'
+            'Supporting Decision Explanation Chain references must remain historical.'
         ),
         (
             'governance'::text,

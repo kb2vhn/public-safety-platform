@@ -44,7 +44,7 @@ Modules may specialize these abstractions.
 
 For example:
 
-* A public-safety module may use a governed scope to represent a legal jurisdiction, mutual-aid area, precinct, response district, or service area.
+* A public-safety module may use a governed scope to represent a legal governed scope, mutual-aid area, precinct, response district, or service area.
 * A school module may use a governed scope to represent a district, school, campus, department, program, or grade boundary.
 * A municipal module may use a governed scope to represent a town, department, facility, taxing district, utility district, or regulatory area.
 

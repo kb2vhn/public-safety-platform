@@ -57,7 +57,7 @@ CREATE TABLE access_control.authority_grants (
     purpose_definition_id uuid REFERENCES access_control.purpose_definitions(purpose_definition_id),
     service_id uuid REFERENCES service.platform_services(service_id),
     organization_id uuid REFERENCES organization.organizations(organization_id),
-    jurisdiction_id uuid REFERENCES organization.jurisdictions(jurisdiction_id),
+    governed_scope_id uuid REFERENCES organization.governed_scopes(governed_scope_id),
     scope_reference text NOT NULL,
     status text NOT NULL DEFAULT 'PENDING',
     valid_from timestamptz NOT NULL,

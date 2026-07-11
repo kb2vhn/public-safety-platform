@@ -1,6 +1,6 @@
 -- ============================================================================
--- Migration: 096_monitoring_subscriptions_and_provider_delivery_state.sql
--- Title: Monitoring subscriptions and provider delivery state
+-- Migration: 096_monitoring_subscriptions_and_delivery_state.sql
+-- Title: Monitoring subscriptions and delivery state
 -- Layer: Platform Foundation
 -- Status: INITIAL REVIEW CANDIDATE
 -- Target: PostgreSQL 18
@@ -36,8 +36,8 @@ $dependency_check$;
 CREATE TABLE observability.monitoring_subscriptions (
     monitoring_subscription_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     subscription_key text NOT NULL UNIQUE,
-    provider_type text NOT NULL,
-    provider_reference text NOT NULL,
+    destination_type text NOT NULL,
+    destination_reference text NOT NULL,
     event_filter jsonb NOT NULL DEFAULT '{}'::jsonb,
     status text NOT NULL DEFAULT 'ACTIVE',
     max_retry_count integer NOT NULL DEFAULT 5,
@@ -60,11 +60,11 @@ CREATE TABLE observability.monitoring_delivery_state (
 CREATE INDEX monitoring_delivery_pending_idx ON observability.monitoring_delivery_state(delivery_status,next_attempt_at);
 
 SELECT foundation_meta.register_migration(
-    p_migration_id       => '096_monitoring_subscriptions_and_provider_delivery_state',
-    p_migration_name     => 'Monitoring subscriptions and provider delivery state',
+    p_migration_id       => '096_monitoring_subscriptions_and_delivery_state',
+    p_migration_name     => 'Monitoring subscriptions and delivery state',
     p_migration_layer    => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes              => 'Created monitoring subscriptions and provider delivery state objects.'
+    p_notes              => 'Created monitoring subscriptions and delivery state objects.'
 );
 
 COMMIT;

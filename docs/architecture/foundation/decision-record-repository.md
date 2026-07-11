@@ -16,7 +16,7 @@ A Decision Record captures:
 
 - Decision identifier and correlation context,
 - Requester, actor, organization, service, session, and device context,
-- Purpose, operation, target, jurisdiction, and classification scope,
+- Purpose, operation, target, governed scope, and classification scope,
 - Governing policy and document versions,
 - Required and observed approvals,
 - Stage results and reason codes,
@@ -60,6 +60,6 @@ The Foundation SQL test framework must test the requirements that can be demonst
 
 ## Related Documents
 
-- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Authentication and Authorization Evaluation](authentication-and-authorization-evaluation-model.md)
 - [Database Security](database-security-model.md)
 - [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)

@@ -12,7 +12,7 @@ Define what belongs in the reusable Platform Foundation and prevent domain, prov
 
 ### Included in the Foundation
 
-The Foundation owns reusable capabilities for identity references, device trust, organizations, jurisdictions, platform services, participation, federation, attestations, approvals, authority, sessions, Authorization Leases, decision records, classification, governed documents, lifecycle history, controls, compliance mappings, assurance, risk, resilience, workload governance, observability, and integration delivery state.
+The Foundation owns reusable capabilities for identity references, device trust, organizations, governed scopes, platform services, participation, federation, attestations, approvals, authority, sessions, Authorization Leases, decision records, classification, governed documents, lifecycle history, controls, compliance mappings, assurance, risk, resilience, workload governance, observability, and integration delivery state.
 
 ### Excluded from the Foundation
 
@@ -32,11 +32,11 @@ PostgreSQL enforces database-level invariants. Runtime services enforce protocol
 
 ### Shared Infrastructure
 
-Multiple organizations may share infrastructure without sharing authority. Organization and jurisdiction scope must remain explicit in every protected relationship.
+Multiple organizations may share infrastructure without sharing authority. Organization and governed scope scope must remain explicit in every protected relationship.
 
 ## SQL Implementation Mapping
 
-Migrations `000–099` define the current Foundation range. Later migration ranges are reserved for operational resources and domain modules. The exact range allocation is maintained in `sql-migration-map.md`.
+Migrations `000–099` define the current Foundation range. Later migration ranges are reserved for shared resources and domain modules. The exact range allocation is maintained in `sql-migration-map.md`.
 
 The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
@@ -48,4 +48,4 @@ The Foundation SQL test framework must test the requirements that can be demonst
 
 - [SQL Migration Map](sql-migration-map.md)
 - [Database Security](database-security-model.md)
-- [Organization and Jurisdiction](organization-and-jurisdiction-model.md)
+- [Organization and Governed Scope](organization-and-governed-scope-model.md)

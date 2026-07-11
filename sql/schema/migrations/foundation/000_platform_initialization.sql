@@ -32,7 +32,7 @@
 --   - Application login roles
 --   - Trust providers or devices
 --   - Human or service identities
---   - Organizations or jurisdictions
+--   - Organizations or governed scopes
 --   - Authorization policy
 --   - Domain objects such as CAD, RMS, or Evidence
 --
@@ -129,7 +129,7 @@ COMMENT ON SCHEMA identity IS
     'Domain-neutral identities, persons, identity-provider mappings, and identity lifecycle records.';
 
 COMMENT ON SCHEMA organization IS
-    'Organizations, organizational units, relationships, jurisdictions, and authority-purpose boundaries.';
+    'Organizations, organizational units, relationships, governed scopes, and authority-purpose boundaries.';
 
 COMMENT ON SCHEMA service IS
     'Platform services, deployments, participation agreements, federation, and governed configuration.';
@@ -141,10 +141,10 @@ COMMENT ON SCHEMA approval IS
     'Generic approval policies, requests, stages, actions, independence, and lifecycle records.';
 
 COMMENT ON SCHEMA access_control IS
-    'Authority definitions, grants, purpose, sessions, Trust Assertions, and Authorization Leases.';
+    'Authority definitions, grants, purpose, sessions, Authentication Assertions, and Authorization Leases.';
 
 COMMENT ON SCHEMA decision IS
-    'Append-only Decision Records, evaluation records, Justification Chains, and integrity metadata.';
+    'Append-only Decision Records, evaluation records, Decision Explanation Chains, and integrity metadata.';
 
 COMMENT ON SCHEMA governance IS
     'Data classification, ownership, custody, governed documents, policies, and historical lineage.';
@@ -367,9 +367,9 @@ VALUES
     ),
     (
         'organization',
-        'organizations_and_jurisdictions',
+        'organizations_and_governed_scopes',
         'FOUNDATION',
-        'Organizations, units, relationships, jurisdictions, and authority purposes.',
+        'Organizations, units, relationships, governed scopes, and authority purposes.',
         '000_platform_initialization'
     ),
     (
@@ -397,14 +397,14 @@ VALUES
         'access_control',
         'authority_and_authorization',
         'FOUNDATION',
-        'Authority, purpose, sessions, Trust Assertions, and Authorization Leases.',
+        'Authority, purpose, sessions, Authentication Assertions, and Authorization Leases.',
         '000_platform_initialization'
     ),
     (
         'decision',
         'decision_record_repository',
         'FOUNDATION',
-        'Decision Records, evaluations, Justification Chains, and integrity metadata.',
+        'Decision Records, evaluations, Decision Explanation Chains, and integrity metadata.',
         '000_platform_initialization'
     ),
     (

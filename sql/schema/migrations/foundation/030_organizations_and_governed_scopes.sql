@@ -1,6 +1,6 @@
 -- ============================================================================
--- Migration: 030_organizations_and_jurisdictions.sql
--- Title: Organizations and jurisdictions
+-- Migration: 030_organizations_and_governed_scopes.sql
+-- Title: Organizations and governed scopes
 -- Layer: Platform Foundation
 -- Status: INITIAL REVIEW CANDIDATE
 -- Target: PostgreSQL 18
@@ -75,28 +75,28 @@ CREATE TABLE organization.organization_relationships (
     CONSTRAINT org_relationship_validity_ck CHECK (valid_until IS NULL OR valid_until > valid_from)
 );
 
-CREATE TABLE organization.jurisdictions (
-    jurisdiction_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    jurisdiction_key text NOT NULL UNIQUE,
+CREATE TABLE organization.governed_scopes (
+    governed_scope_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    governed_scope_key text NOT NULL UNIQUE,
     display_name text NOT NULL,
-    jurisdiction_type text NOT NULL,
+    governed_scope_type text NOT NULL,
     status text NOT NULL DEFAULT 'ACTIVE',
     valid_from timestamptz NOT NULL,
     valid_until timestamptz,
     created_by_reference text NOT NULL
 );
 
-CREATE TABLE organization.jurisdiction_authorities (
-    jurisdiction_authority_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE organization.governed_scope_authorities (
+    governed_scope_authority_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id uuid NOT NULL REFERENCES organization.organizations(organization_id),
-    jurisdiction_id uuid NOT NULL REFERENCES organization.jurisdictions(jurisdiction_id),
+    governed_scope_id uuid NOT NULL REFERENCES organization.governed_scopes(governed_scope_id),
     authority_purpose text NOT NULL,
     priority integer NOT NULL DEFAULT 100,
     valid_from timestamptz NOT NULL,
     valid_until timestamptz,
     status text NOT NULL DEFAULT 'ACTIVE',
     created_by_reference text NOT NULL,
-    UNIQUE(organization_id,jurisdiction_id,authority_purpose,valid_from)
+    UNIQUE(organization_id,governed_scope_id,authority_purpose,valid_from)
 );
 
 
@@ -133,38 +133,48 @@ ALTER TABLE organization.organization_relationships
     ADD CONSTRAINT organization_relationship_status_nonempty_ck
     CHECK (btrim(status) <> '');
 
-ALTER TABLE organization.jurisdictions
-    ADD CONSTRAINT jurisdictions_key_format_ck
-    CHECK (jurisdiction_key ~ '^[a-z][a-z0-9_.-]*$'),
-    ADD CONSTRAINT jurisdictions_type_nonempty_ck
-    CHECK (btrim(jurisdiction_type) <> ''),
-    ADD CONSTRAINT jurisdictions_status_nonempty_ck
+ALTER TABLE organization.governed_scopes
+    ADD CONSTRAINT governed_scopes_key_format_ck
+    CHECK (governed_scope_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT governed_scopes_type_nonempty_ck
+    CHECK (btrim(governed_scope_type) <> ''),
+    ADD CONSTRAINT governed_scopes_status_nonempty_ck
     CHECK (btrim(status) <> ''),
-    ADD CONSTRAINT jurisdictions_validity_ck
+    ADD CONSTRAINT governed_scopes_validity_ck
     CHECK (
         valid_until IS NULL
         OR valid_until > valid_from
     );
 
-ALTER TABLE organization.jurisdiction_authorities
-    ADD CONSTRAINT jurisdiction_authority_purpose_nonempty_ck
+ALTER TABLE organization.governed_scope_authorities
+    ADD CONSTRAINT governed_scope_authority_purpose_nonempty_ck
     CHECK (btrim(authority_purpose) <> ''),
-    ADD CONSTRAINT jurisdiction_authority_priority_positive_ck
+    ADD CONSTRAINT governed_scope_authority_priority_positive_ck
     CHECK (priority > 0),
-    ADD CONSTRAINT jurisdiction_authority_status_nonempty_ck
+    ADD CONSTRAINT governed_scope_authority_status_nonempty_ck
     CHECK (btrim(status) <> ''),
-    ADD CONSTRAINT jurisdiction_authority_validity_ck
+    ADD CONSTRAINT governed_scope_authority_validity_ck
     CHECK (
         valid_until IS NULL
         OR valid_until > valid_from
     );
+
+-- Domain-neutral governed-scope definitions
+COMMENT ON TABLE organization.governed_scopes IS
+    'A domain-neutral legal, administrative, geographic, organizational, contractual, data, or service boundary used by policy and authority evaluation. Modules specialize governed_scope_type.';
+
+COMMENT ON COLUMN organization.governed_scopes.governed_scope_type IS
+    'A governed type key. JURISDICTION may be used by a module, but it is not the universal Foundation meaning.';
+
+COMMENT ON TABLE organization.governed_scope_authorities IS
+    'Effective-dated organizational authority within one governed scope and purpose.';
 
 SELECT foundation_meta.register_migration(
-    p_migration_id       => '030_organizations_and_jurisdictions',
-    p_migration_name     => 'Organizations and jurisdictions',
+    p_migration_id       => '030_organizations_and_governed_scopes',
+    p_migration_name     => 'Organizations and governed scopes',
     p_migration_layer    => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes              => 'Created organizations and jurisdictions objects.'
+    p_notes              => 'Created organizations and governed scopes objects.'
 );
 
 COMMIT;

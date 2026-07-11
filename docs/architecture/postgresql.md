@@ -57,7 +57,7 @@ sql/schema/scripts/apply_foundation.sh
 sql/schema/scripts/validate_foundation.sh
 ```
 
-Foundation migrations occupy `000–099`. Later ranges are reserved for operational resources, CAD, RMS, Evidence and Property, personnel, fleet, Fire/EMS, future modules, and deployment/bootstrap work.
+Foundation migrations occupy `000–099`. Later ranges are reserved for shared resources, CAD, RMS, Evidence and Property, personnel, fleet, Fire/EMS, future modules, and deployment/bootstrap work.
 
 ## Testing
 

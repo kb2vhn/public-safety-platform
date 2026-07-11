@@ -65,7 +65,7 @@ This goal is implemented architecturally through:
 
 - [Approval Framework](../architecture/foundation/approval-framework.md)
 - [Authority and Authorization](../architecture/foundation/authority-and-authorization-model.md)
-- [Trust and Decision Engine](../architecture/foundation/trust-and-decision-engine-model.md)
+- [Authentication and Authorization Evaluation](../architecture/foundation/authentication-and-authorization-evaluation-model.md)
 - [Decision Record Repository](../architecture/foundation/decision-record-repository.md)
 
 SQL migrations `050`, `055`, `070`, `075`, and `080` provide the initial structural implementation.

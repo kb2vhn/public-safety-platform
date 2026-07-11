@@ -63,6 +63,6 @@ The Foundation SQL test framework must test the requirements that can be demonst
 
 ## Related Documents
 
-- [Provider-Neutral Observability](../provider-neutral-observability.md)
+- [External-System-Independent Observability](../external-system-independent-observability.md)
 - [Resilience, Availability, and Recovery](resilience-availability-and-recovery-model.md)
 - [Performance, Efficiency, and Resource Governance](performance-efficiency-and-resource-governance-model.md)

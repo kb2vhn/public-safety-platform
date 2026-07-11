@@ -22,7 +22,7 @@ Examples include:
 
 - Self-approval or circular approval,
 - Role accumulation creating unrestricted authority,
-- Reuse of an expired or consumed trust assertion,
+- Reuse of an expired or consumed authentication assertion,
 - Lease theft or wrong-audience use,
 - Silent decision-record alteration,
 - Cross-organization access without current participation,
@@ -56,4 +56,4 @@ The Foundation SQL test framework must test the requirements that can be demonst
 
 - [Risk Assessment and Treatment](risk-assessment-and-treatment-model.md)
 - [Common Security Control Catalog](common-security-control-catalog.md)
-- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Authentication and Authorization Evaluation](authentication-and-authorization-evaluation-model.md)

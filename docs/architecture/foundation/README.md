@@ -25,28 +25,32 @@ The Foundation does not contain CAD, RMS, Evidence and Property, payroll, procur
 9. Policies, agreements, controls, rules, and governed documents used in decisions must be versioned and integrity-verifiable.
 10. Current state must not silently overwrite historical state.
 11. Shared infrastructure does not create centralized organizational authority.
-12. Authorization is bounded by identity, organization, service, purpose, operation, jurisdiction, classification, and time.
+12. Authorization is bounded by identity, organization, service, purpose, operation, governed scope, classification, and time.
 13. Monitoring and integration providers remain replaceable.
 14. Workloads and resource consumption must be attributable and bounded.
 15. Availability, recovery, and degraded operation must be governed before production use.
-
+16. Domain-specific concepts belong in modules; the Foundation uses neutral shared concepts and extension points.
 ## Documentation Groups
 
 ### Boundaries, Trust, and Database Enforcement
 
+- [Foundation Terminology and Domain Neutrality](foundation-terminology-and-domain-neutrality.md)
+
 - [Platform Boundaries](platform-boundaries.md)
-- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Authentication and Authorization Evaluation](authentication-and-authorization-evaluation-model.md)
 - [Database Security](database-security-model.md)
 - [Schema Naming Conventions](schema-naming-conventions.md)
 - [SQL Migration Map](sql-migration-map.md)
 
 ### Organizations, Services, Identity, and Eligibility
 
-- [Organization and Jurisdiction](organization-and-jurisdiction-model.md)
+- [Organization and Governed Scope](organization-and-governed-scope-model.md)
 - [Service Participation and Federation](service-participation-and-federation-model.md)
 - [Organizational Attestation and Access Eligibility](organizational-attestation-and-access-eligibility-model.md)
 
 ### Approval and Authorization
+
+- [Authorization Evaluation Contract](authorization-evaluation-contract.md)
 
 - [Approval Framework](approval-framework.md)
 - [Authority and Authorization](authority-and-authorization-model.md)
@@ -88,7 +92,7 @@ The following remain incomplete until separately implemented and tested:
 - Off-host integrity anchoring and protected export,
 - Migration-checksum population and enforcement,
 - Production Go services,
-- Provider adapters and workers,
+- External-system adapters and delivery workers,
 - Backup protection and restoration validation,
 - Break-glass procedures,
 - Trusted rebuild and compromise recovery,

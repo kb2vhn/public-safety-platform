@@ -6,7 +6,7 @@
 >
 > **Implementation status:** This document defines the contract that migrations `050–080` and their behavioral tests must implement. Structural presence does not imply complete enforcement.
 >
-> **Primary rule:** Authentication establishes an identity context. Authorization determines whether a specific protected operation may occur within a specific organization, service, purpose, operation, resource, jurisdiction, classification, device, session, policy, and time context.
+> **Primary rule:** Authentication establishes an identity context. Authorization determines whether a specific protected operation may occur within a specific organization, service, purpose, operation, resource, governed scope, classification, device, session, policy, and time context.
 
 ## Purpose
 
@@ -18,7 +18,7 @@ This contract prevents each later migration or service from inventing its own:
 - Time semantics
 - Status meanings
 - Reason codes
-- Trust Assertion behavior
+- Authentication Assertion behavior
 - Session relationship
 - Approval interpretation
 - Lease-use rules
@@ -31,7 +31,7 @@ The contract is domain-neutral. It does not define CAD, RMS, Evidence and Proper
 ## Governing Principles
 
 1. Every important decision must have an explanation.
-2. A Trust Assertion is evidence, not authorization.
+2. A Authentication Assertion is evidence, not authorization.
 3. A session is identity continuity, not durable authority.
 4. An approval is an attributable policy input, not a standalone capability.
 5. An Authorization Lease is short-lived, scoped authority, not a role.
@@ -69,7 +69,7 @@ This contract does not yet define:
 - Production login roles
 - Final ownership transfers
 - Go package or API layout
-- Provider-specific signature verification
+- Trust-trust-provider-specific signature verification
 - Operational-module resource schemas
 - Off-host Decision Record anchoring
 - Backup, restoration, or break-glass procedures
@@ -81,9 +81,9 @@ Those remain required later stages.
 The complete conceptual path is:
 
 ```text
-Provider Evidence
+Received Authentication Assertion
       ↓
-Verified Trust Assertion
+Verified Authentication Assertion
       ↓
 Session Establishment or Step-Up
       ↓
@@ -114,7 +114,7 @@ Initial decision classes are:
 
 ### `SESSION_ESTABLISHMENT`
 
-Establishes a new authenticated session from a verified Trust Assertion.
+Establishes a new authenticated session from a verified Authentication Assertion.
 
 A successful result may create a new session.
 
@@ -122,7 +122,7 @@ It does not issue durable authority or permit an operational action by itself.
 
 ### `SESSION_STEP_UP`
 
-Strengthens an existing session with a new verified Trust Assertion.
+Strengthens an existing session with a new verified Authentication Assertion.
 
 The assertion must be bound to the exact existing session, identity, device when required, audience, environment, and trust provider.
 
@@ -141,7 +141,7 @@ This class may evaluate:
 - Eligibility
 - Purpose
 - Requested operation
-- Jurisdiction
+- Governed Scope
 - Classification
 - Authority grants
 - Incompatible authority
@@ -185,13 +185,13 @@ requester_identity_id
 requester_organization_id
 session_id
 device_id
-trust_assertion_id
+authentication_assertion_id
 service_id
 purpose_definition_id
 operation_key
 target_type
 target_reference
-jurisdiction_id
+governed_scope_id
 classification_definition_id
 authorization_policy_version_id
 approval_request_id
@@ -213,7 +213,7 @@ Retries must not silently create unrelated requests. A retry either:
 
 ### Correlation Identifier
 
-`correlation_id` connects the request, Trust Assertion, session, approvals, lease, protected operation, Decision Record, telemetry, and provider delivery records.
+`correlation_id` connects the request, Authentication Assertion, session, approvals, lease, protected operation, Decision Record, telemetry, and provider delivery records.
 
 A correlation identifier is not an authorization secret.
 
@@ -282,11 +282,11 @@ target_reference
 
 The target must be interpreted by the controlled operation, not through arbitrary dynamic SQL.
 
-### Jurisdiction
+### Governed Scope
 
-`jurisdiction_id` identifies the applicable governed jurisdiction when jurisdiction is relevant.
+`governed_scope_id` identifies the applicable governed governed scope when governed scope is relevant.
 
-Absence of a jurisdiction is not equivalent to universal jurisdiction.
+Absence of a governed scope is not equivalent to universal governed scope.
 
 ### Classification
 
@@ -311,11 +311,11 @@ The following require typed columns or typed function parameters:
 - Service
 - Session
 - Device
-- Trust Assertion
+- Authentication Assertion
 - Purpose
 - Operation
 - Target
-- Jurisdiction
+- Governed Scope
 - Classification
 - Approval request
 - Authorization Lease
@@ -326,18 +326,18 @@ The following require typed columns or typed function parameters:
 
 JSON may be used for:
 
-- Non-authoritative provider evidence snapshots
+- Non-authoritative received authentication assertion snapshots
 - Supplementary explanation
 - Non-secret diagnostic context
 - Policy-specific metadata that does not replace required scope
 
 Secrets, plaintext lease values, session tokens, private keys, and provider credentials must not be stored in Decision Record JSON.
 
-## Trust Assertion Contract
+## Authentication Assertion Contract
 
 ### Assertion Roles
 
-A Trust Assertion supports one of two initial purposes:
+A Authentication Assertion supports one of two initial purposes:
 
 ```text
 SESSION_ESTABLISHMENT
@@ -400,9 +400,9 @@ REVOKED
 Meanings:
 
 - `RECEIVED` — stored but not yet trusted for authorization.
-- `VERIFIED` — signature and provider evidence have been validated by an authorized verifier.
+- `VERIFIED` — signature and received authentication assertion have been validated by an authorized verifier.
 - `CONSUMED` — used exactly once for its intended decision context.
-- `REJECTED` — verification failed or the provider evidence was unacceptable.
+- `REJECTED` — verification failed or the received authentication assertion was unacceptable.
 - `EXPIRED` — no longer valid due to time.
 - `REVOKED` — explicitly invalidated before use.
 
@@ -410,7 +410,7 @@ Only `VERIFIED` assertions are consumable.
 
 ### Signature Verification Boundary
 
-Provider-specific signature verification may occur outside PostgreSQL.
+Trust-trust-provider-specific signature verification may occur outside PostgreSQL.
 
 PostgreSQL must not treat an arbitrary runtime insert as verified evidence.
 
@@ -418,7 +418,7 @@ A later deployment design must restrict the transition to `VERIFIED` to a dedica
 
 ### Assertion Freshness
 
-Policy may require a maximum assertion age shorter than the provider expiration.
+Policy may require a maximum assertion age shorter than the source assertion expiration.
 
 The effective assertion validity requires:
 
@@ -538,9 +538,9 @@ An authorization policy version defines:
 - Applicable purpose
 - Applicable operation
 - Applicable target scope
-- Jurisdiction requirements
+- Governed Scope requirements
 - Classification requirements
-- Trust Assertion requirement
+- Authentication Assertion requirement
 - Maximum assertion age
 - Device requirement
 - Session requirement
@@ -722,7 +722,7 @@ An authority grant is applicable only when all required scope matches:
 - Purpose
 - Operation
 - Target or scope
-- Jurisdiction
+- Governed Scope
 - Classification
 - Effective time
 
@@ -766,7 +766,7 @@ A lease binds:
 - Purpose
 - Operation
 - Target
-- Jurisdiction
+- Governed Scope
 - Classification
 - Authorization policy version
 - Issuing Decision Record
@@ -852,7 +852,7 @@ A controlled operation verifies:
 - Purpose
 - Operation
 - Target
-- Jurisdiction
+- Governed Scope
 - Classification
 - Policy version where required
 
@@ -870,7 +870,7 @@ A lease is not extended by changing `expires_at` on the original historical auth
 
 PostgreSQL time is authoritative at the database security boundary.
 
-Client-supplied time may be recorded as evidence but is not used to establish validity.
+Client-supplied time may be recorded as supporting context but is not used to establish validity.
 
 ### Evaluation Time
 
@@ -994,7 +994,7 @@ PURPOSE_NOT_GOVERNED
 TARGET_SCOPE_INVALID
 ```
 
-### Trust Assertion
+### Authentication Assertion
 
 ```text
 TRUST_ASSERTION_REQUIRED
@@ -1135,12 +1135,12 @@ Every material decision records:
 - Requester organization
 - Session
 - Device
-- Trust Assertion
+- Authentication Assertion
 - Service
 - Purpose
 - Operation
 - Target
-- Jurisdiction
+- Governed Scope
 - Classification
 - Policy version
 - Approval request
@@ -1180,7 +1180,7 @@ Decision Records must not contain:
 - Plaintext lease secrets
 - Session tokens
 - Private keys
-- Provider credentials
+- Credentials used to access external systems or trust services
 - Full authentication payloads unless separately protected and explicitly required
 - Passwords or MFA secrets
 
@@ -1228,7 +1228,7 @@ The result does not contain secrets.
 
 ## Concurrency Contract
 
-### Trust Assertion Consumption
+### Authentication Assertion Consumption
 
 Consumption uses one atomic state transition:
 
@@ -1280,7 +1280,7 @@ The same identifier with different context is rejected with:
 REQUEST_IDENTIFIER_CONFLICT
 ```
 
-Idempotency must not allow replay of a single-use Trust Assertion or lease for a different operation.
+Idempotency must not allow replay of a single-use Authentication Assertion or lease for a different operation.
 
 ## Status and Reason Catalog Governance
 
@@ -1307,7 +1307,7 @@ This contract primarily affects:
 | `055_authority_purpose_and_authorization_policy.sql` | Operation definitions, policy versions, stage requirements, reason catalog |
 | `060_sessions.sql` | Session lifecycle, binding, controlled state changes, event history |
 | `065_authorization_leases.sql` | Complete lease scope, use modes, linkage, use history |
-| `070_postgresql_trust_gate.sql` | Assertion purpose, `VERIFIED` state, context binding, atomic consumption |
+| `070_postgresql_authentication_assertion_gate.sql` | Assertion purpose, `VERIFIED` state, context binding, atomic consumption |
 | `075_controlled_authorization_api.sql` | Typed controlled verification and denial behavior |
 | `080_decision_record_repository.sql` | Decision classes, stage consistency, finalization, reason codes |
 | `098_security_boundaries_and_role_separation.sql` | Later controlled writer and runtime role mapping |
@@ -1319,7 +1319,7 @@ This contract is the primary Phase 0 document.
 
 The following documents remain authoritative for their specialized subjects and should link to this contract:
 
-- `trust-and-decision-engine-model.md`
+- `authentication-and-authorization-evaluation-model.md`
 - `approval-framework.md`
 - `authority-and-authorization-model.md`
 - `authorization-lease-model.md`
@@ -1347,7 +1347,7 @@ Before Phase 1 implementation, the test framework should have a reusable fixture
 - One approval policy
 - One authorization policy version
 - One session
-- One Trust Assertion
+- One Authentication Assertion
 - One Authorization Lease
 - One protected test resource
 
@@ -1360,7 +1360,7 @@ Phase 0 is complete when:
 1. This contract is accepted as normative.
 2. Decision classes are fixed for the next implementation phases.
 3. Canonical request context is fixed.
-4. Trust Assertion purposes and lifecycle are fixed.
+4. Authentication Assertion purposes and lifecycle are fixed.
 5. Session-establishment and step-up relationships are fixed.
 6. The time model is fixed.
 7. Policy selection and ambiguity behavior are fixed.
@@ -1376,7 +1376,7 @@ Phase 0 is complete when:
 
 ## Next Phase
 
-Phase 1 implements Trust Assertion context binding.
+Phase 1 implements Authentication Assertion context binding.
 
 Its work includes:
 

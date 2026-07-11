@@ -634,3 +634,59 @@ SELECT sql_test.assert_true(
     ) NOT LIKE '%clock_timestamp()%',
     NULL
 );
+
+-- Domain-neutral governed-scope behavior
+
+INSERT INTO organization.governed_scopes (
+    governed_scope_id,
+    governed_scope_key,
+    display_name,
+    governed_scope_type,
+    status,
+    valid_from,
+    created_by_reference
+)
+VALUES (
+    '30000000-0000-0000-0000-000000000004',
+    'sql_test.governed_scope',
+    'SQL Test Governed Scope',
+    'TEST_BOUNDARY',
+    'ACTIVE',
+    statement_timestamp() - interval '1 day',
+    'sql-test'
+);
+
+INSERT INTO organization.governed_scope_authorities (
+    governed_scope_authority_id,
+    organization_id,
+    governed_scope_id,
+    authority_purpose,
+    priority,
+    valid_from,
+    status,
+    created_by_reference
+)
+VALUES (
+    '30000000-0000-0000-0000-000000000005',
+    '30000000-0000-0000-0000-000000000001',
+    '30000000-0000-0000-0000-000000000004',
+    'SQL_TEST',
+    100,
+    statement_timestamp() - interval '1 day',
+    'ACTIVE',
+    'sql-test'
+);
+
+SELECT sql_test.assert_equal_bigint(
+    'Governed scope authority is represented without a domain-specific boundary field',
+    (
+        SELECT count(*)
+        FROM organization.governed_scope_authorities
+        WHERE organization_id =
+            '30000000-0000-0000-0000-000000000001'
+          AND governed_scope_id =
+            '30000000-0000-0000-0000-000000000004'
+          AND authority_purpose = 'SQL_TEST'
+    ),
+    1
+);

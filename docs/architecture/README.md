@@ -15,7 +15,7 @@ The architecture is divided into:
 ### Technology and Provider Decisions
 
 - [PostgreSQL Architecture](postgresql.md)
-- [Provider-Neutral Observability](provider-neutral-observability.md)
+- [External-System-Independent Observability](external-system-independent-observability.md)
 - [Authorization Evaluation Contract](authorization-evaluation-contract.md)
 
 ### Platform Foundation
@@ -46,7 +46,7 @@ Technology Decisions
         ↓
 Platform Foundation
         ↓
-Platform Services and Operational Resources
+Platform Services and Shared Resources
         ↓
 CAD, RMS, Evidence, Personnel, Fleet, Fire, EMS
         ↓

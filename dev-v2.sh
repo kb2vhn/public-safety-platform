@@ -9,8 +9,8 @@
 #
 # Run from the repository root:
 #
-#   chmod +x foundation-domain-neutrality-update.sh
-#   ./foundation-domain-neutrality-update.sh
+#   chmod +x foundation-domain-neutrality-update-from-latest-dev-v2.sh
+#   ./foundation-domain-neutrality-update-from-latest-dev-v2.sh
 #
 # Options:
 #   --no-tests      Apply and validate source changes without running PostgreSQL.
@@ -42,7 +42,7 @@ run_tests=1
 usage() {
     cat <<'USAGE'
 Usage:
-  ./foundation-domain-neutrality-update.sh [options]
+  ./foundation-domain-neutrality-update-from-latest-dev-v2.sh [options]
 
 Options:
   --no-tests
@@ -541,6 +541,9 @@ text_suffixes = {
 
 text_files: list[Path] = []
 for relative in tracked_paths:
+    if relative.startswith("foundation-domain-neutrality-update"):
+        continue
+
     path = root / relative
     if not path.is_file():
         continue
@@ -599,6 +602,12 @@ replacement_pairs = [
     ),
 
     # Governed-scope SQL identifiers.
+    # Machine identifiers must keep underscore separators. This exact
+    # replacement must occur before natural-language jurisdiction rewrites.
+    (
+        "organizations_and_jurisdictions",
+        "organizations_and_governed_scopes",
+    ),
     ("jurisdiction_authority_id", "governed_scope_authority_id"),
     ("jurisdiction_authorities", "governed_scope_authorities"),
     ("jurisdiction_id", "governed_scope_id"),
@@ -1955,6 +1964,30 @@ for relative in final_paths:
                         f"{token!r}: {line.strip()}"
                     )
 
+# Reject natural-language spacing inside machine identifiers. This catches
+# defects such as organizations_and_governed scopes before PostgreSQL does.
+machine_identifier_space_patterns = [
+    re.compile(r"\b[a-z0-9]+(?:_[a-z0-9]+)*_governed scopes\b"),
+    re.compile(r"\bgoverned scopes_[a-z0-9_]+\b"),
+]
+
+for relative in final_paths:
+    path = root / relative
+    if not path.is_file():
+        continue
+    try:
+        content = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        continue
+
+    for line_number, line in enumerate(content.splitlines(), 1):
+        for pattern in machine_identifier_space_patterns:
+            if pattern.search(line):
+                violations.append(
+                    f"{relative}:{line_number}: natural-language spacing "
+                    f"appears inside a machine identifier: {line.strip()}"
+                )
+
 # Lowercase/title-case natural-language governed scope must also be gone.
 # The uppercase module type JURISDICTION is deliberately permitted.
 natural_pattern = re.compile(r"\b[jJ]urisdictions?\b")
@@ -2110,7 +2143,7 @@ git diff --cached --stat
 
 if [[ "$run_tests" -eq 1 ]]; then
     printf '\nRunning the complete Foundation SQL test framework in the temporary worktree...\n\n'
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh
+    ./sql/test-framework/sql/schema/scripts/test_foundation.sh --drop-on-failure
 else
     printf '\nPostgreSQL tests were skipped by request.\n'
     printf 'Run them before committing with:\n\n'
@@ -2165,4 +2198,3 @@ printf '\nReview before committing:\n\n'
 printf '  git diff --check\n'
 printf '  git diff -- README.md docs sql\n'
 printf '  git status\n'
-

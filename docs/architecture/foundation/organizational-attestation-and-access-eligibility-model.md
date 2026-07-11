@@ -53,6 +53,6 @@ The Foundation SQL test framework must test the requirements that can be demonst
 
 ## Related Documents
 
-- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Authentication and Authorization Evaluation](authentication-and-authorization-evaluation-model.md)
 - [Approval Framework](approval-framework.md)
 - [Lifecycle Versioning and Historical Lineage](lifecycle-versioning-and-historical-lineage-model.md)

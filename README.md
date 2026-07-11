@@ -14,35 +14,31 @@ The ultimate measure of success is not the number of features implemented, but w
 
 ## Platform Scope and Long-Term Direction
 
-The Public Safety Platform repository began with public safety as its first operational focus. Public safety remains the planned first module family, but it does not define the limits of the Platform Foundation.
+The repository began with public safety as its first operational focus.
 
-The Platform Foundation is intended to be domain-neutral.
+Public safety remains the planned first module family, but it does not define the limits of the Platform Foundation.
 
-It should provide the shared trust, identity, authorization, approval, decision-recording, governance, compliance, resilience, observability, integration, and resource-control capabilities required by many different operational systems.
+The Platform Foundation is domain-neutral. It provides shared trust, identity, authorization, approval, Decision Record, governance, compliance, resilience, observability, integration, and resource-control capabilities for unrelated module families.
 
 Future module families may include:
 
-* Public safety
-* Municipal administration
-* Finance and budgeting
-* Human resources
-* Permitting and licensing
-* Code enforcement
-* Property and asset management
-* Fleet and public works
-* Utility operations and billing
-* School and educational administration
-* Additional local-government or institutional services
+- Public safety
+- Municipal administration
+- Finance and budgeting
+- Human resources
+- Permitting and licensing
+- Code enforcement
+- Property and asset management
+- Fleet and public works
+- Utility operations and billing
+- School and educational administration
+- Other local-government or institutional services
 
-Domain-specific concepts belong in their applicable modules.
+Domain-specific records and workflows belong in their modules.
 
-The Foundation should contain only concepts that are broadly reusable across those modules or that are required to establish common trust and governance boundaries.
+The Foundation contains only broadly reusable concepts or neutral extension points. A legal or geographic authority boundary, for example, is represented by a Governed Scope whose module-defined type may be `JURISDICTION`; it is not imposed as a universal Foundation concept.
 
-Public safety concepts such as incidents, dispatch units, calls for service, evidence, cases, and legal jurisdiction must not become mandatory assumptions of the shared Foundation.
-
-Where different domains require a similar kind of boundary, the Foundation should use a neutral concept that modules can specialize. For example, the Foundation uses a governed scope rather than requiring every module to describe its authority boundary as a jurisdiction.
-
-The long-term objective is to create a secure and dependable platform upon which small municipalities, schools, and similar organizations can build or operate many different modules without recreating the security foundation for every application.
+The long-term objective is to let small municipalities, schools, and similar organizations add or replace operational modules without rebuilding the security and governance foundation for every application.
 
 ## Project Direction
 
@@ -99,7 +95,7 @@ The platform is being developed in deliberate stages:
                          ↓
 7. Build the production Go services against controlled database APIs
                          ↓
-8. Add Operational Resources and public-safety modules
+8. Add Shared Resources and public-safety modules
 ```
 
 Each stage may expose assumptions or weaknesses in an earlier stage. Those issues are corrected before the project moves forward.
@@ -140,7 +136,7 @@ A protected action may require multiple independent proofs, including:
 
 Authentication establishes who or what is presenting a request.
 
-Authorization determines whether that identity may perform a specific operation, for a specific purpose, within a specific organization, service, jurisdiction, classification, and time period.
+Authorization determines whether that identity may perform a specific operation, for a specific purpose, within a specific organization, service, governed scope, classification, and time period.
 
 ### PostgreSQL Is an Independent Security Boundary
 
@@ -181,7 +177,7 @@ Project Goals and Technology Decisions
                   ↓
           Platform Foundation
                   ↓
-        Operational Resources
+        Shared Resources
                   ↓
  CAD, RMS, Evidence, Personnel, Fleet, Fire, EMS
                   ↓
@@ -198,7 +194,7 @@ The current Foundation architecture covers:
 
 * Cryptographic and device trust
 * Identities and identity lifecycle
-* Organizations and jurisdictions
+* Organizations and governed scopes
 * Platform services and configuration
 * Service participation and federation
 * Attestations and access eligibility
@@ -219,7 +215,7 @@ The current Foundation architecture covers:
 * Workload and resource governance
 * Client and deployment performance profiles
 * Operational telemetry and health
-* Monitoring subscriptions and provider delivery state
+* Monitoring subscriptions and delivery state
 * Transactional integration outbox
 * Security boundaries and validation inventories
 
@@ -233,7 +229,7 @@ The current SQL provides an initial structural implementation and selected datab
 
 The following remain active work:
 
-* Complete Trust Assertion context binding
+* Complete Authentication Assertion context binding
 * Scope-aware Authorization Lease verification
 * Full approval independence and self-approval enforcement
 * Complete Decision Record consistency and integrity controls
@@ -243,12 +239,12 @@ The following remain active work:
 * Least-privileged runtime grants
 * Behavioral, negative, and concurrency tests
 * Production Go services
-* Provider adapters and workers
+* External-system adapters and delivery workers
 * Off-host integrity anchoring and protected logging
 * Backup protection and restoration validation
 * Break-glass access
 * Trusted rebuild and compromise recovery
-* Operational Resources and public-safety modules
+* Shared Resources and public-safety modules
 
 These are expected development stages, not hidden claims of completion.
 
@@ -257,14 +253,8 @@ These are expected development stages, not hidden claims of completion.
 | Range     | Purpose                  |
 | --------- | ------------------------ |
 | `000–099` | Platform Foundation      |
-| `100–199` | Operational Resources    |
-| `200–299` | CAD                      |
-| `300–399` | RMS                      |
-| `400–499` | Evidence and Property    |
-| `500–599` | Personnel extensions     |
-| `600–699` | Fleet extensions         |
-| `700–799` | Fire and EMS             |
-| `800–899` | Future modules           |
+| `100–199` | Shared resources and cross-module capabilities |
+| `200–899` | Module-owned migrations allocated by an approved module-range decision |
 | `900–999` | Deployment and bootstrap |
 
 The authoritative Foundation migration order is maintained in:
@@ -280,7 +270,7 @@ The authoritative Foundation migration order is maintained in:
 │   ├── architecture/
 │   │   ├── README.md
 │   │   ├── postgresql.md
-│   │   ├── provider-neutral-observability.md
+│   │   ├── external-system-independent-observability.md
 │   │   └── foundation/
 │   ├── compliance-profiles/
 │   └── goals/
@@ -310,7 +300,7 @@ Start with:
 * [Architecture Index](docs/architecture/README.md)
 * [Platform Foundation Documentation](docs/architecture/foundation/README.md)
 * [PostgreSQL Architecture](docs/architecture/postgresql.md)
-* [Provider-Neutral Observability](docs/architecture/provider-neutral-observability.md)
+* [External-System-Independent Observability](docs/architecture/external-system-independent-observability.md)
 * [Project Goals](docs/goals/README.md)
 * [Compliance Profiles](docs/compliance-profiles/README.md)
 

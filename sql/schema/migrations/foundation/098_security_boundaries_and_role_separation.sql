@@ -16,7 +16,7 @@
 --   completed after the role and ownership design is approved.
 --
 -- Dependencies:
---   - 097_provider_integration_outbox.sql
+--   - 097_external_integration_outbox.sql
 --
 -- Security invariants:
 --   - PUBLIC has no access to Foundation schemas, tables, sequences, or
@@ -47,12 +47,12 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM foundation_meta.applied_migrations
-        WHERE migration_id = '097_provider_integration_outbox'
+        WHERE migration_id = '097_external_integration_outbox'
     ) THEN
         RAISE EXCEPTION
             USING
                 ERRCODE = 'object_not_in_prerequisite_state',
-                MESSAGE = 'Required migration 097_provider_integration_outbox is not registered';
+                MESSAGE = 'Required migration 097_external_integration_outbox is not registered';
     END IF;
 END;
 $dependency_check$;

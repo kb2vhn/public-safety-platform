@@ -14,7 +14,7 @@ Distinguish durable sources of authority from individual, time-bounded authoriza
 
 Authority describes what an identity, organization, role, office, service, or delegated relationship is permitted to authorize or perform under a governing policy.
 
-Authority must be scoped by organization, service, purpose, operation, jurisdiction, classification, and effective period.
+Authority must be scoped by organization, service, purpose, operation, governed scope, classification, and effective period.
 
 ### Purpose
 
@@ -54,4 +54,4 @@ The Foundation SQL test framework must test the requirements that can be demonst
 
 - [Approval Framework](approval-framework.md)
 - [Authorization Lease](authorization-lease-model.md)
-- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Authentication and Authorization Evaluation](authentication-and-authorization-evaluation-model.md)

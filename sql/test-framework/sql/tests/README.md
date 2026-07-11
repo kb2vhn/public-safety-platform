@@ -444,8 +444,8 @@ The Foundation SQL and test suite remain active work.
 
 The suite does not yet fully prove:
 
-- Trust Assertion audience, environment, identity, device, and session binding
-- Single-use Trust Assertion behavior under concurrency
+- Authentication Assertion audience, environment, identity, device, and session binding
+- Single-use Authentication Assertion behavior under concurrency
 - Session expiration and revocation behavior
 - Approval independence and self-approval prevention
 - Authorization Lease scope binding
@@ -607,7 +607,7 @@ Controls involving consumption, replay protection, uniqueness, or state transiti
 
 Examples include:
 
-- Trust Assertion single use
+- Authentication Assertion single use
 - Authorization Lease consumption
 - Approval finalization
 - Outbox claiming

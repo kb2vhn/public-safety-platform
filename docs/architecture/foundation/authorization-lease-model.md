@@ -19,7 +19,7 @@ An Authorization Lease binds:
 - Session and trusted device context,
 - Purpose,
 - Operation and resource scope,
-- Jurisdiction and classification limits,
+- Governed Scope and classification limits,
 - Governing policy and decision record,
 - Issue, activation, and expiration times,
 - Revocation and consumption state.

@@ -67,6 +67,6 @@ The Foundation SQL test framework must test the requirements that can be demonst
 ## Related Documents
 
 - [PostgreSQL Architecture](../postgresql.md)
-- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Authentication and Authorization Evaluation](authentication-and-authorization-evaluation-model.md)
 - [Decision Record Repository](decision-record-repository.md)
 - [SQL Migration Map](sql-migration-map.md)

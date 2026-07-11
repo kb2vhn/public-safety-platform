@@ -28,7 +28,7 @@ Federation must define:
 
 - Participating parties,
 - Services and operations,
-- Jurisdiction and classification limits,
+- Governed Scope and classification limits,
 - Purpose,
 - Effective period,
 - Approval and revocation authority,
@@ -54,6 +54,6 @@ The Foundation SQL test framework must test the requirements that can be demonst
 
 ## Related Documents
 
-- [Organization and Jurisdiction](organization-and-jurisdiction-model.md)
+- [Organization and Governed Scope](organization-and-governed-scope-model.md)
 - [Authority and Authorization](authority-and-authorization-model.md)
 - [Governed Document and Policy Versioning](governed-document-and-policy-versioning-model.md)

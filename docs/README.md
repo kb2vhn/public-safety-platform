@@ -19,7 +19,7 @@ docs/
 ├── architecture/
 │   ├── README.md
 │   ├── postgresql.md
-│   ├── provider-neutral-observability.md
+│   ├── external-system-independent-observability.md
 │   └── foundation/
 │       ├── README.md
 │       └── *.md

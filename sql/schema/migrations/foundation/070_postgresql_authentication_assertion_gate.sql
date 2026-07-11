@@ -1,17 +1,17 @@
 -- ============================================================================
--- Migration: 070_postgresql_trust_gate.sql
--- Title: PostgreSQL Trust Gate
+-- Migration: 070_postgresql_authentication_assertion_gate.sql
+-- Title: PostgreSQL Authentication Assertion Gate
 -- Layer: Platform Foundation
 -- Status: REVIEW CANDIDATE
 -- Target: PostgreSQL 18
 -- ============================================================================
 --
 -- Purpose:
---   Store provider-issued Trust Assertions and provide a database-side,
+--   Store externally issued Authentication Assertions received from configured trust providers and provide a database-side,
 --   single-use consumption function.
 --
 -- Security boundaries:
---   - A Trust Assertion is an input to authorization, not authorization itself.
+--   - A Authentication Assertion is an input to authorization, not authorization itself.
 --   - Assertions are audience-bound, environment-bound, time-bound, and
 --     single-use.
 --   - PostgreSQL time is authoritative for assertion expiration.
@@ -21,7 +21,7 @@
 --
 -- Important:
 --   Signature verification is not implemented in this migration. A later
---   provider-specific verification layer must validate the signed assertion
+--   trust-provider-specific authentication verification component must validate the signed assertion
 --   before inserting it with status RECEIVED.
 --
 -- Dependencies:
@@ -59,11 +59,11 @@ END;
 $dependency_check$;
 
 -- ============================================================================
--- Trust Assertions
+-- Authentication Assertions
 -- ============================================================================
 
-CREATE TABLE access_control.trust_assertions (
-    trust_assertion_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE access_control.authentication_assertions (
+    authentication_assertion_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     assertion_id text NOT NULL UNIQUE,
 
     trust_provider_id uuid NOT NULL
@@ -103,32 +103,32 @@ CREATE TABLE access_control.trust_assertions (
 
     status text NOT NULL DEFAULT 'RECEIVED',
 
-    CONSTRAINT trust_assertions_assertion_id_ck
+    CONSTRAINT authentication_assertions_assertion_id_ck
         CHECK (
             btrim(assertion_id) <> ''
         ),
 
-    CONSTRAINT trust_assertions_audience_ck
+    CONSTRAINT authentication_assertions_audience_ck
         CHECK (
             btrim(audience) <> ''
         ),
 
-    CONSTRAINT trust_assertions_environment_key_ck
+    CONSTRAINT authentication_assertions_environment_key_ck
         CHECK (
             environment_key ~ '^[a-z][a-z0-9_-]*$'
         ),
 
-    CONSTRAINT trust_assertions_signature_algorithm_ck
+    CONSTRAINT authentication_assertions_signature_algorithm_ck
         CHECK (
             btrim(signature_algorithm) <> ''
         ),
 
-    CONSTRAINT trust_assertions_validity_ck
+    CONSTRAINT authentication_assertions_validity_ck
         CHECK (
             expires_at > issued_at
         ),
 
-    CONSTRAINT trust_assertions_status_ck
+    CONSTRAINT authentication_assertions_status_ck
         CHECK (
             status IN (
                 'RECEIVED',
@@ -139,7 +139,7 @@ CREATE TABLE access_control.trust_assertions (
             )
         ),
 
-    CONSTRAINT trust_assertions_consumption_state_ck
+    CONSTRAINT authentication_assertions_consumption_state_ck
         CHECK (
             (
                 status = 'CONSUMED'
@@ -152,52 +152,52 @@ CREATE TABLE access_control.trust_assertions (
             )
         ),
 
-    CONSTRAINT trust_assertions_received_after_issue_ck
+    CONSTRAINT authentication_assertions_received_after_issue_ck
         CHECK (
             received_at >= issued_at
         )
 );
 
-COMMENT ON TABLE access_control.trust_assertions IS
-    'Provider-issued, audience-bound, environment-bound, time-bound, single-use Trust Assertions. Assertions do not grant authority by themselves.';
+COMMENT ON TABLE access_control.authentication_assertions IS
+    'Externally issued, audience-bound, environment-bound, time-bound Authentication Assertions received from configured trust providers. Assertions do not grant authority by themselves.';
 
-COMMENT ON COLUMN access_control.trust_assertions.nonce_hash IS
-    'Digest of the provider assertion nonce used to prevent replay.';
+COMMENT ON COLUMN access_control.authentication_assertions.nonce_hash IS
+    'Digest of the source authentication assertion nonce used to prevent replay.';
 
-COMMENT ON COLUMN access_control.trust_assertions.payload_hash IS
+COMMENT ON COLUMN access_control.authentication_assertions.payload_hash IS
     'Digest of the canonical signed assertion payload.';
 
-COMMENT ON COLUMN access_control.trust_assertions.signature_value IS
-    'Provider signature bytes retained for verification evidence and later review.';
+COMMENT ON COLUMN access_control.authentication_assertions.signature_value IS
+    'Signature bytes supplied with the Authentication Assertion and retained for controlled verification and authorized audit review.';
 
-CREATE UNIQUE INDEX trust_assertions_nonce_hash_uq
-    ON access_control.trust_assertions (
+CREATE UNIQUE INDEX authentication_assertions_nonce_hash_uq
+    ON access_control.authentication_assertions (
         nonce_hash
     );
 
-CREATE INDEX trust_assertions_status_expiry_idx
-    ON access_control.trust_assertions (
+CREATE INDEX authentication_assertions_status_expiry_idx
+    ON access_control.authentication_assertions (
         status,
         expires_at
     );
 
-CREATE INDEX trust_assertions_identity_received_idx
-    ON access_control.trust_assertions (
+CREATE INDEX authentication_assertions_identity_received_idx
+    ON access_control.authentication_assertions (
         identity_id,
         received_at DESC
     );
 
-CREATE INDEX trust_assertions_session_idx
-    ON access_control.trust_assertions (
+CREATE INDEX authentication_assertions_session_idx
+    ON access_control.authentication_assertions (
         session_id
     )
     WHERE session_id IS NOT NULL;
 
 -- ============================================================================
--- Single-use Trust Assertion consumption
+-- Single-use Authentication Assertion consumption
 -- ============================================================================
 
-CREATE FUNCTION access_control.assert_trust_assertion_available(
+CREATE FUNCTION access_control.consume_authentication_assertion(
     p_assertion_id text
 )
 RETURNS uuid
@@ -206,36 +206,36 @@ STRICT
 SET search_path = pg_catalog, access_control
 AS $function$
 DECLARE
-    v_trust_assertion_id uuid;
+    v_authentication_assertion_id uuid;
 BEGIN
-    UPDATE access_control.trust_assertions
+    UPDATE access_control.authentication_assertions
        SET status = 'CONSUMED',
            consumed_at = pg_catalog.clock_timestamp()
      WHERE assertion_id = p_assertion_id
        AND status = 'RECEIVED'
        AND issued_at <= pg_catalog.clock_timestamp()
        AND pg_catalog.clock_timestamp() < expires_at
-     RETURNING trust_assertion_id
-          INTO v_trust_assertion_id;
+     RETURNING authentication_assertion_id
+          INTO v_authentication_assertion_id;
 
-    IF v_trust_assertion_id IS NULL THEN
+    IF v_authentication_assertion_id IS NULL THEN
         RAISE EXCEPTION
             USING
                 ERRCODE = 'invalid_authorization_specification',
-                MESSAGE = 'Trust Assertion is unavailable',
+                MESSAGE = 'Authentication Assertion is unavailable',
                 DETAIL = 'The assertion was not found, is not in RECEIVED state, is not yet valid, has expired, or was already consumed.',
-                HINT = 'Obtain and verify a new Trust Assertion.';
+                HINT = 'Obtain and verify a new Authentication Assertion.';
     END IF;
 
-    RETURN v_trust_assertion_id;
+    RETURN v_authentication_assertion_id;
 END;
 $function$;
 
-COMMENT ON FUNCTION access_control.assert_trust_assertion_available(text) IS
-    'Atomically consumes one currently valid Trust Assertion and returns its identifier. PostgreSQL time is authoritative.';
+COMMENT ON FUNCTION access_control.consume_authentication_assertion(text) IS
+    'Atomically consumes one currently valid Authentication Assertion and returns its identifier. PostgreSQL time is authoritative.';
 
 REVOKE ALL
-ON FUNCTION access_control.assert_trust_assertion_available(text)
+ON FUNCTION access_control.consume_authentication_assertion(text)
 FROM PUBLIC;
 
 -- ============================================================================
@@ -243,11 +243,11 @@ FROM PUBLIC;
 -- ============================================================================
 
 SELECT foundation_meta.register_migration(
-    p_migration_id       => '070_postgresql_trust_gate',
-    p_migration_name     => 'PostgreSQL trust gate',
+    p_migration_id       => '070_postgresql_authentication_assertion_gate',
+    p_migration_name     => 'PostgreSQL authentication assertion gate',
     p_migration_layer    => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes              => 'Created Trust Assertions, replay protections, lifecycle constraints, supporting indexes, and a single-use database consumption function using the access_control schema.'
+    p_notes              => 'Created Authentication Assertions, replay protections, lifecycle constraints, supporting indexes, and a single-use database consumption function using the access_control schema.'
 );
 
 COMMIT;
