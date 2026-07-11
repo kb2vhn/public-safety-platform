@@ -4,7 +4,7 @@
 >
 > **Phase:** 2 — Session Establishment, Step-Up, and Lifecycle Enforcement
 >
-> **Status:** Normative Phase 2 contract; Step 1 started; SQL implementation not yet begun
+> **Status:** Normative Phase 2 contract; Step 2 implementation candidate; clean-install and regression validation required
 >
 > **Depends on:**
 > [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)

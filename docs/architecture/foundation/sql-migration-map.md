@@ -36,6 +36,7 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | `060` | `060_sessions.sql` | Operator and service sessions |
 | `065` | `065_authorization_leases.sql` | Short-lived, revocable authorization capabilities |
 | `070` | `070_postgresql_authentication_assertion_gate.sql` | Authentication Assertion state machine, local verification gate, rejection, expiration, revocation, and exact-context single-use consumption |
+| `072` | `072_postgresql_session_control.sql` | Authentication Assertion linkage, current-trust revalidation, atomic session establishment, and atomic step-up completion |
 | `075` | `075_controlled_authorization_api.sql` | Controlled Authorization Lease verification and protected API foundations |
 | `080` | `080_decision_record_repository.sql` | Decision and evaluation records |
 | `082` | `082_data_classification_and_governance.sql` | Classification and information-governance structures |
@@ -132,12 +133,13 @@ The planned migration ownership is:
 |---|---|
 | `060_sessions.sql` | Session and session-event structure, state constraints, chronology, and indexes |
 | `070_postgresql_authentication_assertion_gate.sql` | Accepted Phase 1 assertion verification and single-use consumption boundary; unchanged unless revalidation is required |
-| `072_postgresql_session_control.sql` | Planned assertion-dependent session establishment, step-up, activity, and lifecycle control APIs |
+| `072_postgresql_session_control.sql` | Assertion linkage, current local trust revalidation, atomic session establishment, atomic step-up completion, and later Phase 2 activity/lifecycle APIs |
 | `075_controlled_authorization_api.sql` | Later controlled authorization boundary; not the owner of session lifecycle |
 
-Migration `072` is a Phase 2 plan and is not part of the current manifest until
-Step 2 implements, reviews, and tests it. When added, it must appear after
-`070` and before `075`.
+Migration `072` is added by Phase 2 Step 2 after `070` and before `075`. Step 2
+implements assertion linkage, current local trust revalidation, atomic session
+establishment, and atomic step-up completion. Step 3 extends the same migration
+with controlled activity and lifecycle APIs before Phase 2 acceptance.
 
 ### Migration Completion Rule
 
