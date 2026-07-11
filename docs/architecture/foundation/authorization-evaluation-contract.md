@@ -148,10 +148,17 @@ It is not an authorization secret.
 
 ### Governed Operation
 
-`operation_definition_id` references the governed operation definition when
-one exists.
+`operation_definition_id` is the authoritative relational identity of the
+Governed Operation.
 
-`operation_key` is the stable machine-readable operation identifier.
+`operation_key` is the stable machine-readable key and may be retained in an
+immutable record as a historical snapshot.
+
+When both are stored, the database must enforce that the key belongs to the
+referenced definition. An approval request, Authorization Policy Version,
+Authority Grant, Authorization Lease, and Decision Record participating in
+one authorization chain must resolve to the same Governed Operation
+definition.
 
 Operation keys use:
 
@@ -174,6 +181,18 @@ The reference identifies the exact record or bounded set understood by the
 controlled operation.
 
 The target is never interpreted as caller-supplied SQL.
+
+### Definition Identifiers and Snapshot Keys
+
+Definition identifiers are authoritative for relational consistency.
+
+Stable keys may be stored beside identifiers in immutable or append-oriented
+records to preserve historical readability. A composite foreign key or an
+equivalent controlled-write invariant must prove that each stored key matches
+its referenced definition.
+
+A free-form key must not substitute for a definition identifier after the
+definition catalog exists.
 
 ### Governed Scope
 

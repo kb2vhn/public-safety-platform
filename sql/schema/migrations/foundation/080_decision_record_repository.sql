@@ -60,8 +60,7 @@ CREATE TABLE decision.decision_records (
         REFERENCES service.platform_services(service_id),
     purpose_definition_id uuid
         REFERENCES access_control.purpose_definitions(purpose_definition_id),
-    operation_definition_id uuid
-        REFERENCES access_control.operation_definitions(operation_definition_id),
+    operation_definition_id uuid NOT NULL,
     operation_key text NOT NULL,
     protected_target_type text NOT NULL,
     protected_target_reference text NOT NULL,
@@ -93,6 +92,12 @@ CREATE TABLE decision.decision_records (
         ),
     CONSTRAINT decision_records_operation_key_ck
         CHECK (operation_key ~ '^[a-z][a-z0-9_.-]*$'),
+    CONSTRAINT decision_records_operation_definition_fk
+        FOREIGN KEY (operation_definition_id, operation_key)
+        REFERENCES access_control.operation_definitions(
+            operation_definition_id,
+            operation_key
+        ),
     CONSTRAINT decision_records_target_type_ck
         CHECK (protected_target_type ~ '^[A-Z][A-Z0-9_]*$'),
     CONSTRAINT decision_records_target_reference_ck
@@ -287,7 +292,7 @@ SELECT foundation_meta.register_migration(
     p_migration_name => 'Decision Record Repository',
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes => 'Created explicit Decision Record context, ordered evaluation records, supporting-record references, finalization consistency, and Authorization Lease decision linkage.'
+    p_notes => 'Created explicit Decision Record context with authoritative Governed Operation linkage, ordered evaluation records, supporting-record references, finalization consistency, and Authorization Lease decision linkage.'
 );
 
 COMMIT;

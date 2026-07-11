@@ -94,6 +94,8 @@ CREATE TABLE approval.approval_requests (
     requester_session_id uuid,
     service_id uuid
         REFERENCES service.platform_services(service_id),
+    -- The definition tables are created in migration 055. These stable keys
+    -- are bound to their authoritative definition identifiers there.
     purpose_key text,
     operation_key text NOT NULL,
     protected_target_type text NOT NULL,
@@ -186,7 +188,7 @@ SELECT foundation_meta.register_migration(
     p_migration_name => 'Approval framework',
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes => 'Created versioned approval policies, explicit approval request context, and append-oriented approval actions.'
+    p_notes => 'Created versioned approval policies, approval request context pending definition binding in migration 055, and append-oriented approval actions.'
 );
 
 COMMIT;

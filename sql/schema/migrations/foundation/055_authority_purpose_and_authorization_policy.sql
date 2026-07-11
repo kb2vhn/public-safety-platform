@@ -70,6 +70,57 @@ CREATE TABLE access_control.operation_definitions (
         CHECK (status IN ('DRAFT', 'ACTIVE', 'SUSPENDED', 'RETIRED'))
 );
 
+-- Bind approval-request snapshot keys to authoritative definition identifiers.
+-- The Foundation baseline is pre-stable and is installed into a fresh database,
+-- so these columns may be added as required before any module data exists.
+ALTER TABLE access_control.purpose_definitions
+    ADD CONSTRAINT purpose_definitions_id_key_uq
+    UNIQUE (purpose_definition_id, purpose_key);
+
+ALTER TABLE access_control.operation_definitions
+    ADD CONSTRAINT operation_definitions_id_key_uq
+    UNIQUE (operation_definition_id, operation_key);
+
+ALTER TABLE approval.approval_requests
+    ADD COLUMN purpose_definition_id uuid,
+    ADD COLUMN operation_definition_id uuid NOT NULL,
+    ADD CONSTRAINT approval_requests_purpose_pair_ck
+        CHECK (
+            (
+                purpose_definition_id IS NULL
+                AND purpose_key IS NULL
+            )
+            OR
+            (
+                purpose_definition_id IS NOT NULL
+                AND purpose_key IS NOT NULL
+            )
+        ),
+    ADD CONSTRAINT approval_requests_purpose_definition_fk
+        FOREIGN KEY (purpose_definition_id, purpose_key)
+        REFERENCES access_control.purpose_definitions(
+            purpose_definition_id,
+            purpose_key
+        ),
+    ADD CONSTRAINT approval_requests_operation_definition_fk
+        FOREIGN KEY (operation_definition_id, operation_key)
+        REFERENCES access_control.operation_definitions(
+            operation_definition_id,
+            operation_key
+        );
+
+DROP INDEX approval.approval_requests_context_idx;
+
+CREATE INDEX approval_requests_context_idx
+    ON approval.approval_requests(
+        requester_identity_id,
+        service_id,
+        operation_definition_id,
+        governed_scope_id,
+        status,
+        expires_at
+    );
+
 CREATE TABLE access_control.authority_grants (
     authority_grant_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     identity_id uuid NOT NULL
@@ -298,7 +349,7 @@ SELECT foundation_meta.register_migration(
     p_migration_name => 'Authority purpose operation and authorization policy',
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes => 'Created authority, Governed Purpose, Governed Operation, Authorization Policy Version, stage requirement, and separation-of-duties objects.'
+    p_notes => 'Created authority, Governed Purpose, Governed Operation, approval-request definition binding, Authorization Policy Version, stage requirement, and separation-of-duties objects.'
 );
 
 COMMIT;
