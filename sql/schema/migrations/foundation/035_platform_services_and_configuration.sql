@@ -71,6 +71,95 @@ CREATE TABLE service.configuration_items (
     UNIQUE(service_id,deployment_id,configuration_key,version_number)
 );
 
+
+-- Phase -1 Foundation baseline integrity
+
+ALTER TABLE service.platform_services
+    ADD CONSTRAINT platform_services_key_format_ck
+    CHECK (service_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT platform_services_type_nonempty_ck
+    CHECK (btrim(service_type) <> ''),
+    ADD CONSTRAINT platform_services_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT platform_services_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    );
+
+ALTER TABLE service.deployments
+    ADD CONSTRAINT deployments_key_format_ck
+    CHECK (deployment_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT deployments_environment_key_format_ck
+    CHECK (environment_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT deployments_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT deployments_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    );
+
+ALTER TABLE service.configuration_items
+    ADD COLUMN configuration_scope text NOT NULL,
+    ADD CONSTRAINT configuration_items_scope_ck
+    CHECK (
+        (
+            configuration_scope = 'PLATFORM'
+            AND service_id IS NULL
+            AND deployment_id IS NULL
+        )
+        OR
+        (
+            configuration_scope = 'SERVICE'
+            AND service_id IS NOT NULL
+            AND deployment_id IS NULL
+        )
+        OR
+        (
+            configuration_scope = 'DEPLOYMENT'
+            AND service_id IS NULL
+            AND deployment_id IS NOT NULL
+        )
+    ),
+    ADD CONSTRAINT configuration_items_key_format_ck
+    CHECK (configuration_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT configuration_items_classification_nonempty_ck
+    CHECK (
+        classification_key IS NULL
+        OR btrim(classification_key) <> ''
+    ),
+    ADD CONSTRAINT configuration_items_version_positive_ck
+    CHECK (version_number > 0),
+    ADD CONSTRAINT configuration_items_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    );
+
+CREATE UNIQUE INDEX configuration_items_platform_version_uq
+    ON service.configuration_items(
+        configuration_key,
+        version_number
+    )
+    WHERE configuration_scope = 'PLATFORM';
+
+CREATE UNIQUE INDEX configuration_items_service_version_uq
+    ON service.configuration_items(
+        service_id,
+        configuration_key,
+        version_number
+    )
+    WHERE configuration_scope = 'SERVICE';
+
+CREATE UNIQUE INDEX configuration_items_deployment_version_uq
+    ON service.configuration_items(
+        deployment_id,
+        configuration_key,
+        version_number
+    )
+    WHERE configuration_scope = 'DEPLOYMENT';
+
 SELECT foundation_meta.register_migration(
     p_migration_id       => '035_platform_services_and_configuration',
     p_migration_name     => 'Platform services and configuration',

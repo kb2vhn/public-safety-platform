@@ -61,6 +61,47 @@ CREATE TABLE identity.identity_suspensions (
 );
 CREATE INDEX identity_suspensions_active_idx ON identity.identity_suspensions(identity_id,effective_at,expires_at,released_at);
 
+
+-- Phase -1 Foundation baseline integrity
+
+ALTER TABLE identity.identity_lifecycle_events
+    ADD CONSTRAINT identity_lifecycle_event_type_nonempty_ck
+    CHECK (btrim(event_type) <> ''),
+    ADD CONSTRAINT identity_lifecycle_previous_status_ck
+    CHECK (
+        previous_status IS NULL
+        OR previous_status IN (
+            'PENDING',
+            'ACTIVE',
+            'SUSPENDED',
+            'DISABLED',
+            'RETIRED',
+            'ARCHIVED'
+        )
+    ),
+    ADD CONSTRAINT identity_lifecycle_new_status_ck
+    CHECK (
+        new_status IN (
+            'PENDING',
+            'ACTIVE',
+            'SUSPENDED',
+            'DISABLED',
+            'RETIRED',
+            'ARCHIVED'
+        )
+    ),
+    ADD CONSTRAINT identity_lifecycle_reason_code_nonempty_ck
+    CHECK (btrim(reason_code) <> '');
+
+ALTER TABLE identity.identity_suspensions
+    ADD CONSTRAINT identity_suspension_reason_code_nonempty_ck
+    CHECK (btrim(reason_code) <> ''),
+    ADD CONSTRAINT identity_suspension_release_period_ck
+    CHECK (
+        released_at IS NULL
+        OR released_at >= effective_at
+    );
+
 SELECT foundation_meta.register_migration(
     p_migration_id       => '025_identity_lifecycle',
     p_migration_name     => 'Identity lifecycle',

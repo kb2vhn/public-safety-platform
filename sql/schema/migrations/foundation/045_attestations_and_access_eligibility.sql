@@ -86,6 +86,73 @@ CREATE TABLE attestation.eligibility_supporting_attestations (
     PRIMARY KEY(access_eligibility_grant_id,organizational_attestation_id)
 );
 
+
+-- Phase -1 Foundation baseline integrity
+
+ALTER TABLE attestation.attestation_authorities
+    ADD CONSTRAINT attestation_authorities_category_nonempty_ck
+    CHECK (btrim(authority_category) <> ''),
+    ADD CONSTRAINT attestation_authorities_scope_nonempty_ck
+    CHECK (btrim(scope_reference) <> ''),
+    ADD CONSTRAINT attestation_authorities_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT attestation_authorities_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    );
+
+ALTER TABLE attestation.organizational_attestations
+    ADD CONSTRAINT organizational_attestations_identity_person_fk
+    FOREIGN KEY (subject_identity_id, subject_person_id)
+    REFERENCES identity.identities(identity_id, person_id),
+    ADD CONSTRAINT organizational_attestations_category_nonempty_ck
+    CHECK (btrim(attestation_category) <> ''),
+    ADD CONSTRAINT organizational_attestations_scope_nonempty_ck
+    CHECK (btrim(scope_reference) <> ''),
+    ADD CONSTRAINT organizational_attestations_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT organizational_attestations_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    ),
+    ADD CONSTRAINT organizational_attestations_review_ck
+    CHECK (
+        review_at IS NULL
+        OR review_at >= valid_from
+    );
+
+ALTER TABLE attestation.access_eligibility_grants
+    ADD CONSTRAINT access_eligibility_identity_person_fk
+    FOREIGN KEY (identity_id, person_id)
+    REFERENCES identity.identities(identity_id, person_id),
+    ADD CONSTRAINT access_eligibility_key_format_ck
+    CHECK (eligibility_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT access_eligibility_scope_nonempty_ck
+    CHECK (btrim(scope_reference) <> ''),
+    ADD CONSTRAINT access_eligibility_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT access_eligibility_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    ),
+    ADD CONSTRAINT access_eligibility_review_ck
+    CHECK (
+        review_at IS NULL
+        OR review_at >= valid_from
+    );
+
+CREATE INDEX access_eligibility_current_lookup_idx
+    ON attestation.access_eligibility_grants(
+        identity_id,
+        service_id,
+        participating_organization_id,
+        status,
+        valid_until
+    );
+
 SELECT foundation_meta.register_migration(
     p_migration_id       => '045_attestations_and_access_eligibility',
     p_migration_name     => 'Attestations and access eligibility',

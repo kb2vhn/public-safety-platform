@@ -161,6 +161,145 @@ CREATE INDEX trust_revocations_device_idx ON trust.revocations(device_id,effecti
 CREATE INDEX trust_revocations_cert_idx ON trust.revocations(device_certificate_id,effective_at) WHERE device_certificate_id IS NOT NULL;
 CREATE INDEX trust_lifecycle_object_idx ON trust.trust_lifecycle_events(object_type,object_id,effective_at);
 
+
+-- Phase -1 Foundation baseline integrity
+
+ALTER TABLE trust.certificate_authorities
+    ADD CONSTRAINT ca_public_key_size_positive_ck
+    CHECK (
+        public_key_size_bits IS NULL
+        OR public_key_size_bits > 0
+    );
+
+ALTER TABLE trust.device_certificates
+    ADD CONSTRAINT device_cert_public_key_size_positive_ck
+    CHECK (
+        public_key_size_bits IS NULL
+        OR public_key_size_bits > 0
+    ),
+    ADD CONSTRAINT device_cert_observation_period_ck
+    CHECK (
+        last_seen_at IS NULL
+        OR (
+            first_seen_at IS NOT NULL
+            AND last_seen_at >= first_seen_at
+        )
+    );
+
+ALTER TABLE trust.revocations
+    ADD CONSTRAINT revocations_type_target_ck
+    CHECK (
+        (
+            object_type = 'TRUST_PROVIDER'
+            AND trust_provider_id IS NOT NULL
+            AND num_nonnulls(
+                certificate_authority_id,
+                device_id,
+                device_certificate_id
+            ) = 0
+        )
+        OR
+        (
+            object_type = 'CERTIFICATE_AUTHORITY'
+            AND certificate_authority_id IS NOT NULL
+            AND num_nonnulls(
+                trust_provider_id,
+                device_id,
+                device_certificate_id
+            ) = 0
+        )
+        OR
+        (
+            object_type = 'DEVICE'
+            AND device_id IS NOT NULL
+            AND num_nonnulls(
+                trust_provider_id,
+                certificate_authority_id,
+                device_certificate_id
+            ) = 0
+        )
+        OR
+        (
+            object_type = 'DEVICE_CERTIFICATE'
+            AND device_certificate_id IS NOT NULL
+            AND num_nonnulls(
+                trust_provider_id,
+                certificate_authority_id,
+                device_id
+            ) = 0
+        )
+    );
+
+ALTER TABLE trust.trust_lifecycle_events
+    ADD COLUMN trust_provider_id uuid
+        REFERENCES trust.trust_providers(trust_provider_id),
+    ADD COLUMN certificate_authority_id uuid
+        REFERENCES trust.certificate_authorities(certificate_authority_id),
+    ADD COLUMN device_id uuid
+        REFERENCES trust.devices(device_id),
+    ADD COLUMN device_certificate_id uuid
+        REFERENCES trust.device_certificates(device_certificate_id),
+    ADD CONSTRAINT trust_lifecycle_type_target_ck
+    CHECK (
+        (
+            object_type = 'TRUST_PROVIDER'
+            AND trust_provider_id IS NOT NULL
+            AND object_id = trust_provider_id
+            AND num_nonnulls(
+                certificate_authority_id,
+                device_id,
+                device_certificate_id
+            ) = 0
+        )
+        OR
+        (
+            object_type = 'CERTIFICATE_AUTHORITY'
+            AND certificate_authority_id IS NOT NULL
+            AND object_id = certificate_authority_id
+            AND num_nonnulls(
+                trust_provider_id,
+                device_id,
+                device_certificate_id
+            ) = 0
+        )
+        OR
+        (
+            object_type = 'DEVICE'
+            AND device_id IS NOT NULL
+            AND object_id = device_id
+            AND num_nonnulls(
+                trust_provider_id,
+                certificate_authority_id,
+                device_certificate_id
+            ) = 0
+        )
+        OR
+        (
+            object_type = 'DEVICE_CERTIFICATE'
+            AND device_certificate_id IS NOT NULL
+            AND object_id = device_certificate_id
+            AND num_nonnulls(
+                trust_provider_id,
+                certificate_authority_id,
+                device_id
+            ) = 0
+        )
+    ),
+    ADD CONSTRAINT trust_lifecycle_event_type_nonempty_ck
+    CHECK (btrim(event_type) <> ''),
+    ADD CONSTRAINT trust_lifecycle_new_status_nonempty_ck
+    CHECK (btrim(new_status) <> ''),
+    ADD CONSTRAINT trust_lifecycle_reason_code_nonempty_ck
+    CHECK (btrim(reason_code) <> '');
+
+CREATE INDEX trust_revocations_provider_idx
+    ON trust.revocations(trust_provider_id, effective_at)
+    WHERE trust_provider_id IS NOT NULL;
+
+CREATE INDEX trust_revocations_ca_idx
+    ON trust.revocations(certificate_authority_id, effective_at)
+    WHERE certificate_authority_id IS NOT NULL;
+
 SELECT foundation_meta.register_migration(
     p_migration_id       => '010_cryptographic_and_device_trust',
     p_migration_name     => 'Cryptographic and device trust',

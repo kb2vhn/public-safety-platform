@@ -99,6 +99,66 @@ CREATE TABLE organization.jurisdiction_authorities (
     UNIQUE(organization_id,jurisdiction_id,authority_purpose,valid_from)
 );
 
+
+-- Phase -1 Foundation baseline integrity
+
+ALTER TABLE organization.organizations
+    ADD CONSTRAINT organizations_key_format_ck
+    CHECK (organization_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT organizations_type_nonempty_ck
+    CHECK (btrim(organization_type) <> '');
+
+ALTER TABLE organization.organizational_units
+    ADD CONSTRAINT organizational_units_org_id_unit_id_uq
+    UNIQUE (organization_id, organizational_unit_id),
+    ADD CONSTRAINT organizational_units_key_format_ck
+    CHECK (unit_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT organizational_units_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT organizational_units_parent_not_self_ck
+    CHECK (
+        parent_unit_id IS NULL
+        OR parent_unit_id <> organizational_unit_id
+    ),
+    ADD CONSTRAINT organizational_units_parent_same_org_fk
+    FOREIGN KEY (organization_id, parent_unit_id)
+    REFERENCES organization.organizational_units(
+        organization_id,
+        organizational_unit_id
+    );
+
+ALTER TABLE organization.organization_relationships
+    ADD CONSTRAINT organization_relationship_type_nonempty_ck
+    CHECK (btrim(relationship_type) <> ''),
+    ADD CONSTRAINT organization_relationship_status_nonempty_ck
+    CHECK (btrim(status) <> '');
+
+ALTER TABLE organization.jurisdictions
+    ADD CONSTRAINT jurisdictions_key_format_ck
+    CHECK (jurisdiction_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT jurisdictions_type_nonempty_ck
+    CHECK (btrim(jurisdiction_type) <> ''),
+    ADD CONSTRAINT jurisdictions_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT jurisdictions_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    );
+
+ALTER TABLE organization.jurisdiction_authorities
+    ADD CONSTRAINT jurisdiction_authority_purpose_nonempty_ck
+    CHECK (btrim(authority_purpose) <> ''),
+    ADD CONSTRAINT jurisdiction_authority_priority_positive_ck
+    CHECK (priority > 0),
+    ADD CONSTRAINT jurisdiction_authority_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT jurisdiction_authority_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    );
+
 SELECT foundation_meta.register_migration(
     p_migration_id       => '030_organizations_and_jurisdictions',
     p_migration_name     => 'Organizations and jurisdictions',

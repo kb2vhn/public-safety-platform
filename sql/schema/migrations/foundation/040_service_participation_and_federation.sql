@@ -73,6 +73,87 @@ CREATE TABLE service.delegated_authorities (
     created_by_reference text NOT NULL
 );
 
+
+-- Phase -1 Foundation baseline integrity
+
+ALTER TABLE service.participation_agreements
+    ADD COLUMN version_number integer NOT NULL DEFAULT 1,
+    ADD CONSTRAINT participation_agreements_key_format_ck
+    CHECK (agreement_key ~ '^[a-z][a-z0-9_.-]*$'),
+    ADD CONSTRAINT participation_agreements_version_positive_ck
+    CHECK (version_number > 0),
+    ADD CONSTRAINT participation_agreements_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT participation_agreements_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    );
+
+DO $remove_original_participation_agreement_unique$
+DECLARE
+    v_constraint_name name;
+BEGIN
+    SELECT constraint_record.conname
+    INTO v_constraint_name
+    FROM pg_constraint AS constraint_record
+    WHERE constraint_record.conrelid =
+        'service.participation_agreements'::regclass
+      AND constraint_record.contype = 'u'
+      AND pg_get_constraintdef(constraint_record.oid) =
+        'UNIQUE (service_id, participating_organization_id, agreement_key)';
+
+    IF v_constraint_name IS NULL THEN
+        RAISE EXCEPTION
+        USING
+            ERRCODE = 'undefined_object',
+            MESSAGE = 'Expected participation agreement unique constraint was not found';
+    END IF;
+
+    EXECUTE format(
+        'ALTER TABLE service.participation_agreements DROP CONSTRAINT %I',
+        v_constraint_name
+    );
+END;
+$remove_original_participation_agreement_unique$;
+
+ALTER TABLE service.participation_agreements
+    ADD CONSTRAINT participation_agreements_version_uq
+    UNIQUE (
+        service_id,
+        participating_organization_id,
+        agreement_key,
+        version_number
+    );
+
+ALTER TABLE service.participation_scopes
+    ADD CONSTRAINT participation_scopes_type_nonempty_ck
+    CHECK (btrim(scope_type) <> ''),
+    ADD CONSTRAINT participation_scopes_reference_nonempty_ck
+    CHECK (btrim(scope_reference) <> ''),
+    ADD CONSTRAINT participation_scopes_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    );
+
+ALTER TABLE service.delegated_authorities
+    ADD CONSTRAINT delegated_authorities_no_self_ck
+    CHECK (
+        delegating_organization_id <> receiving_organization_id
+    ),
+    ADD CONSTRAINT delegated_authorities_category_nonempty_ck
+    CHECK (btrim(authority_category) <> ''),
+    ADD CONSTRAINT delegated_authorities_scope_nonempty_ck
+    CHECK (btrim(scope_reference) <> ''),
+    ADD CONSTRAINT delegated_authorities_status_nonempty_ck
+    CHECK (btrim(status) <> ''),
+    ADD CONSTRAINT delegated_authorities_validity_ck
+    CHECK (
+        valid_until IS NULL
+        OR valid_until > valid_from
+    );
+
 SELECT foundation_meta.register_migration(
     p_migration_id       => '040_service_participation_and_federation',
     p_migration_name     => 'Service participation and federation',

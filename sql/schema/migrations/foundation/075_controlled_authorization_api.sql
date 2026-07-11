@@ -112,6 +112,9 @@ ON FUNCTION access_control.hash_lease_secret(text)
 FROM PUBLIC;
 
 -- ============================================================================
+-- Phase -1 Foundation baseline integrity
+-- The STABLE verifier uses statement_timestamp() so one statement evaluates a lease against one authoritative time.
+
 -- Authorization Lease verification
 -- ============================================================================
 
@@ -132,8 +135,8 @@ AS $function$
         WHERE lease.authorization_lease_id = p_authorization_lease_id
           AND lease.status = 'ACTIVE'
           AND lease.revoked_at IS NULL
-          AND lease.issued_at <= pg_catalog.clock_timestamp()
-          AND pg_catalog.clock_timestamp() < lease.expires_at
+          AND lease.issued_at <= pg_catalog.statement_timestamp()
+          AND pg_catalog.statement_timestamp() < lease.expires_at
           AND lease.lease_secret_hash =
               extensions.digest(
                   pg_catalog.convert_to(p_plaintext_secret, 'UTF8'),

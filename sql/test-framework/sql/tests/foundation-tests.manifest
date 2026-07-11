@@ -6,3 +6,4 @@ foundation/040_migration_registry_behavior.sql
 foundation/050_catalog_integrity.sql
 foundation/060_validation_views.sql
 foundation/070_inventory_report.sql
+foundation/080_foundation_baseline_integrity.sql

@@ -581,6 +581,42 @@ ON FUNCTION foundation_meta.register_migration(
 FROM PUBLIC;
 
 -- Register this migration only after all initialization work succeeds.
+
+-- Phase -1 Foundation baseline integrity
+-- CREATE EXTENSION IF NOT EXISTS does not move an extension that was already
+-- installed in another schema. Verify the required extension boundary here.
+DO $pgcrypto_schema_check$
+DECLARE
+    v_pgcrypto_schema name;
+BEGIN
+    SELECT namespace_record.nspname
+    INTO v_pgcrypto_schema
+    FROM pg_extension AS extension_record
+    JOIN pg_namespace AS namespace_record
+      ON namespace_record.oid = extension_record.extnamespace
+    WHERE extension_record.extname = 'pgcrypto';
+
+    IF v_pgcrypto_schema IS NULL THEN
+        RAISE EXCEPTION
+        USING
+            ERRCODE = 'undefined_object',
+            MESSAGE = 'Required pgcrypto extension is not installed';
+    END IF;
+
+    IF v_pgcrypto_schema <> 'extensions' THEN
+        RAISE EXCEPTION
+        USING
+            ERRCODE = 'object_not_in_prerequisite_state',
+            MESSAGE = 'pgcrypto must be installed in the extensions schema',
+            DETAIL = format(
+                'pgcrypto is currently installed in schema %I.',
+                v_pgcrypto_schema
+            ),
+            HINT = 'Move pgcrypto with: ALTER EXTENSION pgcrypto SET SCHEMA extensions;';
+    END IF;
+END;
+$pgcrypto_schema_check$;
+
 SELECT foundation_meta.register_migration(
     p_migration_id       => '000_platform_initialization',
     p_migration_name     => 'Platform initialization',
