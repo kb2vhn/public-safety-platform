@@ -2,24 +2,12 @@
 #
 # Public Safety Platform Foundation SQL test runner
 #
-# This runner intentionally lives inside:
+# Applies the live Foundation migration manifest, installs the disposable SQL
+# assertion framework, runs sequential SQL tests, and then runs manifest-driven
+# multi-connection concurrency tests against the same disposable database.
 #
-#   sql/test-framework/sql/schema/scripts/
-#
-# It applies live Foundation migrations from:
-#
-#   sql/schema/
-#
-# It runs test-only SQL from:
-#
-#   sql/test-framework/sql/tests/
-#
-# It writes logs and summaries beneath:
-#
-#   sql/test-framework/sql/test-results/
-#
-# The dependency, repository, and PostgreSQL preflights complete before the
-# runner creates a results directory, log file, temporary file, or database.
+# All dependency, repository, manifest, PostgreSQL, and database-name preflights
+# complete before this runner creates files, directories, or databases.
 
 set -Eeuo pipefail
 IFS=$'\n\t'
@@ -30,8 +18,8 @@ usage() {
         'Usage: test_foundation.sh [options]' \
         '' \
         'Creates a disposable PostgreSQL database, applies the live Foundation' \
-        'migration manifest, runs the SQL test suite, and writes timestamped' \
-        'log and summary files.' \
+        'migration manifest, runs sequential and concurrency tests, and writes' \
+        'timestamped log and summary files.' \
         '' \
         'Options:' \
         '  --keep-database' \
@@ -69,7 +57,6 @@ usage() {
 die() {
     local exit_code="$1"
     shift
-
     printf '%s\n' "$*" >&2
     exit "$exit_code"
 }
@@ -84,16 +71,14 @@ log() {
 
 trim_manifest_line() {
     local line="$1"
-
-    printf '%s' "$line" |
-        sed 's/\r$//' |
-        sed 's/[[:space:]]*#.*$//' |
-        sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+    printf '%s' "$line" \
+        | sed 's/\r$//' \
+        | sed 's/[[:space:]]*#.*$//' \
+        | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
 }
 
 quote_sql_literal() {
     local value="$1"
-
     printf '%s' "${value//\'/\'\'}"
 }
 
@@ -109,9 +94,7 @@ print_dependency_failure() {
 
     for command_name in "${missing_command_list_ref[@]}"; do
         package_name="${COMMAND_PACKAGE_MAP[$command_name]}"
-        printf '  %-12s Arch package: %s\n' \
-            "$command_name" \
-            "$package_name" >&2
+        printf '  %-12s Arch package: %s\n' "$command_name" "$package_name" >&2
     done
 
     printf -v package_line '%s ' "${missing_package_list_ref[@]}"
@@ -140,6 +123,7 @@ preflight_dependencies() {
         rm
         sed
         sha256sum
+        sleep
         tee
     )
     local -a missing_commands=()
@@ -189,23 +173,19 @@ preflight_postgresql() {
             --dbname="$maintenance_database" \
             --command="
                 SELECT
-                    current_setting('server_version_num')
-                    || '|'
-                    || current_user
-                    || '|'
-                    || CASE
-                        WHEN role_record.rolsuper
-                          OR role_record.rolcreatedb
-                        THEN '1'
+                    current_setting('server_version_num') || '|' ||
+                    current_user || '|' ||
+                    CASE
+                        WHEN role_record.rolsuper OR role_record.rolcreatedb
+                            THEN '1'
                         ELSE '0'
-                       END
+                    END
                 FROM pg_roles AS role_record
                 WHERE role_record.rolname = current_user;
             "
     )"; then
         printf '\nPostgreSQL preflight: FAIL\n' >&2
-        printf 'Could not connect to maintenance database: %s\n' \
-            "$maintenance_database" >&2
+        printf 'Could not connect to maintenance database: %s\n' "$maintenance_database" >&2
         printf 'Check PGHOST, PGPORT, PGUSER, PGPASSWORD, and PGSSLMODE.\n' >&2
         printf 'No results directory, log file, temporary file, or database was created.\n' >&2
         exit 69
@@ -219,8 +199,7 @@ preflight_postgresql() {
 
     if [[ ! "$server_version_number" =~ ^[0-9]+$ ]]; then
         printf '\nPostgreSQL preflight: FAIL\n' >&2
-        printf 'Could not interpret server_version_num: %s\n' \
-            "$server_version_number" >&2
+        printf 'Could not interpret server_version_num: %s\n' "$server_version_number" >&2
         printf 'No results directory, log file, temporary file, or database was created.\n' >&2
         exit 69
     fi
@@ -235,8 +214,7 @@ preflight_postgresql() {
 
     if [[ "$can_create_database" != "1" ]]; then
         printf '\nPostgreSQL preflight: FAIL\n' >&2
-        printf 'Connected role %s lacks CREATEDB or SUPERUSER.\n' \
-            "$connected_role" >&2
+        printf 'Connected role %s lacks CREATEDB or SUPERUSER.\n' "$connected_role" >&2
         printf 'The disposable test framework must create and drop its test database.\n' >&2
         printf 'No results directory, log file, temporary file, or database was created.\n' >&2
         exit 77
@@ -260,26 +238,21 @@ while [[ $# -gt 0 ]]; do
             keep_database=1
             shift
             ;;
-
         --drop-on-failure)
             drop_on_failure=1
             shift
             ;;
-
         --results-dir)
             if [[ $# -lt 2 ]]; then
                 die 64 "--results-dir requires a path"
             fi
-
             results_dir_override="$2"
             shift 2
             ;;
-
         -h|--help)
             usage
             exit 0
             ;;
-
         *)
             printf 'Unknown option: %s\n\n' "$1" >&2
             usage >&2
@@ -289,24 +262,17 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$keep_database" in
-    0|1)
-        ;;
-    *)
-        die 64 "KEEP_TEST_DB must be 0 or 1"
-        ;;
+    0|1) ;;
+    *) die 64 "KEEP_TEST_DB must be 0 or 1" ;;
 esac
 
 case "$drop_on_failure" in
-    0|1)
-        ;;
-    *)
-        die 64 "DROP_TEST_DB_ON_FAILURE must be 0 or 1"
-        ;;
+    0|1) ;;
+    *) die 64 "DROP_TEST_DB_ON_FAILURE must be 0 or 1" ;;
 esac
 
 if (( BASH_VERSINFO[0] < 4 )); then
-    printf 'Bash 4 or newer is required; running version is %s\n' \
-        "${BASH_VERSION}" >&2
+    printf 'Bash 4 or newer is required; running version is %s\n' "$BASH_VERSION" >&2
     printf 'Arch Linux package: bash\n' >&2
     printf 'No results directory, log file, temporary file, or database was created.\n' >&2
     exit 69
@@ -327,54 +293,108 @@ declare -A COMMAND_PACKAGE_MAP=(
     [rm]="coreutils"
     [sed]="sed"
     [sha256sum]="coreutils"
+    [sleep]="coreutils"
     [tee]="coreutils"
 )
 
 preflight_dependencies
 
-# ---------------------------------------------------------------------------
 # Resolve the intentionally separate repository and test-framework trees.
-#
-# Current script:
-#   /sql/test-framework/sql/schema/scripts/test_foundation.sh
-#
-# Live migrations:
-#   /sql/schema/
-#
-# Test-only assets:
-#   /sql/test-framework/sql/
-# ---------------------------------------------------------------------------
-
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 test_sql_root="$(cd -- "${script_dir}/../.." && pwd -P)"
 test_framework_root="$(cd -- "${test_sql_root}/.." && pwd -P)"
 repository_root="$(cd -- "${test_framework_root}/../.." && pwd -P)"
-
 foundation_schema_root="${repository_root}/sql/schema"
 foundation_manifest="${foundation_schema_root}/manifests/foundation.manifest"
 test_root="${test_sql_root}/tests"
 test_manifest="${test_root}/foundation-tests.manifest"
+concurrency_manifest="${test_root}/foundation-concurrency-tests.manifest"
 framework_file="${test_root}/framework/000_test_framework.sql"
 
-[[ -d "$foundation_schema_root" ]] ||
-    die 66 "Live Foundation schema directory not found: ${foundation_schema_root}"
+[[ -d "$foundation_schema_root" ]] \
+    || die 66 "Live Foundation schema directory not found: ${foundation_schema_root}"
+[[ -f "$foundation_manifest" ]] \
+    || die 66 "Live Foundation manifest not found: ${foundation_manifest}"
+[[ -f "$test_manifest" ]] \
+    || die 66 "Sequential test manifest not found: ${test_manifest}"
+[[ -f "$concurrency_manifest" ]] \
+    || die 66 "Concurrency test manifest not found: ${concurrency_manifest}"
+[[ -f "$framework_file" ]] \
+    || die 66 "Test assertion framework not found: ${framework_file}"
 
-[[ -f "$foundation_manifest" ]] ||
-    die 66 "Live Foundation manifest not found: ${foundation_manifest}"
+# Validate every manifest and referenced file before creating anything.
+declare -a migration_paths=()
+declare -a sequential_test_paths=()
+declare -a concurrency_test_paths=()
+declare -A seen_migrations=()
+declare -A seen_sequential_tests=()
+declare -A seen_concurrency_tests=()
 
-[[ -f "$test_manifest" ]] ||
-    die 66 "Test manifest not found: ${test_manifest}"
+while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
+    relative_path="$(trim_manifest_line "$raw_line")"
+    [[ -z "$relative_path" ]] && continue
 
-[[ -f "$framework_file" ]] ||
-    die 66 "Test assertion framework not found: ${framework_file}"
+    if [[ ! "$relative_path" =~ ^migrations/foundation/[0-9]{3}_[a-z0-9_]+\.sql$ ]]; then
+        die 65 "Invalid Foundation manifest path: ${relative_path}"
+    fi
+    if [[ -n "${seen_migrations[$relative_path]:-}" ]]; then
+        die 65 "Duplicate Foundation manifest entry: ${relative_path}"
+    fi
+
+    sql_file="${foundation_schema_root}/${relative_path}"
+    [[ -f "$sql_file" ]] || die 66 "Migration file not found: ${sql_file}"
+
+    seen_migrations["$relative_path"]=1
+    migration_paths+=("$relative_path")
+done <"$foundation_manifest"
+
+while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
+    relative_path="$(trim_manifest_line "$raw_line")"
+    [[ -z "$relative_path" ]] && continue
+
+    if [[ ! "$relative_path" =~ ^foundation/[0-9]{3}_[a-z0-9_]+\.sql$ ]]; then
+        die 65 "Invalid sequential test manifest path: ${relative_path}"
+    fi
+    if [[ -n "${seen_sequential_tests[$relative_path]:-}" ]]; then
+        die 65 "Duplicate sequential test manifest entry: ${relative_path}"
+    fi
+
+    sql_file="${test_root}/${relative_path}"
+    [[ -f "$sql_file" ]] || die 66 "Sequential test file not found: ${sql_file}"
+
+    seen_sequential_tests["$relative_path"]=1
+    sequential_test_paths+=("$relative_path")
+done <"$test_manifest"
+
+while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
+    relative_path="$(trim_manifest_line "$raw_line")"
+    [[ -z "$relative_path" ]] && continue
+
+    if [[ ! "$relative_path" =~ ^concurrency/[0-9]{3}_[a-z0-9_]+\.sh$ ]]; then
+        die 65 "Invalid concurrency test manifest path: ${relative_path}"
+    fi
+    if [[ -n "${seen_concurrency_tests[$relative_path]:-}" ]]; then
+        die 65 "Duplicate concurrency test manifest entry: ${relative_path}"
+    fi
+
+    shell_file="${test_root}/${relative_path}"
+    [[ -f "$shell_file" ]] || die 66 "Concurrency test file not found: ${shell_file}"
+
+    seen_concurrency_tests["$relative_path"]=1
+    concurrency_test_paths+=("$relative_path")
+done <"$concurrency_manifest"
+
+[[ "${#migration_paths[@]}" -gt 0 ]] \
+    || die 65 "Foundation manifest contains no migration files"
+[[ "${#sequential_test_paths[@]}" -gt 0 ]] \
+    || die 65 "Sequential test manifest contains no test files"
+[[ "${#concurrency_test_paths[@]}" -gt 0 ]] \
+    || die 65 "Concurrency test manifest contains no test files"
 
 maintenance_db="${PGMAINTENANCE_DB:-postgres}"
-
 export PGAPPNAME="public-safety-platform-foundation-test"
-
 POSTGRESQL_SERVER_VERSION_NUM=""
 POSTGRESQL_CONNECTED_ROLE=""
-
 preflight_postgresql "$maintenance_db"
 
 timestamp="$(date +%Y%m%d_%H%M%S)"
@@ -395,7 +415,6 @@ No results directory, log file, temporary file, or database was created."
 fi
 
 quoted_test_database="$(quote_sql_literal "$test_database")"
-
 if psql \
     -X \
     --no-psqlrc \
@@ -403,18 +422,15 @@ if psql \
     --dbname="$maintenance_db" \
     --tuples-only \
     --no-align \
-    --command="
-        SELECT 1
-        FROM pg_database
-        WHERE datname = '${quoted_test_database}';
-    " |
-    grep -qx '1'
+    --command="SELECT 1 FROM pg_database WHERE datname = '${quoted_test_database}';" \
+    | grep -qx '1'
 then
     die 65 \
         "Refusing to overwrite existing database: ${test_database}
 No results directory, log file, or temporary file was created."
 fi
 
+# All preflights have passed. Files and the disposable database may now be made.
 if [[ -n "$results_dir_override" ]]; then
     mkdir -p -- "$results_dir_override"
     results_dir="$(cd -- "$results_dir_override" && pwd -P)"
@@ -433,17 +449,13 @@ latest_summary="${results_dir}/latest-summary.txt"
 rm -f -- "$latest_log" "$latest_summary"
 ln -s -- "$(basename -- "$log_file")" "$latest_log"
 
-# Send all subsequent output to both the terminal and the timestamped log.
 exec > >(tee -a "$log_file") 2>&1
 
 database_created=0
-expected_sql_file=""
+expected_sql_file="$(mktemp "${TMPDIR:-/tmp}/psp-foundation-expected.XXXXXX.sql")"
 migration_count=0
-test_file_count=0
-
-expected_sql_file="$(
-    mktemp "${TMPDIR:-/tmp}/psp-foundation-expected.XXXXXX.sql"
-)"
+sequential_test_count=0
+concurrency_test_count=0
 
 write_summary() {
     local runner_exit_status="$1"
@@ -464,13 +476,9 @@ write_summary() {
         --dbname="$test_database" \
         --tuples-only \
         --no-align \
-        --command="
-            SELECT 1
-            FROM pg_namespace
-            WHERE nspname = 'sql_test';
-        " \
-        2>/dev/null |
-        grep -qx '1'
+        --command="SELECT 1 FROM pg_namespace WHERE nspname = 'sql_test';" \
+        2>/dev/null \
+        | grep -qx '1'
     then
         return 0
     fi
@@ -483,6 +491,8 @@ write_summary() {
         printf 'Runner exit status: %s\n' "$runner_exit_status"
         printf 'Database: %s\n' "$test_database"
         printf 'Completed: %s\n' "$(timestamp_iso)"
+        printf 'Sequential test files: %s\n' "$sequential_test_count"
+        printf 'Concurrency test files: %s\n' "$concurrency_test_count"
         printf 'Full log: %s\n\n' "$log_file"
 
         psql \
@@ -492,55 +502,31 @@ write_summary() {
             --dbname="$test_database" <<'SQL'
 \pset border 2
 \pset pager off
-
 \echo 'Result totals'
-
-SELECT
-    status,
-    count(*) AS result_count
+SELECT status, count(*) AS result_count
 FROM sql_test.results
 GROUP BY status
-ORDER BY
-    CASE status
-        WHEN 'FAIL' THEN 1
-        WHEN 'WARN' THEN 2
-        ELSE 3
-    END;
+ORDER BY CASE status WHEN 'FAIL' THEN 1 WHEN 'WARN' THEN 2 ELSE 3 END;
 
 \echo ''
 \echo 'Failed assertions'
-
-SELECT
-    test_file,
-    test_name,
-    COALESCE(details, '') AS details
+SELECT test_file, test_name, COALESCE(details, '') AS details
 FROM sql_test.results
 WHERE status = 'FAIL'
 ORDER BY result_id;
 
 \echo ''
 \echo 'Warnings'
-
-SELECT
-    test_file,
-    test_name,
-    COALESCE(details, '') AS details
+SELECT test_file, test_name, COALESCE(details, '') AS details
 FROM sql_test.results
 WHERE status = 'WARN'
 ORDER BY result_id;
 
 \echo ''
 \echo 'Migration totals'
-
 SELECT
-    (
-        SELECT count(*)
-        FROM sql_test.expected_migrations
-    ) AS manifest_migrations,
-    (
-        SELECT count(*)
-        FROM foundation_meta.applied_migrations
-    ) AS registered_migrations;
+    (SELECT count(*) FROM sql_test.expected_migrations) AS manifest_migrations,
+    (SELECT count(*) FROM foundation_meta.applied_migrations) AS registered_migrations;
 SQL
     } >"$summary_file" 2>&1 || summary_status=$?
 
@@ -560,10 +546,7 @@ cleanup() {
     set +e
 
     write_summary "$exit_status"
-
-    if [[ -n "$expected_sql_file" ]]; then
-        rm -f -- "$expected_sql_file"
-    fi
+    rm -f -- "$expected_sql_file"
 
     if [[ "$database_created" -eq 1 ]]; then
         if [[ "$exit_status" -eq 0 ]]; then
@@ -598,7 +581,6 @@ cleanup() {
 
     log "Full log: ${log_file}"
     log "Latest log: ${latest_log}"
-
     exit "$exit_status"
 }
 
@@ -611,7 +593,8 @@ log "Repository root: ${repository_root}"
 log "Live schema root: ${foundation_schema_root}"
 log "Foundation manifest: ${foundation_manifest}"
 log "Test framework root: ${test_framework_root}"
-log "Test manifest: ${test_manifest}"
+log "Sequential test manifest: ${test_manifest}"
+log "Concurrency test manifest: ${concurrency_manifest}"
 log "Maintenance database: ${maintenance_db}"
 log "Connected PostgreSQL role: ${POSTGRESQL_CONNECTED_ROLE}"
 log "PostgreSQL server_version_num: ${POSTGRESQL_SERVER_VERSION_NUM}"
@@ -619,12 +602,10 @@ log "Test database: ${test_database}"
 log "Results directory: ${results_dir}"
 
 log "Creating disposable database from template0"
-
 createdb \
     --maintenance-db="$maintenance_db" \
     --template=template0 \
     "$test_database"
-
 database_created=1
 
 server_version="$(
@@ -636,7 +617,6 @@ server_version="$(
         --no-align \
         --command='SHOW server_version;'
 )"
-
 server_version_num="$(
     psql \
         -X \
@@ -660,38 +640,11 @@ if (( server_version_num < 180000 )); then
 fi
 
 : >"$expected_sql_file"
-printf '%s\n' \
-    'TRUNCATE TABLE sql_test.expected_migrations;' \
-    >>"$expected_sql_file"
-
-declare -A seen_migrations=()
+printf '%s\n' 'TRUNCATE TABLE sql_test.expected_migrations;' >>"$expected_sql_file"
 
 log "Applying live Foundation migrations"
-
-while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
-    relative_path="$(trim_manifest_line "$raw_line")"
-
-    [[ -z "$relative_path" ]] && continue
-
-    if [[ ! "$relative_path" =~ ^migrations/foundation/[0-9]{3}_[a-z0-9_]+\.sql$ ]]; then
-        log "Invalid Foundation manifest path: ${relative_path}"
-        exit 65
-    fi
-
-    if [[ -n "${seen_migrations[$relative_path]:-}" ]]; then
-        log "Duplicate Foundation manifest entry: ${relative_path}"
-        exit 65
-    fi
-
-    seen_migrations["$relative_path"]=1
-
+for relative_path in "${migration_paths[@]}"; do
     sql_file="${foundation_schema_root}/${relative_path}"
-
-    if [[ ! -f "$sql_file" ]]; then
-        log "Migration file not found: ${sql_file}"
-        exit 66
-    fi
-
     migration_count=$((migration_count + 1))
     migration_id="$(basename -- "$relative_path" .sql)"
     checksum="$(sha256sum "$sql_file" | awk '{print $1}')"
@@ -705,7 +658,6 @@ while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
         >>"$expected_sql_file"
 
     log "Applying ${relative_path}"
-
     psql \
         -X \
         --no-psqlrc \
@@ -714,17 +666,11 @@ while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
         --set=SHOW_CONTEXT=errors \
         --dbname="$test_database" \
         --file="$sql_file"
-done <"$foundation_manifest"
-
-if [[ "$migration_count" -eq 0 ]]; then
-    log "Foundation manifest contains no migration files"
-    exit 65
-fi
+done
 
 log "Applied ${migration_count} Foundation migration files"
 
 log "Installing the test-only SQL assertion framework"
-
 psql \
     -X \
     --no-psqlrc \
@@ -735,7 +681,6 @@ psql \
     --file="$framework_file"
 
 log "Loading migration manifest expectations and SHA-256 checksums"
-
 psql \
     -X \
     --no-psqlrc \
@@ -745,38 +690,12 @@ psql \
     --dbname="$test_database" \
     --file="$expected_sql_file"
 
-declare -A seen_tests=()
-
-log "Running Foundation SQL tests"
-
-while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
-    relative_path="$(trim_manifest_line "$raw_line")"
-
-    [[ -z "$relative_path" ]] && continue
-
-    if [[ ! "$relative_path" =~ ^foundation/[0-9]{3}_[a-z0-9_]+\.sql$ ]]; then
-        log "Invalid test manifest path: ${relative_path}"
-        exit 65
-    fi
-
-    if [[ -n "${seen_tests[$relative_path]:-}" ]]; then
-        log "Duplicate test manifest entry: ${relative_path}"
-        exit 65
-    fi
-
-    seen_tests["$relative_path"]=1
-
+log "Running Foundation sequential SQL tests"
+for relative_path in "${sequential_test_paths[@]}"; do
     sql_file="${test_root}/${relative_path}"
-
-    if [[ ! -f "$sql_file" ]]; then
-        log "Test file not found: ${sql_file}"
-        exit 66
-    fi
-
-    test_file_count=$((test_file_count + 1))
+    sequential_test_count=$((sequential_test_count + 1))
 
     log "Running ${relative_path}"
-
     psql \
         -X \
         --no-psqlrc \
@@ -785,16 +704,24 @@ while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
         --set=SHOW_CONTEXT=errors \
         --dbname="$test_database" \
         --file="$sql_file"
-done <"$test_manifest"
+done
 
-if [[ "$test_file_count" -eq 0 ]]; then
-    log "Test manifest contains no test files"
-    exit 65
-fi
+log "Executed ${sequential_test_count} Foundation sequential test files"
 
-log "Executed ${test_file_count} Foundation test files"
+log "Running Foundation concurrency tests"
+for relative_path in "${concurrency_test_paths[@]}"; do
+    shell_file="${test_root}/${relative_path}"
+    concurrency_test_count=$((concurrency_test_count + 1))
+
+    log "Running ${relative_path}"
+    PSP_TEST_DATABASE="$test_database" \
+    PSP_TEST_RUN_ID="$run_id" \
+    bash "$shell_file"
+done
+
+log "Executed ${concurrency_test_count} Foundation concurrency test files"
+
 log "Writing the test result inventory"
-
 psql \
     -X \
     --no-psqlrc \
@@ -802,18 +729,10 @@ psql \
     --dbname="$test_database" <<'SQL'
 \pset border 2
 \pset pager off
-
-SELECT
-    status,
-    count(*) AS result_count
+SELECT status, count(*) AS result_count
 FROM sql_test.results
 GROUP BY status
-ORDER BY
-    CASE status
-        WHEN 'FAIL' THEN 1
-        WHEN 'WARN' THEN 2
-        ELSE 3
-    END;
+ORDER BY CASE status WHEN 'FAIL' THEN 1 WHEN 'WARN' THEN 2 ELSE 3 END;
 
 SELECT
     result_id,
@@ -827,7 +746,6 @@ ORDER BY result_id;
 SQL
 
 log "Evaluating final test status"
-
 psql \
     -X \
     --no-psqlrc \
@@ -836,3 +754,4 @@ psql \
     --command='SELECT sql_test.finish();'
 
 log "Foundation SQL tests passed"
+

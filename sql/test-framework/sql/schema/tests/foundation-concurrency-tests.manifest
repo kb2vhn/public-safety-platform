@@ -1,0 +1,2 @@
+# Platform Foundation concurrency tests
+concurrency/100_authentication_assertion_single_use.sh
