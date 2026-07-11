@@ -65,7 +65,7 @@ CREATE TABLE performance.performance_test_results (
     tested_at timestamptz NOT NULL,
     result text NOT NULL,
     measurements jsonb NOT NULL,
-    evidence_reference text
+    test_artifact_reference text
 );
 
 SELECT foundation_meta.register_migration(
@@ -77,3 +77,4 @@ SELECT foundation_meta.register_migration(
 );
 
 COMMIT;
+

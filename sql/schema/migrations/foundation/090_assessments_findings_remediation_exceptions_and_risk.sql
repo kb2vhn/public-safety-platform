@@ -23,11 +23,11 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM foundation_meta.applied_migrations
-        WHERE migration_id = '089_control_implementations_and_evidence'
+        WHERE migration_id = '089_control_implementations_and_assurance_artifacts'
     ) THEN
         RAISE EXCEPTION
             USING ERRCODE = 'object_not_in_prerequisite_state',
-                  MESSAGE = 'Required migration 089_control_implementations_and_evidence is not registered';
+                  MESSAGE = 'Required migration 089_control_implementations_and_assurance_artifacts is not registered';
     END IF;
 END;
 $dependency_check$;
@@ -94,3 +94,4 @@ SELECT foundation_meta.register_migration(
 );
 
 COMMIT;
+

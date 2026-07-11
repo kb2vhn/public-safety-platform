@@ -150,7 +150,7 @@ COMMENT ON SCHEMA governance IS
     'Data classification, ownership, custody, governed documents, policies, and historical lineage.';
 
 COMMENT ON SCHEMA compliance IS
-    'Framework-neutral controls, compliance profiles, implementations, evidence, assessments, and findings.';
+    'Framework-neutral controls, compliance profiles, implementations, assurance artifacts, assessments, and findings.';
 
 COMMENT ON SCHEMA risk IS
     'Risk records, threats, abuse cases, treatments, exceptions, and compensating controls.';
@@ -418,7 +418,7 @@ VALUES
         'compliance',
         'compliance_and_controls',
         'FOUNDATION',
-        'Controls, profiles, implementations, evidence, assessments, and findings.',
+        'Controls, profiles, implementations, assurance artifacts, assessments, and findings.',
         '000_platform_initialization'
     ),
     (
