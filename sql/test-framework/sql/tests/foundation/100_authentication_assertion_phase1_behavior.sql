@@ -89,6 +89,80 @@ BEGIN
 END;
 $function$;
 
+CREATE FUNCTION sql_test.create_consumed_session_establishment_fixture(
+    p_trust_provider_id uuid,
+    p_identity_id uuid,
+    p_device_id uuid,
+    p_service_id uuid,
+    p_authenticated_at timestamptz
+)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_authentication_assertion_id uuid := gen_random_uuid();
+    v_assertion_id text :=
+        'sql-test-phase2-session-fixture-' || gen_random_uuid()::text;
+BEGIN
+    INSERT INTO access_control.authentication_assertions (
+        authentication_assertion_id,
+        assertion_id,
+        assertion_purpose,
+        trust_provider_id,
+        identity_id,
+        device_id,
+        session_id,
+        service_id,
+        audience,
+        environment_key,
+        issued_at,
+        expires_at,
+        nonce_hash,
+        payload_hash,
+        signature_algorithm,
+        signature_value,
+        received_at,
+        verified_at,
+        verified_by_reference,
+        verification_method,
+        consumed_at,
+        status
+    )
+    VALUES (
+        v_authentication_assertion_id,
+        v_assertion_id,
+        'SESSION_ESTABLISHMENT',
+        p_trust_provider_id,
+        p_identity_id,
+        p_device_id,
+        NULL,
+        p_service_id,
+        'phase2-session-fixture-audience',
+        'test',
+        p_authenticated_at - interval '1 minute',
+        p_authenticated_at + interval '10 minutes',
+        extensions.digest(
+            convert_to(v_assertion_id || ':nonce', 'UTF8'),
+            'sha256'
+        ),
+        extensions.digest(
+            convert_to(v_assertion_id || ':payload', 'UTF8'),
+            'sha256'
+        ),
+        'SQL-TEST-SIGNATURE',
+        decode(repeat('4f', 32), 'hex'),
+        p_authenticated_at - interval '50 seconds',
+        p_authenticated_at - interval '40 seconds',
+        'sql_test.fixture_verifier',
+        'sql_test.fixture_verification.v1',
+        p_authenticated_at,
+        'CONSUMED'
+    );
+
+    RETURN v_authentication_assertion_id;
+END;
+$function$;
+
 CREATE FUNCTION sql_test.assert_authentication_verification_blocked(
     p_test_name text,
     p_authentication_assertion_id uuid
@@ -213,6 +287,15 @@ DECLARE
     v_provider_mismatch_session_id uuid := gen_random_uuid();
     v_service_mismatch_session_id uuid := gen_random_uuid();
 
+    v_session_establishment_assertion_id uuid;
+    v_locked_session_establishment_assertion_id uuid;
+    v_expired_session_establishment_assertion_id uuid;
+    v_inactive_session_establishment_assertion_id uuid;
+    v_identity_mismatch_establishment_assertion_id uuid;
+    v_device_mismatch_establishment_assertion_id uuid;
+    v_provider_mismatch_establishment_assertion_id uuid;
+    v_service_mismatch_establishment_assertion_id uuid;
+
     v_assertion_id uuid;
     v_external_assertion_id text;
     v_consumed_id uuid;
@@ -238,8 +321,6 @@ DECLARE
     v_consumed_terminal_assertion_id uuid;
     v_consumed_terminal_external_id text;
 
-    v_candidate_status text;
-    v_non_active_session_status text;
 BEGIN
     -- -----------------------------------------------------------------------
     -- Shared valid and invalid Foundation fixtures
@@ -592,6 +673,81 @@ BEGIN
             'sql_test'
         );
 
+    -- Phase 2 requires every session row to retain the consumed
+    -- SESSION_ESTABLISHMENT assertion that created it. These direct Phase 1
+    -- fixtures supply structurally valid historical assertion evidence.
+    v_session_establishment_assertion_id :=
+        sql_test.create_consumed_session_establishment_fixture(
+            v_provider_id,
+            v_identity_id,
+            v_device_id,
+            v_service_id,
+            v_now - interval '5 minutes'
+        );
+
+    v_locked_session_establishment_assertion_id :=
+        sql_test.create_consumed_session_establishment_fixture(
+            v_provider_id,
+            v_identity_id,
+            v_device_id,
+            v_service_id,
+            v_now - interval '5 minutes'
+        );
+
+    v_expired_session_establishment_assertion_id :=
+        sql_test.create_consumed_session_establishment_fixture(
+            v_provider_id,
+            v_identity_id,
+            v_device_id,
+            v_service_id,
+            v_now - interval '2 hours'
+        );
+
+    v_inactive_session_establishment_assertion_id :=
+        sql_test.create_consumed_session_establishment_fixture(
+            v_provider_id,
+            v_identity_id,
+            v_device_id,
+            v_service_id,
+            v_now - interval '2 hours'
+        );
+
+    v_identity_mismatch_establishment_assertion_id :=
+        sql_test.create_consumed_session_establishment_fixture(
+            v_provider_id,
+            v_alternate_identity_id,
+            v_device_id,
+            v_service_id,
+            v_now - interval '5 minutes'
+        );
+
+    v_device_mismatch_establishment_assertion_id :=
+        sql_test.create_consumed_session_establishment_fixture(
+            v_provider_id,
+            v_identity_id,
+            v_alternate_device_id,
+            v_service_id,
+            v_now - interval '5 minutes'
+        );
+
+    v_provider_mismatch_establishment_assertion_id :=
+        sql_test.create_consumed_session_establishment_fixture(
+            v_alternate_provider_id,
+            v_identity_id,
+            v_device_id,
+            v_service_id,
+            v_now - interval '5 minutes'
+        );
+
+    v_service_mismatch_establishment_assertion_id :=
+        sql_test.create_consumed_session_establishment_fixture(
+            v_provider_id,
+            v_identity_id,
+            v_device_id,
+            v_alternate_service_id,
+            v_now - interval '5 minutes'
+        );
+
     INSERT INTO access_control.sessions (
         session_id,
         identity_id,
@@ -603,7 +759,8 @@ BEGIN
         authenticated_at,
         expires_at,
         last_activity_at,
-        inactivity_timeout
+        inactivity_timeout,
+        establishment_authentication_assertion_id
     )
     VALUES
         (
@@ -617,7 +774,8 @@ BEGIN
             v_now - interval '5 minutes',
             v_now + interval '1 hour',
             v_now - interval '1 minute',
-            interval '30 minutes'
+            interval '30 minutes',
+            v_session_establishment_assertion_id
         ),
         (
             v_locked_session_id,
@@ -630,7 +788,8 @@ BEGIN
             v_now - interval '5 minutes',
             v_now + interval '1 hour',
             v_now - interval '1 minute',
-            interval '30 minutes'
+            interval '30 minutes',
+            v_locked_session_establishment_assertion_id
         ),
         (
             v_expired_session_id,
@@ -643,7 +802,8 @@ BEGIN
             v_now - interval '2 hours',
             v_now - interval '1 hour',
             v_now - interval '90 minutes',
-            interval '30 minutes'
+            interval '30 minutes',
+            v_expired_session_establishment_assertion_id
         ),
         (
             v_inactive_timeout_session_id,
@@ -656,7 +816,8 @@ BEGIN
             v_now - interval '2 hours',
             v_now + interval '1 hour',
             v_now - interval '2 hours',
-            interval '10 minutes'
+            interval '10 minutes',
+            v_inactive_session_establishment_assertion_id
         ),
         (
             v_identity_mismatch_session_id,
@@ -669,7 +830,8 @@ BEGIN
             v_now - interval '5 minutes',
             v_now + interval '1 hour',
             v_now - interval '1 minute',
-            interval '30 minutes'
+            interval '30 minutes',
+            v_identity_mismatch_establishment_assertion_id
         ),
         (
             v_device_mismatch_session_id,
@@ -682,7 +844,8 @@ BEGIN
             v_now - interval '5 minutes',
             v_now + interval '1 hour',
             v_now - interval '1 minute',
-            interval '30 minutes'
+            interval '30 minutes',
+            v_device_mismatch_establishment_assertion_id
         ),
         (
             v_provider_mismatch_session_id,
@@ -695,7 +858,8 @@ BEGIN
             v_now - interval '5 minutes',
             v_now + interval '1 hour',
             v_now - interval '1 minute',
-            interval '30 minutes'
+            interval '30 minutes',
+            v_provider_mismatch_establishment_assertion_id
         ),
         (
             v_service_mismatch_session_id,
@@ -708,39 +872,15 @@ BEGIN
             v_now - interval '5 minutes',
             v_now + interval '1 hour',
             v_now - interval '1 minute',
-            interval '30 minutes'
+            interval '30 minutes',
+            v_service_mismatch_establishment_assertion_id
         );
 
-    -- Select an allowed non-ACTIVE session state without coupling this test
-    -- to a particular future session-state vocabulary. If no state constraint
-    -- exists, the first candidate is accepted.
-    FOREACH v_candidate_status IN ARRAY ARRAY[
-        'LOCKED',
-        'REVOKED',
-        'TERMINATED',
-        'EXPIRED',
-        'SUSPENDED'
-    ]
-    LOOP
-        BEGIN
-            UPDATE access_control.sessions
-            SET status = v_candidate_status
-            WHERE session_id = v_locked_session_id;
-
-            v_non_active_session_status := v_candidate_status;
-            EXIT;
-        EXCEPTION
-            WHEN check_violation THEN
-                NULL;
-        END;
-    END LOOP;
-
-    IF v_non_active_session_status IS NULL THEN
-        RAISE EXCEPTION
-            USING
-                ERRCODE = 'check_violation',
-                MESSAGE = 'No supported non-ACTIVE session status was available for the Phase 1 test fixture';
-    END IF;
+    UPDATE access_control.sessions
+    SET
+        status = 'LOCKED',
+        locked_at = v_now
+    WHERE session_id = v_locked_session_id;
 
     -- -----------------------------------------------------------------------
     -- Verifier attribution validation

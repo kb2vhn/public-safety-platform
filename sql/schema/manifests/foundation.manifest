@@ -11,6 +11,7 @@ migrations/foundation/055_authority_purpose_and_authorization_policy.sql
 migrations/foundation/060_sessions.sql
 migrations/foundation/065_authorization_leases.sql
 migrations/foundation/070_postgresql_authentication_assertion_gate.sql
+migrations/foundation/072_postgresql_session_control.sql
 migrations/foundation/075_controlled_authorization_api.sql
 migrations/foundation/080_decision_record_repository.sql
 migrations/foundation/082_data_classification_and_governance.sql
@@ -29,4 +30,3 @@ migrations/foundation/096_monitoring_subscriptions_and_delivery_state.sql
 migrations/foundation/097_external_integration_outbox.sql
 migrations/foundation/098_security_boundaries_and_role_separation.sql
 migrations/foundation/099_foundation_validation.sql
-

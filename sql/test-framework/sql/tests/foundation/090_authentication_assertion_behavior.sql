@@ -14,6 +14,9 @@ DECLARE
     v_organization_id uuid := gen_random_uuid();
     v_service_id uuid := gen_random_uuid();
     v_session_id uuid := gen_random_uuid();
+    v_session_establishment_assertion_id uuid := gen_random_uuid();
+    v_session_establishment_external_id text :=
+        'sql-test-session-fixture-' || gen_random_uuid()::text;
 
     v_assertion_id uuid := gen_random_uuid();
     v_assertion_external_id text :=
@@ -156,6 +159,70 @@ BEGIN
         'sql_test'
     );
 
+    -- Phase 2 requires every session to retain the consumed establishment
+    -- assertion that created it. This direct fixture supplies a structurally
+    -- valid historical assertion without exercising the Phase 2 API.
+    INSERT INTO access_control.authentication_assertions (
+        authentication_assertion_id,
+        assertion_id,
+        assertion_purpose,
+        trust_provider_id,
+        identity_id,
+        device_id,
+        session_id,
+        service_id,
+        audience,
+        environment_key,
+        issued_at,
+        expires_at,
+        nonce_hash,
+        payload_hash,
+        signature_algorithm,
+        signature_value,
+        received_at,
+        verified_at,
+        verified_by_reference,
+        verification_method,
+        consumed_at,
+        status
+    )
+    VALUES (
+        v_session_establishment_assertion_id,
+        v_session_establishment_external_id,
+        'SESSION_ESTABLISHMENT',
+        v_trust_provider_id,
+        v_identity_id,
+        v_device_id,
+        NULL,
+        v_service_id,
+        'sql-test-session-fixture-audience',
+        'test',
+        v_now - interval '10 minutes',
+        v_now + interval '10 minutes',
+        extensions.digest(
+            convert_to(
+                v_session_establishment_external_id || ':nonce',
+                'UTF8'
+            ),
+            'sha256'
+        ),
+        extensions.digest(
+            convert_to(
+                v_session_establishment_external_id || ':payload',
+                'UTF8'
+            ),
+            'sha256'
+        ),
+        'TEST-SIGNATURE',
+        decode(repeat('10', 32), 'hex'),
+        v_now - interval '9 minutes',
+        v_now - interval '8 minutes',
+        'sql_test.fixture_verifier',
+        'sql_test.fixture_verification.v1',
+        v_now - interval '5 minutes',
+        'CONSUMED'
+    );
+
     INSERT INTO access_control.sessions (
         session_id,
         identity_id,
@@ -166,7 +233,8 @@ BEGIN
         status,
         authenticated_at,
         expires_at,
-        last_activity_at
+        last_activity_at,
+        establishment_authentication_assertion_id
     )
     VALUES (
         v_session_id,
@@ -178,7 +246,8 @@ BEGIN
         'ACTIVE',
         v_now - interval '5 minutes',
         v_now + interval '1 hour',
-        v_now
+        v_now,
+        v_session_establishment_assertion_id
     );
 
     INSERT INTO access_control.authentication_assertions (

@@ -10,3 +10,4 @@ foundation/070_inventory_report.sql
 foundation/080_foundation_baseline_integrity.sql
 foundation/090_authentication_assertion_behavior.sql
 foundation/100_authentication_assertion_phase1_behavior.sql
+foundation/110_session_establishment_and_step_up_behavior.sql
