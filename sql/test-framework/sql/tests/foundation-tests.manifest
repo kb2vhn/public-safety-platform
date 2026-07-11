@@ -1,4 +1,4 @@
-# Public Safety Platform Foundation SQL tests
+# Platform Foundation SQL tests
 
 foundation/010_foundation_smoke.sql
 foundation/020_schema_security.sql
