@@ -121,6 +121,24 @@ Accepted evidence:
 See
 [Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md).
 
+### Active Phase 2 Mapping
+
+Phase 2 is governed by
+[Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md).
+
+The planned migration ownership is:
+
+| Migration | Phase 2 responsibility |
+|---|---|
+| `060_sessions.sql` | Session and session-event structure, state constraints, chronology, and indexes |
+| `070_postgresql_authentication_assertion_gate.sql` | Accepted Phase 1 assertion verification and single-use consumption boundary; unchanged unless revalidation is required |
+| `072_postgresql_session_control.sql` | Planned assertion-dependent session establishment, step-up, activity, and lifecycle control APIs |
+| `075_controlled_authorization_api.sql` | Later controlled authorization boundary; not the owner of session lifecycle |
+
+Migration `072` is a Phase 2 plan and is not part of the current manifest until
+Step 2 implements, reviews, and tests it. When added, it must appear after
+`070` and before `075`.
+
 ### Migration Completion Rule
 
 A migration is not complete merely because it executes. It should:
@@ -154,3 +172,4 @@ The Foundation SQL test framework must test the requirements that can be demonst
 - [Platform Boundaries](platform-boundaries.md)
 - [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
 - [Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md)
+- [Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md)

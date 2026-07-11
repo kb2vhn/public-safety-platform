@@ -2,13 +2,16 @@
 
 > **Document status:** Normative Platform Foundation architecture.
 >
-> **Phase:** Central Authorization Completion Program — Phase 0.
+> **Program:** Central Authorization Completion Program.
 >
-> **Implementation status:** This document defines the contract that
-> migrations `050–080` and their behavioral tests must implement. The Phase 1
-> Authentication Assertion boundary is implemented and accepted; the wider
-> authorization contract remains incomplete. Structural presence does not
-> imply complete enforcement.
+> **Current implementation phase:** Phase 2 — Session Establishment, Step-Up,
+> and Lifecycle Enforcement.
+>
+> **Implementation status:** This document defines the wider authorization
+> contract that migrations `050–080` and their behavioral tests must implement.
+> The Phase 1 Authentication Assertion boundary is implemented and accepted.
+> Phase 2 has begun at the session boundary; the wider authorization contract
+> remains incomplete. Structural presence does not imply complete enforcement.
 
 ## Primary Rule
 
@@ -317,6 +320,11 @@ TERMINATED
 ```
 
 A session does not independently grant a Protected Operation.
+
+The current Phase 2 session boundary is defined by
+[Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md).
+That model must preserve the Authentication Assertion invariants accepted in
+Phase 1 and must not treat session continuity as durable authority.
 
 ## Policy Contract
 

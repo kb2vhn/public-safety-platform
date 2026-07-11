@@ -117,13 +117,7 @@ The accepted Phase 0 SQL test baseline is:
 3 understood WARN
 ```
 
-Phase 1 completed the Authentication Assertion verification and consumption
-boundary. It added controlled rejection and expiration, explicit local
-Trust Provider, identity, device, Platform Service, and step-up-session
-verification checks, exact-context consumption, terminal-state enforcement,
-expanded hostile-condition tests, and a real two-connection single-use race.
-
-The accepted Phase 1 SQL test baseline is:
+The accepted Phase 1 Authentication Assertion baseline is:
 
 ```text
 31 manifest migrations
@@ -135,13 +129,19 @@ The accepted Phase 1 SQL test baseline is:
 3 understood WARN
 ```
 
-The Phase 1 acceptance evidence is recorded in:
+Phase 1 proved controlled local verification, exact-context single-use
+consumption, terminal lifecycle behavior, and a real two-connection race in
+which exactly one consumer succeeded. The accepted boundary is tagged as
+`phase-1-authentication-assertion-complete-v1`.
 
-[Phase 1 Authentication Assertion Acceptance](docs/architecture/foundation/phase-1-authentication-assertion-acceptance.md)
+Phase 2 has started with the normative
+[Session Establishment, Step-Up, and Lifecycle Model](docs/architecture/foundation/session-establishment-step-up-and-lifecycle-model.md).
+It will implement atomic session establishment, atomic step-up completion,
+controlled activity and lifecycle transitions, and the required concurrency
+proofs without weakening Phase 1.
 
-These results prove only the controls exercised by the accepted test suite.
-They do not mean every documented Foundation control is already fully
-enforced or that the repository is production-ready.
+These results prove only the properties covered by the accepted tests. They do
+not mean every documented Foundation control is already fully enforced.
 
 ## Staged Development Approach
 
@@ -334,13 +334,12 @@ utility accounts, permits, or other module-specific business records.
 Implemented behavior now includes:
 
 - Authentication Assertion lifecycle constraints
-- Controlled Authentication Assertion verification with local Trust Provider,
-  identity, device, Platform Service, and step-up-session checks
-- Controlled Authentication Assertion rejection and expiration
+- Controlled Authentication Assertion verification
 - Exact Authentication Assertion context matching
 - Atomic Authentication Assertion consumption
-- Sequential and concurrent replay denial
+- Replay denial
 - Authentication Assertion revocation with history preservation
+- Authentication Assertion concurrent single-use proof
 - Authorization Lease secret hashing
 - Secret-only lease verification
 - Complete Authorization Lease context verification
@@ -354,8 +353,7 @@ Implemented behavior now includes:
 The following remain active Foundation work:
 
 - Trust-Provider-specific verifier-role and credential boundary enforcement
-- Atomic session establishment that consumes a valid `VERIFIED`
-  `SESSION_ESTABLISHMENT` Authentication Assertion in the same transaction
+- Atomic session establishment from a verified Authentication Assertion
 - Complete session lifecycle APIs and concurrency behavior
 - Full approval independence and self-approval enforcement
 - Deterministic Authorization Policy selection and stage resolution
@@ -367,8 +365,7 @@ The following remain active Foundation work:
 - Migration-checksum population and enforcement
 - Final production ownership and login-role topology
 - Least-privileged runtime grants
-- Additional behavioral, negative, and concurrency tests for later
-  Foundation controls
+- Additional behavioral, negative, and concurrency tests
 - Production Go services
 - External-System Adapters and delivery workers
 - Off-host integrity anchoring and protected logging
@@ -434,6 +431,7 @@ Start with:
 - [Authorization Evaluation Contract](docs/architecture/foundation/authorization-evaluation-contract.md)
 - [Authentication Assertion Verification and Consumption Model](docs/architecture/foundation/authentication-assertion-verification-and-consumption-model.md)
 - [Phase 1 Authentication Assertion Acceptance](docs/architecture/foundation/phase-1-authentication-assertion-acceptance.md)
+- [Session Establishment, Step-Up, and Lifecycle Model](docs/architecture/foundation/session-establishment-step-up-and-lifecycle-model.md)
 - [PostgreSQL Architecture](docs/architecture/postgresql.md)
 - [External-System-Independent Observability](docs/architecture/external-system-independent-observability.md)
 - [Project Goals](docs/goals/README.md)
@@ -506,13 +504,10 @@ The framework will:
 3. Apply the live Foundation manifest.
 4. Calculate migration-file SHA-256 digests.
 5. Install the test-only `sql_test` assertion schema.
-6. Run the Foundation sequential SQL test manifest.
-7. Run the Foundation concurrency-test manifest with independent `psql`
-   connections.
-8. Record sequential and concurrency outcomes in the same result inventory.
-9. Write a complete log and compact summary.
-10. Drop a successful database by default.
-11. Preserve a failed database by default for investigation.
+6. Run the Foundation SQL test manifest.
+7. Write a complete log and compact summary.
+8. Drop a successful database by default.
+9. Preserve a failed database by default for investigation.
 
 The newest results are written to:
 
