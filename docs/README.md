@@ -1,85 +1,73 @@
-# Platform Documentation
+# Platform Architecture
 
 ## Purpose
 
-The `docs/` tree defines the goals and architecture of the Public Safety Platform. It separates long-term project goals from the normative Platform Foundation, provider and technology decisions, and future compliance profiles.
+This directory contains architecture that applies across the platform.
 
-The documentation describes both:
+The repository began with public safety as its first operational focus. The
+Platform Foundation is intentionally domain-neutral and is expected to support
+unrelated module families such as public safety, municipal administration,
+finance, permitting, public works, utilities, human resources, and education.
 
-1. **Target architecture** — the requirements the finished platform must satisfy.
-2. **Current implementation mapping** — the SQL migrations and supporting work that presently represent those requirements.
-
-A documented requirement must not be described as fully implemented merely because a table, view, or migration exists.
-
-## Current Directory Layout
+## Architecture Layers
 
 ```text
-docs/
-├── README.md
-├── architecture/
-│   ├── README.md
-│   ├── postgresql.md
-│   ├── external-system-independent-observability.md
-│   └── foundation/
-│       ├── README.md
-│       └── *.md
-├── compliance-profiles/
-│   └── README.md
-└── goals/
-    ├── README.md
-    ├── operational-simplicity-and-supportability-goals.md
-    ├── performance-and-efficiency-goals.md
-    └── two-person-concept.md
+Technology Decisions
+        ↓
+Domain-Neutral Platform Foundation
+        ↓
+Platform Services and Shared Resources
+        ↓
+Module Families
+        ↓
+External-System Adapters, Integrations, and User Interfaces
 ```
 
-Directories for domain modules, formal architecture decisions, deployment profiles, and concrete compliance profiles will be added when those artifacts exist. They are not shown as current repository content until they are created.
+A lower layer may consume an upper layer.
 
-## Documentation Layers
+An upper layer must not acquire a dependency on one specific lower-layer
+module.
 
-```text
-Project Goals
-      ↓
-Architecture and Technology Decisions
-      ↓
-Platform Foundation
-      ↓
-Compliance Profiles
-      ↓
-Domain Platforms and Operational Modules
-      ↓
-Deployment Profiles and Provider Adapters
-      ↓
-User Interfaces and Integrations
-```
+## Current Documents
 
-Dependencies must point downward through this model. The Platform Foundation must not depend on a particular public-safety module, regulatory framework, deployment, or monitoring vendor.
+### Technology Decisions
 
-## Status Language
+- [PostgreSQL Architecture](postgresql.md)
+- [External-System-Independent Observability](external-system-independent-observability.md)
 
-The documentation uses the following meanings:
+### Platform Foundation
 
-- **Normative** — a requirement of the target architecture.
-- **Structurally implemented** — represented in schema objects or migration logic.
-- **Database-enforced** — actively protected by constraints, privileges, row policies, controlled functions, or other PostgreSQL controls.
-- **Runtime-enforced** — actively enforced by the production service implementation.
-- **Operationally enforced** — supported by deployment controls, monitoring, backup, recovery, and administrative procedure.
-- **Validated** — demonstrated by automated tests or documented operational exercises.
+- [Platform Foundation Documentation](foundation/README.md)
+- [Domain-Neutral Foundation Principle](foundation/domain-neutral-foundation-principle.md)
+- [Foundation Terminology and Domain Neutrality](foundation/foundation-terminology-and-domain-neutrality.md)
+- [Authorization Evaluation Contract](foundation/authorization-evaluation-contract.md)
 
-No single status implies all other statuses.
+## Relationship to SQL
 
-## Source-of-Truth Boundaries
-
-The architecture documents define intent and invariants. The SQL manifest defines migration order. The SQL migrations define the current database implementation. The test framework demonstrates selected database properties. Deployment and runtime documentation will define controls outside PostgreSQL when those layers are implemented.
-
-Current SQL locations:
+The active Foundation migration order is maintained in:
 
 ```text
 sql/schema/manifests/foundation.manifest
+```
+
+The active Foundation migrations are maintained in:
+
+```text
 sql/schema/migrations/foundation/
-sql/schema/scripts/
+```
+
+The self-contained SQL test framework is maintained in:
+
+```text
 sql/test-framework/
 ```
 
-## Governing Principle
+Architecture documents define requirements.
 
-> Security, performance, compliance, maintainability, accessibility, observability, operational simplicity, supportability, resilience, and affordability must be designed into the platform from the beginning and preserved throughout its lifetime.
+Migrations implement database structures and selected controls.
+
+Tests demonstrate selected properties.
+
+None of these replaces production deployment security, runtime enforcement,
+operational verification, backup protection, trusted recovery, or off-host
+integrity controls.

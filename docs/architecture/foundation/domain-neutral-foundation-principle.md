@@ -1,60 +1,129 @@
-## Domain-Neutral Foundation Principle
+# Domain-Neutral Foundation Principle
 
-The Platform Foundation must remain independent of any single operational domain.
+> **Document status:** Normative Platform Foundation architecture.
 
-Public safety is the initial implementation focus and may provide the first real-world requirements used to test the Foundation. Those requirements must be generalized before they become Foundation concepts.
+## Principle
 
-A concept belongs in the Foundation only when at least one of the following is true:
+The Platform Foundation must remain independent of any single operational
+domain.
 
-1. It is required to establish trust, identity, authorization, accountability, governance, resilience, or another shared platform boundary.
-2. It is broadly reusable across multiple unrelated module families.
-3. It provides a neutral extension point through which modules can define domain-specific behavior.
-4. It is required to preserve consistent security or historical guarantees across the entire platform.
+Public safety is the initial implementation focus and a demanding source of
+requirements. It does not define the limits of the Platform Foundation.
 
-A concept does not belong in the Foundation merely because the first public-safety module requires it.
+A requirement discovered while designing a public-safety module must be
+generalized before it becomes a Foundation concept.
 
-Domain-specific terminology, records, workflows, and policies belong in their applicable modules.
+## Foundation Admission Rule
 
-The Foundation may define neutral abstractions such as:
+A concept belongs in the Foundation only when at least one of the following is
+true:
 
-* Organization
-* Organizational unit
-* Platform service
-* Deployment
-* Identity
-* Device
-* Session
-* Purpose
-* Governed operation
-* Governed scope
-* Resource target
-* Data classification
-* Approval policy
-* Authorization policy
-* Authorization Lease
-* Decision Record
-* Lifecycle event
-* Governed document
-* Control
-* Risk
-* Workload
-* Integration event
+1. It establishes a shared trust, identity, authorization, accountability,
+   governance, resilience, observability, or integration boundary.
+2. It is reusable across multiple unrelated module families.
+3. It provides a neutral extension point through which modules can define
+   domain-specific behavior.
+4. It is required to preserve consistent security, integrity, or historical
+   guarantees across the platform.
 
-Modules may specialize these abstractions.
+A concept does not belong in the Foundation merely because the first module
+requires it.
 
-For example:
+## Domain-Specific Concepts
 
-* A public-safety module may use a governed scope to represent a legal governed scope, mutual-aid area, precinct, response district, or service area.
-* A school module may use a governed scope to represent a district, school, campus, department, program, or grade boundary.
-* A municipal module may use a governed scope to represent a town, department, facility, taxing district, utility district, or regulatory area.
+Domain records and workflows belong to modules.
 
-The Foundation must not require every governed scope to be geographic, legal, or public-safety-specific.
+Examples include:
 
-When a proposed Foundation term is strongly associated with one domain, the design must determine whether:
+- Dispatch incidents
+- Calls for service
+- Criminal or civil cases
+- Evidence custody
+- Permits and inspections
+- Invoices and payments
+- Student records
+- Work orders
+- Payroll records
+- Utility accounts
+- Fleet maintenance records
 
-1. The concept should remain entirely inside that module;
-2. The concept should be replaced by a neutral Foundation abstraction; or
-3. The Foundation should provide an extension mechanism through which the module defines it.
+The Foundation may provide shared controls used by those modules, but it must
+not define their operational meaning.
 
-The burden is on the design to justify why a domain-specific concept belongs in the shared Foundation.
+## Neutral Foundation Concepts
 
+Foundation concepts may include:
+
+- Organization
+- Organizational Unit
+- Platform Service
+- Deployment
+- Identity
+- Device
+- Session
+- Trust Provider
+- Authentication Assertion
+- Governed Purpose
+- Governed Operation
+- Governed Scope
+- Protected Resource Target
+- Data Classification
+- Authority Definition
+- Authority Grant
+- Approval Policy
+- Authorization Policy
+- Authorization Lease
+- Decision Record
+- Lifecycle Event
+- Governed Document
+- Control
+- Risk
+- Workload
+- Integration Event
+
+Modules may specialize these concepts without changing their Foundation
+meaning.
+
+## Governed Scope
+
+The Foundation uses **Governed Scope** for a typed boundary that constrains
+authority, eligibility, approval, policy, data handling, or a protected
+operation.
+
+A public-safety module may define Governed Scope types such as:
+
+- `JURISDICTION`
+- `PRECINCT`
+- `RESPONSE_DISTRICT`
+- `MUTUAL_AID_AREA`
+
+A school module may define:
+
+- `SCHOOL_DISTRICT`
+- `CAMPUS`
+- `PROGRAM`
+- `GRADE_BOUNDARY`
+
+A municipal module may define:
+
+- `MUNICIPAL_BOUNDARY`
+- `DEPARTMENT`
+- `FACILITY`
+- `UTILITY_DISTRICT`
+- `TAXING_DISTRICT`
+
+The Foundation must not require every Governed Scope to be geographic, legal,
+or public-safety-specific.
+
+## Review Requirement
+
+When a proposed Foundation term is strongly associated with one domain, the
+design must determine whether:
+
+1. The concept belongs entirely inside that module;
+2. The concept should be represented by a neutral Foundation abstraction; or
+3. The Foundation should provide an extension mechanism through which the
+   module defines it.
+
+The burden is on the design to justify why a domain-specific concept belongs
+in the shared Foundation.
