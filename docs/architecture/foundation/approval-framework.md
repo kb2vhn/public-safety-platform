@@ -1,108 +1,62 @@
-# Platform Approval Framework
+# Approval Framework
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-The Approval Framework provides policy-driven support for operations requiring one or more approvals.
+Provide reusable, attributable, policy-driven approval without embedding domain-specific workflow in the Foundation.
 
-Approval is organizational consent. It is not authority by itself.
+## Architectural Requirements
 
-## Supported Models
+### Approval Request
 
-- Single approval
-- Supervisor approval
-- Independent approval
-- Dual authorization
-- Multi-party approval
-- Multi-stage approval
-- External organization approval
-- Judicial approval
-- Emergency approval
+A request identifies the requester, organization, service, purpose, target, requested operation, governing policy, required approvals, and expiration.
 
-## Core Objects
+### Approval Requirement
 
-- Approval Policy
-- Approval Policy Version
-- Approval Request
-- Approval Stage
-- Approval Requirement
-- Approval Action
-- Approval Withdrawal
-- Approval Escalation
+Policy defines the number, type, independence, authority, organization, and timing of required approvals.
 
-## Separation of Duties
+### Approval Decision
 
-Policies may require:
+An approver may approve, deny, abstain, or record another explicitly modeled outcome. Each decision is an append-oriented event with actor, authority, session, time, reason, and scope.
 
-- Different identity
-- Different assignment
-- Different organizational role
-- Different organization
-- Different chain-of-command position
-- No conflicting ownership
-- No prior incompatible participation
+### Independence Controls
 
-Self-approval is prohibited by default.
+Where required, the platform must prevent:
 
-## Incompatible Authority Sets
+- Self-approval,
+- Circular approval,
+- Duplicate approval by the same effective actor,
+- Approval using expired or delegated authority outside its scope,
+- Approval after request expiration,
+- Approval by an actor with a prohibited conflict.
 
-The Approval Framework must reject a request when the same identity or combined authority set would allow one person to:
+### Two-Person Authorization
 
-- Request
-- Approve
-- Activate
-- Execute
-- Review
-- Alter the resulting audit trail
+Dual authorization is a policy configuration built on this framework. It is not a hard-coded assumption for every action.
 
-unless a narrowly scoped emergency policy explicitly permits a limited exception.
+### Revocation and Supersession
 
-## Approval Lifecycle
+An approval is not edited after issuance. Revocation, withdrawal, correction, and supersession are recorded as new events.
 
-```text
-PENDING
-PARTIALLY_APPROVED
-APPROVED
-DENIED
-EXPIRED
-WITHDRAWN
-CANCELLED
-ESCALATED
-COMPLETED
-```
+### Finalization
 
-## Versioning
+A request may satisfy its approval requirement only when all required approvals are current, independent, applicable, and valid at the time of authorization.
 
-Every approval result references:
+## SQL Implementation Mapping
 
-- Stable policy identifier
-- Version and revision
-- Approval date
-- Effective period
-- Specific rule or stage
-- Document hash
-- Engine version
+Migration `050_approval_framework.sql` provides the principal structural implementation. Migrations `055`, `065`, `070`, `075`, and `080` consume approval results.
 
-## Record Trail
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-Every action records:
+## Validation Expectations
 
-- Acting identity and organization
-- Acting authority
-- Device and session
-- Authorization Lease
-- Scope
-- Reason
-- Timestamp
-- Supporting records
-- Decision Record
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-## Architectural Invariants
+## Related Documents
 
-1. Approval does not replace authority.
-2. Approval does not execute the operation.
-3. Self-approval is denied by default.
-4. Approval Actions are append-only.
-5. Role concentration is evaluated.
-6. Withdrawal creates a new linked record.
-7. Every approval result has a persistent record trail.
-8. PostgreSQL verifies approval state independently.
+- [Two-Person Concept](../../goals/two-person-concept.md)
+- [Authority and Authorization](authority-and-authorization-model.md)
+- [Decision Record Repository](decision-record-repository.md)

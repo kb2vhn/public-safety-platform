@@ -1,110 +1,59 @@
-# Platform Data Classification and Information Governance Model
+# Data Classification and Information Governance Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines reusable classification and governance for all domains.
+Make classification and handling requirements first-class inputs to access, storage, disclosure, retention, and integration decisions.
 
-Classification must influence handling and access.
+## Architectural Requirements
 
-## Classification Dimensions
+### Classification Scheme
 
-- Confidentiality
-- Regulatory category
-- Operational sensitivity
-- Financial sensitivity
-- Disclosure status
-- Integrity requirement
-- Availability requirement
-- Retention category
-- Ownership
-- Residency
+A governed scheme defines classification levels, categories, caveats, handling rules, owners, versions, and effective periods.
 
-## Classification Sources
+Examples may include public, internal, sensitive, CJIS-related, PHI-related, tax information, credentials, security telemetry, or organization-defined categories. The Foundation does not hard-code one regulatory vocabulary.
 
-Classification may originate from:
+### Assignment
 
-- Service
-- Domain
-- Module
-- Record type
-- Individual record
-- Field
-- Attachment
-- Data Owner
-- Regulation
-- Workflow state
-- Imported source
+Classification may be assigned to a record, document, field group, attachment, event, or resource. The assignment identifies the authority, source, confidence or basis where applicable, and effective period.
 
-## Effective Classification
-
-The effective result is normally the most restrictive compatible combination of all applicable classifications.
-
-## Classification Lifecycle
-
-Actions may include:
-
-```text
-CLASSIFY
-RECLASSIFY
-ADD_CATEGORY
-REMOVE_CATEGORY
-RESTRICT
-RELEASE
-SEAL
-UNSEAL
-PLACE_LEGAL_HOLD
-RELEASE_LEGAL_HOLD
-APPROVE_DISPOSITION
-```
-
-Each action preserves prior state.
-
-## Handling Requirements
+### Handling Rules
 
 Classification may affect:
 
-- View
-- Modify
-- Export
-- Print
-- Share
-- Redact
-- Encrypt
-- Retain
-- Dispose
-- Deliver to providers
-- Require enhanced approval
-- Require enhanced Decision Recording
+- Authorization,
+- Encryption,
+- Display and masking,
+- Export and provider delivery,
+- Retention and disposition,
+- Backup location,
+- Logging and telemetry,
+- Cross-organization sharing,
+- Incident response.
 
-## Composite Chains
+### Inheritance and Conflict
 
-High-level checks such as:
+Derived records inherit classifications according to governed rules. When multiple applicable classifications conflict, the more restrictive handling requirement applies unless a documented rule resolves the conflict.
 
-```text
-PASS - CJIS handling requirements satisfied
-```
+### History
 
-must expand into child evaluations.
+Classification changes do not erase prior handling context. Decisions retain the classification version used at the time.
 
-## Policy Versioning
+## SQL Implementation Mapping
 
-Every handling decision references:
+Migration `082_data_classification_and_governance.sql` provides the principal structural implementation. Migrations `086`, `088–090`, `095–097`, and future domain migrations consume classification rules.
 
-- Stable policy identifier
-- Version and revision
-- Approval date
-- Effective period
-- Specific rule
-- Document hash
-- Engine version
-- Evaluation timestamp
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-## Architectural Invariants
+## Validation Expectations
 
-1. Classification is multidimensional.
-2. Classification affects authorization.
-3. High-level conclusions expand into child evaluations.
-4. Every child result has supporting records.
-5. Reclassification preserves history.
-6. Data Owner permission is derived from real agreements, purpose, scope, and policy.
-7. PostgreSQL verifies material supporting records.
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
+
+## Related Documents
+
+- [Governed Document and Policy Versioning](governed-document-and-policy-versioning-model.md)
+- [Decision Record Repository](decision-record-repository.md)
+- [Compliance and Control Framework](compliance-and-control-framework.md)

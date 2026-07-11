@@ -1,95 +1,57 @@
-# Platform Lifecycle, Versioning, and Historical Lineage Model
+# Lifecycle Versioning and Historical Lineage Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines how meaning is preserved through changes in software, schemas, organizations, policies, agreements, identities, authority, classification, ownership, custody, integrations, and data.
+Preserve state transitions, effective periods, supersession, and lineage without silently rewriting history.
 
-Change is expected. Loss of historical meaning is not acceptable.
+## Architectural Requirements
 
-## Stable Identity and Immutable Versions
+### Stable Identity and Historical Versions
 
-Every long-lived object has:
+A durable entity identifier represents the continuing subject. Material changes are represented through version records, lifecycle events, or effective-dated relationships.
 
-- Stable object identifier
-- Immutable version identifier
-- Version or revision number
-- Effective period
-- System recording time
-- Change reason
-- Acting identity and organization
-- Policy version
-- Software and schema versions
-- Integrity metadata
-- Decision Record
+### Time Semantics
 
-## Valid Time and System Time
+The model distinguishes, where applicable:
 
-The Foundation distinguishes:
+- When an event actually occurred,
+- When the platform learned of it,
+- When a record became effective,
+- When it ceased to be effective,
+- When it was recorded.
 
-- Valid time: when the fact was true or legally effective
-- System time: when the platform recorded it
+### State Changes
 
-Critical domains may require bitemporal history.
+State transitions identify prior state, new state, actor or source, reason, governing policy, and timestamp. Invalid transitions are rejected.
 
-## Material Changes
+### Supersession and Correction
 
-Material changes create new versions or lifecycle events.
+Correction does not destroy the original record. A correction or superseding record links to the prior record and explains the change.
 
-Examples:
+### Lineage
 
-- Scope
-- Classification
-- Ownership
-- Authority
-- Policy
-- Agreement
-- Retention
-- Legal hold
-- Content correction
-- Approval requirement
+Derived or transformed records identify their source records, transformation context, and responsible workload where material to trust or audit.
 
-## Software and Schema Lifecycle
+### Current-State Views
 
-Material actions identify:
+Convenience views may expose current state, but the underlying historical records remain available and authoritative.
 
-- Application version
-- Build identifier
-- Source commit
-- Decision Engine version
-- Policy Engine version
-- Database function version
-- Database schema version
-- API contract version
-- Provider adapter version
+## SQL Implementation Mapping
 
-## Impact Analysis
+Migration `025_identity_lifecycle.sql` introduces identity lifecycle history. Migration `084_lifecycle_and_historical_lineage.sql` generalizes lifecycle and lineage structures.
 
-Material changes should produce:
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-```text
-NO_IMPACT
-REVALIDATION_REQUIRED
-LEASE_REVOCATION_REQUIRED
-RECLASSIFICATION_REQUIRED
-WORKFLOW_REQUIRED
-MANUAL_REVIEW_REQUIRED
-```
+## Validation Expectations
 
-## Historical Reconstruction
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-The platform must answer separately:
+## Related Documents
 
-- Was the decision valid under the rules then in force?
-- Would the same request be allowed under current rules?
-
-## Architectural Invariants
-
-1. Stable identity survives version changes.
-2. Material changes create immutable history.
-3. Valid time and system time remain distinct.
-4. Current state does not overwrite history.
-5. Future-effective changes do not apply early.
-6. Historical decisions reference historical versions.
-7. Corrections create linked records.
-8. Ownership, custody, and source-of-truth history are preserved.
-9. Every material lifecycle change produces a Decision Record.
+- [Governed Document and Policy Versioning](governed-document-and-policy-versioning-model.md)
+- [Decision Record Repository](decision-record-repository.md)
+- [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)

@@ -1,169 +1,105 @@
 # Platform Foundation Documentation
 
+> **Architecture status:** Normative and under active refinement.
+>
+> **SQL status:** Initial Foundation migrations `000–099` exist. Structural presence does not imply complete runtime, deployment, or operational enforcement.
+
 ## Purpose
 
-The Platform Foundation is a domain-neutral security, governance, authorization, compliance, resilience, lifecycle, and decision-recording layer intended for reuse across multiple systems.
+The Platform Foundation is a domain-neutral layer for trust, identity, authorization, governance, compliance, lifecycle, resilience, resource governance, observability, and accountable decision recording.
 
-Potential consumers include:
+Potential consumers include public safety, municipal finance, human resources, records management, permitting, fleet and asset systems, and future integrated services.
 
-- Public safety
-- Municipal finance
-- Human resources
-- Records management
-- Fleet and asset management
-- Permitting
-- Healthcare-connected services
-- Future vendor-integrated services
-
-The Foundation does not contain CAD, RMS, evidence, payroll, procurement, permitting, healthcare workflow, or vendor-specific business logic.
-
-## CIA Triad Architecture
-
-### Confidentiality
-
-The Foundation protects confidentiality through:
-
-- Trust separation
-- Device and identity assurance
-- Least privilege
-- Organization and jurisdiction scope
-- Purpose limitation
-- Data classification
-- Approval
-- Short-lived Authorization Leases
-- Revocation
-- Cross-organization access controls
-- No non-infrastructure God Access
-- Role accumulation and incompatible-authority checks
-
-### Integrity
-
-The Foundation protects integrity through:
-
-- PostgreSQL independent verification
-- Controlled database APIs
-- Append-only Decision Records
-- Immutable versions
-- Policy and document hashes
-- Historical lineage
-- Separation of duties
-- Evidence provenance
-- Assessment records
-- Tamper-evident controls
-- Protection from silent overwrites
-
-### Availability
-
-The Foundation protects availability through:
-
-- Service criticality
-- Resilience planning
-- Recovery objectives
-- Backup and restoration
-- Failover
-- Dependency management
-- Degraded operating modes
-- Provider transition
-- Capacity controls
-- Denial-of-service protections
-- Disaster recovery exercises
-- Recovery validation
-- Reconciliation after restoration
+The Foundation does not contain CAD, RMS, Evidence and Property, payroll, procurement, Fire/EMS workflow, or vendor-specific business logic.
 
 ## Non-Negotiable Principles
 
-1. Trust must be established before identity is evaluated.
-2. A valid certificate does not grant access.
-3. MFA does not grant access.
-4. Authentication establishes identity, not authority.
-5. Except for the unavoidable PostgreSQL infrastructure-superuser boundary, no human, application, service account, or database role may possess unrestricted platform authority.
-6. Role accumulation must not create effective God Access.
-7. The Go backend evaluates and attests.
-8. PostgreSQL independently verifies and enforces.
-9. Every `PASS`, `FAIL`, `NOT_REQUIRED`, and `NOT_EVALUATED` result must have a persistent record trail.
-10. Every policy, agreement, control, rule, and governed document used in a decision must be versioned, approved, effective-dated, and integrity-verifiable.
-11. Current state must not overwrite historical state.
-12. Shared infrastructure does not create centralized organizational authority.
-13. Data classification must affect handling and access decisions.
-14. Authorization must be scoped by identity, organization, service, purpose, classification, operation, jurisdiction, and time.
-15. Compliance must be represented through reusable controls, implementations, evidence, assessments, findings, remediation, exceptions, and risk decisions.
-16. A compliance framework name or product feature must never be treated as proof of compliance.
-17. Threats and abuse cases must be explicitly modeled.
-18. Availability, recovery, and degraded operation must be governed before implementation.
-19. Every material decision, lifecycle change, control assessment, finding, remediation action, exception, risk acceptance, failover, and recovery action must produce a persistent record.
-20. Every material workload, query, job, integration, and storage consumer must be attributable and resource-bounded.
-21. Monitoring must provide operational context, not only infrastructure symptoms.
-22. Monitoring and telemetry providers remain replaceable and may not become hidden core dependencies.
+1. Trust must be established before protected identity and authority are accepted.
+2. A certificate, password, MFA result, session, or role does not independently grant access.
+3. Authentication establishes identity; authorization establishes bounded authority.
+4. The Go backend will evaluate and attest; PostgreSQL will independently verify selected protected operations.
+5. No non-infrastructure actor may possess unrestricted platform authority.
+6. Role accumulation must not create an effective unrestricted account.
+7. Required decision stages fail closed when they return `FAIL` or `NOT_EVALUATED`.
+8. Material decisions must retain an attributable record.
+9. Policies, agreements, controls, rules, and governed documents used in decisions must be versioned and integrity-verifiable.
+10. Current state must not silently overwrite historical state.
+11. Shared infrastructure does not create centralized organizational authority.
+12. Authorization is bounded by identity, organization, service, purpose, operation, jurisdiction, classification, and time.
+13. Monitoring and integration providers remain replaceable.
+14. Workloads and resource consumption must be attributable and bounded.
+15. Availability, recovery, and degraded operation must be governed before production use.
 
-## Documentation Set
+## Documentation Groups
 
-```text
-platform-boundaries.md
-trust-and-decision-engine-model.md
-database-security-model.md
-organization-and-jurisdiction-model.md
-service-participation-and-federation-model.md
-organizational-attestation-and-access-eligibility-model.md
-approval-framework.md
-authority-and-authorization-model.md
-authorization-lease-model.md
-decision-record-repository.md
-data-classification-and-information-governance-model.md
-governed-document-and-policy-versioning-model.md
-lifecycle-versioning-and-historical-lineage-model.md
-compliance-and-control-framework.md
-common-security-control-catalog.md
-control-implementation-and-evidence-model.md
-risk-assessment-and-treatment-model.md
-compliance-profile-versioning-model.md
-security-finding-exception-and-remediation-model.md
-threat-and-abuse-case-model.md
-resilience-availability-and-recovery-model.md
-performance-efficiency-and-resource-governance-model.md
-client-experience-and-accessibility-model.md
-observability-health-and-operational-telemetry-model.md
-schema-naming-conventions.md
-sql-migration-map.md
-```
+### Boundaries, Trust, and Database Enforcement
 
-## Architectural Layers
+- [Platform Boundaries](platform-boundaries.md)
+- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Database Security](database-security-model.md)
+- [Schema Naming Conventions](schema-naming-conventions.md)
+- [SQL Migration Map](sql-migration-map.md)
 
-```text
-Platform Foundation
-        ↓
-Compliance Profiles
-        ↓
-Domain Platforms
-        ↓
-Domain Modules
-        ↓
-Service and Deployment Profiles
-        ↓
-Provider Adapters and User Interfaces
-```
+### Organizations, Services, Identity, and Eligibility
 
-Dependencies must never flow from the Foundation into a particular regulatory framework, domain module, deployment, or vendor product.
+- [Organization and Jurisdiction](organization-and-jurisdiction-model.md)
+- [Service Participation and Federation](service-participation-and-federation-model.md)
+- [Organizational Attestation and Access Eligibility](organizational-attestation-and-access-eligibility-model.md)
 
+### Approval and Authorization
 
-## Relationship to Project Goals
+- [Approval Framework](approval-framework.md)
+- [Authority and Authorization](authority-and-authorization-model.md)
+- [Authorization Lease](authorization-lease-model.md)
+- [Decision Record Repository](decision-record-repository.md)
 
-The project-level performance and efficiency goal is documented in:
+### Governance, Classification, and History
 
-```text
-docs/goals/performance-and-efficiency-goals.md
-```
+- [Data Classification and Information Governance](data-classification-and-information-governance-model.md)
+- [Governed Document and Policy Versioning](governed-document-and-policy-versioning-model.md)
+- [Lifecycle Versioning and Historical Lineage](lifecycle-versioning-and-historical-lineage-model.md)
 
-The goal states the intended long-term outcome.
+### Compliance, Assurance, Findings, and Risk
 
-The Foundation performance and client-experience models define the requirements every implementation must follow.
+- [Compliance and Control Framework](compliance-and-control-framework.md)
+- [Common Security Control Catalog](common-security-control-catalog.md)
+- [Compliance Profile Versioning](compliance-profile-versioning-model.md)
+- [Control Implementation and Assurance Artifact Model](control-implementation-and-assurance-artifact-model.md)
+- [Security Finding, Exception, and Remediation](security-finding-exception-and-remediation-model.md)
+- [Risk Assessment and Treatment](risk-assessment-and-treatment-model.md)
+- [Threat and Abuse Case](threat-and-abuse-case-model.md)
 
+### Resilience, Performance, Experience, and Observability
 
-## Operational Simplicity Goal
+- [Resilience, Availability, and Recovery](resilience-availability-and-recovery-model.md)
+- [Performance, Efficiency, and Resource Governance](performance-efficiency-and-resource-governance-model.md)
+- [Client Experience and Accessibility](client-experience-and-accessibility-model.md)
+- [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)
 
-The project-level operational simplicity and supportability goal is documented in:
+## Current Implementation Boundaries
 
-```text
-docs/goals/operational-simplicity-and-supportability-goals.md
-```
+The `000–099` migrations establish the initial Foundation data model, selected controlled APIs, security inventory, and validation views.
 
-The Foundation observability and resource-governance models turn that goal into enforceable architecture.
+The following remain incomplete until separately implemented and tested:
+
+- Final production ownership and login-role topology,
+- Complete runtime grants and controlled write paths,
+- Full append-only enforcement,
+- Off-host integrity anchoring and protected export,
+- Migration-checksum population and enforcement,
+- Production Go services,
+- Provider adapters and workers,
+- Backup protection and restoration validation,
+- Break-glass procedures,
+- Trusted rebuild and compromise recovery,
+- Complete behavioral and concurrency tests.
+
+## Change Discipline
+
+A Foundation change should normally update:
+
+1. The governing architecture document,
+2. The applicable SQL migration or a new migration,
+3. The migration map,
+4. Automated tests,
+5. Operational or deployment documentation when the change crosses the database boundary.

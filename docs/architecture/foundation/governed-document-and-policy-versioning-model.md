@@ -1,101 +1,51 @@
-# Platform Governed Document and Policy Versioning Model
+# Governed Document and Policy Versioning Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines versioning, approval, effective dating, integrity, and historical preservation for policies, agreements, standards, procedures, regulations, and executable rules.
+Preserve authoritative, approved, effective-dated, and integrity-verifiable versions of policies, agreements, procedures, and other governed documents.
 
-## Core Principle
+## Architectural Requirements
 
-A policy name alone is not sufficient.
+### Document Identity and Version
 
-Every decision must reference the exact version in force at the time.
+A governed document has a stable identity. Each revision is a separate immutable version with version label, content reference, digest, authoring context, approval state, and effective period.
 
-## Required Identity
+### Lifecycle
 
-Every governed document has:
+Typical states include draft, submitted, approved, effective, superseded, withdrawn, and retired. State changes are attributable and historically preserved.
 
-- Stable document identifier
-- Title
-- Version
-- Revision number where applicable
-- Approval date
-- Effective-from date
-- Effective-until date or explicit open-ended status
-- State
-- Approving authority
-- Supersession relationship
-- Integrity hash
-- Storage reference
-- Decision Record
+### Approval
 
-## Lifecycle States
+A document cannot become effective without the approvals required by its document type and governing policy.
 
-```text
-DRAFT
-UNDER_REVIEW
-APPROVED
-SCHEDULED
-ACTIVE
-SUSPENDED
-SUPERSEDED
-EXPIRED
-RETIRED
-WITHDRAWN
-```
+### Integrity
 
-## Rule-Level References
+The authoritative content or canonical serialized representation is cryptographically hashed. External storage locations may be referenced, but the Foundation retains sufficient metadata to verify the exact content used in a decision.
 
-Evaluations should reference the specific:
+### Decision Binding
 
-- Section
-- Clause
-- Control
-- Rule identifier
-- Requirement
+A decision records the specific document and policy versions that were effective and evaluated. Later policy changes do not rewrite the historical basis of an earlier decision.
 
-used in the decision.
+### Supersession
 
-## Future-Effective Versions
+A new version supersedes rather than overwrites the old version. Effective intervals must not create ambiguous simultaneous authority unless explicitly allowed.
 
-A version approved today but effective later must not be enforced early.
+## SQL Implementation Mapping
 
-## Historical Resolution
+Migration `086_governed_documents_and_policy_versions.sql` provides the principal structural implementation. Migrations `050`, `055`, `088–090`, and `092` reference governed versions.
 
-Historical decisions use the version effective at the original evaluation timestamp.
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-Current policy must not retroactively redefine a past decision.
+## Validation Expectations
 
-## External Documents
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-External laws, regulations, contracts, and standards should preserve:
+## Related Documents
 
-- External authority
-- Publication or revision date
-- Edition
-- Internal adoption record
-- Retrieved date
-- Document hash
-- Source reference
-- Internal interpretation policy
-
-A live URL alone is insufficient.
-
-## Machine-Readable Rules
-
-Executable policy definitions must be linked to the human-governed document through:
-
-- Stable identifiers
-- Matching version
-- Effective dates
-- Hashes
-- Approval records
-
-## Architectural Invariants
-
-1. Every governed document has stable identity.
-2. Every material revision creates an immutable version.
-3. Every version has approval and effective dates.
-4. Decision Records reference exact versions.
-5. Historical decisions use historical rules.
-6. Missing required versions fail safely.
-7. PostgreSQL verifies version, scope, approval, effective period, and integrity.
+- [Lifecycle Versioning and Historical Lineage](lifecycle-versioning-and-historical-lineage-model.md)
+- [Approval Framework](approval-framework.md)
+- [Compliance Profile Versioning](compliance-profile-versioning-model.md)

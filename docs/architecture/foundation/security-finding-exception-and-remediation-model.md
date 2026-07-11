@@ -1,111 +1,53 @@
-# Platform Security Finding, Exception, and Remediation Model
+# Security Finding, Exception, and Remediation Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines how control deficiencies, findings, corrective actions, compensating controls, exceptions, and remediation are governed.
+Preserve attributable findings, corrective work, bounded exceptions, and closure decisions without hiding unresolved risk.
 
-## Finding
+## Architectural Requirements
 
-A Finding should include:
+### Finding
 
-- Stable finding identifier
-- Source assessment or event
-- Affected control and implementation
-- Organization, service, and system scope
-- Severity
-- Description
-- Evidence
-- First observed time
-- Responsible owner
-- Required response
-- Due date
-- Current status
-- Risk reference
-- Decision Records
+A finding identifies the affected scope, control or requirement, assessment source, condition, expected state, severity, risk context, discovery time, owner, and lifecycle state.
 
-## Finding States
+A finding is not deleted because it was corrected. Closure records the basis and verification.
 
-```text
-OPEN
-ACKNOWLEDGED
-REMEDIATION_PLANNED
-IN_REMEDIATION
-PENDING_VALIDATION
-CLOSED
-RISK_ACCEPTED
-DEFERRED
-SUPERSEDED
-```
+### Remediation
 
-A finding must not be closed solely because a status field was changed.
+A remediation plan defines responsible owner, actions, dependencies, milestones, target date, validation criteria, and status.
 
-Closure requires validating evidence and an authorized determination.
+Individual remediation actions are attributable and historically preserved.
 
-## Remediation Plan
+### Exception
 
-A plan should include:
+An exception is a formally approved, time-bounded deviation from a requirement or control. It identifies scope, rationale, compensating controls, risk, approvers, effective period, review date, and expiration.
 
-- Finding
-- Corrective action
-- Responsible organization and identity
-- Milestones
-- Due dates
-- Required evidence
-- Dependencies
-- Residual risk
-- Validation method
-- Approval
-- Decision Records
+An exception does not rewrite the requirement or declare the control satisfied.
 
-## Exception
+### Risk Acceptance
 
-An exception is a temporary approved deviation from an internal control or implementation requirement.
+Residual risk acceptance requires an authorized decision maker, explicit scope, reason, expiration or review period, and recorded decision.
 
-It must be:
+### Reopening
 
-- Explicit
-- Scoped
-- Reasoned
-- Approved
-- Time-bounded
-- Linked to affected controls
-- Linked to compensating controls
-- Reviewed
-- Revocable
+A closed finding may be reopened by a new record when validation fails, conditions recur, or the remediation no longer operates effectively.
 
-An exception cannot override a legal prohibition unless the governing authority explicitly permits it.
+## SQL Implementation Mapping
 
-## Compensating Control
+Migration `090_assessments_findings_remediation_exceptions_and_risk.sql` provides the principal structural implementation.
 
-A compensating control must identify:
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-- Original requirement
-- Reason the original implementation cannot be used
-- Alternative safeguard
-- Equivalent or improved objective
-- Evidence
-- Assessment procedure
-- Approver
-- Effective period
+## Validation Expectations
 
-## Escalation
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-Overdue or high-severity findings may trigger:
+## Related Documents
 
-- Lease restrictions
-- Service suspension
-- Additional approval requirements
-- Data-access restrictions
-- Incident response
-- Executive escalation
-- Regulatory notification workflow
-
-## Architectural Invariants
-
-1. Findings are append-only historical records.
-2. Closure requires evidence and validation.
-3. Exceptions are temporary and scoped.
-4. Compensating controls are explicitly assessed.
-5. Risk acceptance does not erase the finding.
-6. Expired exceptions fail safely.
-7. Every finding, remediation, closure, exception, and escalation creates a Decision Record.
+- [Risk Assessment and Treatment](risk-assessment-and-treatment-model.md)
+- [Control Implementation and Assurance Artifact Model](control-implementation-and-assurance-artifact-model.md)
+- [Decision Record Repository](decision-record-repository.md)

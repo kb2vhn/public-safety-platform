@@ -1,220 +1,73 @@
-# Platform Trust and Decision Engine Model
+# Trust and Decision Engine Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines how the Foundation establishes trust, authenticates identity, verifies organizational and operational authority, evaluates requested actions, and records the complete basis for every result.
+Define a fail-closed, explainable decision process for protected platform operations.
 
-## Core Principles
+## Architectural Requirements
 
-> Trust must be established before identity is evaluated.
+### Decision Inputs
 
-> Certificates and MFA are assurance inputs. They do not grant access.
+A protected decision may evaluate:
 
-> Authentication establishes identity, not authority.
+- Device and cryptographic trust,
+- Identity and account state,
+- Organization and service participation,
+- Current eligibility and attestations,
+- Session validity,
+- Purpose and requested operation,
+- Jurisdiction and data classification,
+- Required approvals,
+- Authorization policy,
+- Existing Authorization Lease,
+- Risk or security restrictions.
 
-> The Go backend evaluates and attests.
+### Stage Results
 
-> PostgreSQL independently verifies and enforces.
+Each stage returns exactly one of:
 
-> No high-level result is valid without a complete supporting-record chain.
+- `PASS`
+- `FAIL`
+- `NOT_REQUIRED`
+- `NOT_EVALUATED`
 
-## Assurance Is Not Authorization
+A required stage returning `FAIL` or `NOT_EVALUATED` denies the operation.
 
-The following are distinct:
+`NOT_REQUIRED` is valid only when the governing policy explicitly makes the stage inapplicable. It must not be used as a generic success value.
 
-```text
-Certificate Valid
-        ≠
-Device Trusted
-        ≠
-Identity Authenticated
-        ≠
-Organization Participating
-        ≠
-Person Eligible
-        ≠
-Assignment Active
-        ≠
-Approval Satisfied
-        ≠
-Authority Active
-        ≠
-Purpose Permitted
-        ≠
-Classification Compatible
-        ≠
-Authorization Lease Valid
-        ≠
-Operation Allowed
-```
+### Decision Output
 
-A certificate proves only that a credential was presented and validated according to policy.
+A decision includes the final result, reason codes, evaluated policy versions, actor and organization context, target and operation context, timestamps, stage results, and correlation identifiers.
 
-MFA increases confidence in identity authentication.
+### Independent Verification
 
-Neither proves organizational need, assignment, authority, purpose, scope, or permission.
+The runtime service may gather decision inputs and evaluate complex policy. PostgreSQL independently verifies the minimum protected conditions before performing a controlled database operation.
 
-## Runtime Flow
+### Revocation and Freshness
 
-```text
-Requesting System
-        ↓
-Cryptographic Trust Establishment
-        ↓
-Device Trust
-        ↓
-Identity Authentication
-        ↓
-Service Participation
-        ↓
-Organizational Attestations
-        ↓
-Access Eligibility
-        ↓
-Assignment and Current Validation
-        ↓
-Approval Framework
-        ↓
-Authority and Purpose Evaluation
-        ↓
-Data Classification and Handling Evaluation
-        ↓
-Go Decision Evaluation
-        ↓
-Signed Trust Assertion
-        ↓
-PostgreSQL Trust Gate
-        ↓
-Authorization Lease
-        ↓
-Protected Operation
-        ↓
-Decision Record and Justification Chain
-```
+Trust and authority are time-sensitive. A decision must evaluate expiration, revocation, replacement, and audience binding using a consistent transaction or statement time model.
 
-## Evaluation States
+### Explainability
 
-Every stage must produce:
+A denial must be understandable without exposing secrets. A success must retain enough context to show why it was permitted.
 
-```text
-PASS
-FAIL
-NOT_REQUIRED
-NOT_EVALUATED
-```
+## SQL Implementation Mapping
 
-### PASS
+The principal migrations are `010`, `045`, `055`, `060`, `065`, `070`, `075`, and `080`.
 
-Requires authoritative supporting records.
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-### FAIL
+## Validation Expectations
 
-Must record examined state, required state, and reason.
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-### NOT_REQUIRED
+## Related Documents
 
-Must reference the exact policy rule making the stage unnecessary.
-
-### NOT_EVALUATED
-
-Must record why evaluation did not occur.
-
-A required `NOT_EVALUATED` result must fail safely.
-
-## Composite Evaluations
-
-A conclusion such as:
-
-```text
-PASS - CJIS handling requirements satisfied
-```
-
-must be a parent evaluation containing child evaluations for:
-
-- Classification
-- Policy version
-- Organization participation
-- Identity assurance
-- Device trust
-- Personnel relationship
-- Eligibility
-- Authority
-- Purpose
-- Destination
-- Approval
-- Lease
-
-The parent may pass only when every required child passes.
-
-## Go Responsibilities
-
-The Go backend may:
-
-- Validate mTLS and certificate chains
-- Perform revocation checks
-- Resolve devices and identities
-- Gather policy and authoritative record identifiers
-- Evaluate application logic
-- Produce signed Trust Assertions
-- Request leases
-- Coordinate workflows
-- Record application-stage evaluation results
-
-Go must not create database authority by supplying:
-
-- Role names
-- Boolean flags
-- User identifiers
-- Device identifiers
-- Client timestamps
-- Unverified scope
-- Unversioned policy names
-
-## PostgreSQL Responsibilities
-
-PostgreSQL independently verifies:
-
-- Trust Provider
-- Connection role
-- Assertion signature, audience, environment, lifetime, and replay state
-- CA, certificate, and device state
-- Identity state
-- Service participation
-- Attestation authority and records
-- Eligibility
-- Assignment and validation
-- Approval
-- Authority
-- Purpose
-- Classification and handling requirements
-- Organization and jurisdiction scope
-- Policy versions
-- Lease expiration and revocation
-
-## No God Access
-
-Except for the unavoidable infrastructure-superuser boundary, no identity may independently possess unrestricted authority across:
-
-- Identity administration
-- Device trust
-- Organization administration
-- Policy administration
-- Approval
-- Authority granting
-- Data access
-- Decision-record administration
-- Audit administration
-- Operational execution
-
-The Decision Engine must evaluate both individual grants and combined authority.
-
-## Architectural Invariants
-
-1. Untrusted systems do not reach user authentication.
-2. Certificates and MFA do not grant access.
-3. Authentication alone does not establish authority.
-4. No `PASS` exists only in memory.
-5. PostgreSQL verifies Go-supplied claims independently.
-6. Required `NOT_EVALUATED` fails safely.
-7. Role accumulation is evaluated.
-8. Every final result is reconstructable from persistent records.
+- [Database Security](database-security-model.md)
+- [Authorization Lease](authorization-lease-model.md)
+- [Decision Record Repository](decision-record-repository.md)
+- [Approval Framework](approval-framework.md)

@@ -1,138 +1,51 @@
-# Platform Common Security Control Catalog
+# Common Security Control Catalog
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines the generic control catalog capability used by all compliance profiles and domains.
+Define reusable control outcomes that can be implemented once and mapped to many compliance or policy sources.
 
-The catalog provides stable internal controls that external requirements may map to without forcing the Foundation to depend on a specific framework.
+## Architectural Requirements
 
-## Control Families
+### Control Definition
 
-The Foundation should support control families such as:
+A common control includes a stable identifier, title, objective, control statement, control family, ownership, applicability guidance, lifecycle state, and version.
 
-```text
-AC - Access Control
-AT - Awareness and Training
-AU - Audit and Accountability
-CA - Assessment and Authorization
-CM - Configuration Management
-CP - Contingency Planning
-IA - Identification and Authentication
-IR - Incident Response
-MA - Maintenance
-MP - Media Protection
-PE - Physical and Environmental Protection
-PL - Planning
-PM - Program Management
-PS - Personnel Security
-RA - Risk Assessment
-SA - System and Services Acquisition
-SC - System and Communications Protection
-SI - System and Information Integrity
-SR - Supply Chain Risk Management
-GV - Governance
-DG - Data Governance
-PR - Privacy
-BC - Business Continuity
-```
+### Reuse
 
-These family identifiers are internal organizational categories unless explicitly mapped to an external standard.
+One common control may support requirements from CJIS, HIPAA, IRS Publication 1075, state policy, local policy, or contractual sources. Mappings do not merge or erase the original requirement text.
 
-## Control Definition
+### Versioning
 
-A Common Control should include:
+Material changes create a new control version. Historical assessments and decisions remain linked to the exact control version evaluated.
 
-- Stable control identifier
-- Control family
-- Title
-- Objective
-- Requirement statement
-- Rationale
-- Applicability rules
-- Implementation guidance
-- Evidence requirements
-- Assessment procedure
-- Review frequency
-- Control owner role
-- Control operator role
-- Independent assessor requirements
-- Dependencies
-- Related controls
-- Version
-- Effective period
-- Status
-- Integrity hash
-- Decision Record
+### Control Types
 
-## Control Types
+Controls may address preventive, detective, corrective, deterrent, recovery, governance, privacy, resilience, or operational outcomes.
 
-Controls may be:
+### Ownership
 
-- Preventive
-- Detective
-- Corrective
-- Deterrent
-- Compensating
-- Recovery
-- Administrative
-- Technical
-- Physical
-- Privacy-related
+A control owner maintains the definition. Implementation owners remain responsible for scoped implementations. Assessors independently evaluate effectiveness where required.
 
-A control may have more than one type.
+### Status
 
-## Common Controls and System-Specific Controls
+Draft, approved, effective, superseded, withdrawn, and retired states must be explicitly governed.
 
-A control may be:
+## SQL Implementation Mapping
 
-- Organization-wide
-- Platform-wide
-- Service-wide
-- Domain-specific
-- System-specific
-- Deployment-specific
-- Provider-supplied
-- Inherited
+Migration `087_common_control_catalog.sql` provides the principal structural implementation.
 
-## Control Enhancements
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-A control may have optional or required enhancements.
+## Validation Expectations
 
-Enhancements must have stable identifiers and independent applicability rules.
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-## Control Relationships
+## Related Documents
 
-Relationships may include:
-
-```text
-DEPENDS_ON
-SUPPORTS
-PARTIALLY_SATISFIES
-COMPENSATES_FOR
-INHERITS_FROM
-SUPERSEDES
-CONFLICTS_WITH
-REQUIRES_EVIDENCE_FROM
-```
-
-## Versioning
-
-A control update must preserve:
-
-- Prior wording
-- Prior evidence requirements
-- Prior assessment procedure
-- Prior applicability
-- Effective dates
-- Supersession relationships
-- Historical profile mappings
-
-## Architectural Invariants
-
-1. Common controls are framework-neutral.
-2. External requirements map to controls rather than becoming Foundation logic.
-3. Control identifiers remain stable across wording changes.
-4. Material changes create new versions.
-5. Control applicability is explicit.
-6. Required evidence and assessment procedures are defined.
-7. Historical mappings remain reconstructable.
+- [Compliance and Control Framework](compliance-and-control-framework.md)
+- [Compliance Profile Versioning](compliance-profile-versioning-model.md)
+- [Control Implementation and Assurance Artifact Model](control-implementation-and-assurance-artifact-model.md)

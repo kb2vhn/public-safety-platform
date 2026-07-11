@@ -1,80 +1,81 @@
-# Platform Schema and Naming Conventions
+# Schema Naming Conventions
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines naming conventions for reusable Foundation schemas and domain schemas.
+Keep PostgreSQL objects predictable, reviewable, and resistant to accidental ambiguity as the platform grows.
 
-## General Rules
+## Architectural Requirements
 
-- Use `snake_case`.
-- Use plural table names.
-- Use stable UUID primary keys unless otherwise justified.
-- Name primary keys `<entity>_id`.
-- Use `timestamptz`.
-- Use explicit effective periods.
-- Use controlled vocabularies for lifecycle states.
-- Avoid vendor-specific names in canonical tables.
+### General Form
 
-## Domain Neutrality
+- SQL identifiers use lowercase `snake_case`.
+- Schema, table, column, constraint, index, sequence, view, and function names are descriptive.
+- Avoid abbreviations unless they are established platform terms.
+- Reserved words and quoted mixed-case identifiers are prohibited.
+- Objects are schema-qualified in migrations and security-sensitive functions.
 
-Prefer:
+### Schemas
 
-```text
-services
-organizations
-attestation_authorities
-access_eligibility_grants
-authority_grants
-decision_records
-classification_assignments
-```
+Schemas represent stable capability boundaries, not individual features or developers. Domain modules use their own schemas and do not place application objects in `public`.
 
-Avoid Foundation names tied to CAD, RMS, finance, or any vendor.
+### Tables and Views
 
-## Security-Sensitive State
+Tables use plural nouns when they represent collections. Link tables describe both sides of the relationship. Views use names that describe the projection or validation question.
 
-Do not reduce complex state to unexplained Booleans such as:
+### Keys
 
-```text
-is_authorized
-is_approved
-is_trusted
-is_eligible
-```
+Primary keys use `<entity>_id`. Foreign keys use the referenced entity name. Stable external identifiers and human-readable codes are separate from internal primary keys.
 
-when attribution, scope, time, reason, approval, and revocation history are required.
+### Time
 
-## Versioned Records
+Use `timestamptz` for operational times. Names describe meaning, such as `issued_at`, `effective_from`, `effective_until`, `recorded_at`, `revoked_at`, or `superseded_at`.
 
-Versioned records should generally include:
+Avoid ambiguous names such as `date`, `time`, or `timestamp`.
+
+### Constraints and Indexes
+
+Recommended patterns:
 
 ```text
-version_id
-version_number
-effective_from
-effective_until
-recorded_at
-recorded_by_identity_id
-supersedes_version_id
-decision_id
+pk_<table>
+fk_<table>__<referenced_table>
+uq_<table>__<columns>
+ck_<table>__<rule>
+ix_<table>__<columns>
 ```
 
-## Functions
+Names may be shortened only when PostgreSQL's identifier limit requires it, while retaining unambiguous meaning.
 
-Use verb-first names:
+### Functions
+
+Functions use verb phrases that describe behavior. Assertions begin with `assert_`, verification functions with `verify_`, controlled mutations with an explicit action verb, and validation views or functions with `validate_` where appropriate.
+
+### Migration Files
+
+Foundation migration files use:
 
 ```text
-verify_trust_assertion
-create_authorization_lease
-record_decision
-grant_access_eligibility
-revoke_authority_grant
+NNN_descriptive_name.sql
 ```
 
-## Architectural Invariants
+The filename stem is the migration identifier recorded by the migration registry and listed in the manifest.
 
-1. Names communicate ownership.
-2. Foundation names remain domain-neutral.
-3. Historical and lifecycle concepts are explicit.
-4. Vendor-specific names do not enter canonical schemas.
-5. Security-sensitive state is not reduced to unexplained Booleans.
+## SQL Implementation Mapping
+
+Migration `000_platform_initialization.sql` establishes the initial schema set and migration registry. All Foundation migrations must follow these conventions or document a justified exception.
+
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
+
+## Validation Expectations
+
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
+
+## Related Documents
+
+- [SQL Migration Map](sql-migration-map.md)
+- [Database Security](database-security-model.md)
+- [PostgreSQL Architecture](../postgresql.md)

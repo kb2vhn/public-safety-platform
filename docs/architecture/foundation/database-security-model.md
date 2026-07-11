@@ -1,138 +1,72 @@
-# Platform Database Security Model
+# Database Security Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines PostgreSQL as an independent enforcement boundary.
+Define PostgreSQL as an independent security boundary rather than a passive datastore.
 
-PostgreSQL is not a passive data store.
+## Architectural Requirements
 
-## Infrastructure Superuser Boundary
+### Role Classes
 
-PostgreSQL necessarily has cluster-level superuser capability.
+Production deployment must separate non-login ownership roles, migration roles, runtime roles, controlled writers, read-only investigators, audit readers, and validation readers.
 
-That capability must be treated as infrastructure-level emergency authority, not normal platform authority.
+Login roles must not own protected schemas or tables.
 
-Controls should include:
+### Controlled Access
 
-- Separate named administrator identities
-- No shared operational credential
-- Strong authentication
-- Restricted network path
-- Mandatory reason for use
-- Break-glass procedure
-- Monitoring
-- Independent review
-- No use by the Go backend
-- No routine application access
+End-user applications do not receive direct table access. Protected actions use narrowly scoped functions or repository roles with only the required privileges.
 
-## No Non-Infrastructure God Access
+### Function Security
 
-Except for the infrastructure-superuser boundary, no human, service account, application identity, or database role may possess unrestricted authority across:
+Security-sensitive functions must:
 
-- Schema ownership
-- Identity administration
-- Device trust administration
-- Policy creation and activation
-- Approval administration
-- Authority creation
-- Data access
-- Decision Record modification
-- Audit administration
-- Operational execution
+- Use schema-qualified object references,
+- Set a controlled `search_path`,
+- Revoke execution from `PUBLIC`,
+- Validate all caller-supplied identifiers and scope,
+- Return minimal information,
+- Avoid dynamic SQL unless it is strictly bounded,
+- Use the least powerful owner compatible with the requirement.
 
-## Role Accumulation
+### Table Security
 
-The platform must prevent separately limited roles from combining into effective God Access.
+The database uses constraints, foreign keys, unique rules, check constraints, privileges, row policies where appropriate, and immutable or append-oriented write models.
 
-Example prohibited concentration:
+Row-level security is an additional boundary, not a substitute for correct grants and controlled APIs.
 
-```text
-Database Administrator
-+ Platform Security Administrator
-+ Policy Administrator
-+ Service Owner
-+ Data Owner Delegate
-+ Approval Administrator
-+ Operational Executor
-```
+### No Unrestricted Platform Account
 
-The Foundation must support:
+No application or ordinary administrator account may accumulate universal read, write, approval, authorization, and audit-rewrite authority.
 
-- Incompatible authority sets
-- Separation-of-duty policies
-- Maximum authority concentration rules
-- Independent grant approval
-- Periodic access review
-- Time-bounded elevation
-- Revocation propagation
+The PostgreSQL superuser and operating-system administrator remain unavoidable infrastructure trust boundaries. Their activity must be constrained by operational procedure, off-host logging, protected backups, and trusted recovery.
 
-## Suggested Role Classes
+### Secret Handling
 
-- Database owner
-- Migration role
-- Application connection role
-- Trust Provider role
-- Security function owner
-- Decision Record writer
-- Decision Record reader
-- Audit reader
-- Reporting reader
-- Streaming service reader
-- Validation role
+Runtime secrets are not stored in source code. Lease secrets and tokens must be high entropy, transmitted only over protected channels, stored as verifiers when possible, and never written to general logs.
 
-Application roles must not own protected schemas or security functions.
+### Time Consistency
 
-## Protected Operations
+Authorization checks should use a documented statement- or transaction-consistent time source unless wall-clock variation within a statement is explicitly required.
 
-Protected operations should use controlled functions that:
+## SQL Implementation Mapping
 
-- Validate Authorization Lease
-- Verify current supporting records
-- Enforce scope
-- Recheck revocation
-- Enforce separation of duties
-- Create Decision Records
-- Execute atomically where required
+Migration `000` establishes initial schema and privilege posture. Migrations `070` and `075` introduce controlled trust and authorization APIs. Migration `098` models role separation and security boundaries. Migration `099` provides validation inventories.
 
-## Row-Level Security
+Final deployment roles, ownership transfers, immutable write controls, and production grants remain deployment work.
 
-RLS restricts rows within an authorized operation.
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-RLS does not replace the Decision Engine.
+## Validation Expectations
 
-Trusted RLS context must not come from arbitrary client-set variables.
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-## `SECURITY DEFINER`
+## Related Documents
 
-Every `SECURITY DEFINER` function must:
-
-- Use an explicit fixed `search_path`
-- Be owned by a non-login role
-- Validate the caller
-- Avoid uncontrolled dynamic SQL
-- Avoid trusting raw session settings
-- Record material decisions
-- Return minimal failure detail
-
-## Break-Glass Access
-
-Emergency access must be:
-
-- Explicit
-- Time-bounded where possible
-- Purpose-limited
-- Independently approved
-- Fully recorded
-- Reviewed after use
-- Unable to alter prior Decision Records
-
-## Architectural Invariants
-
-1. PostgreSQL independently verifies protected access.
-2. No application role is a God account.
-3. Role accumulation is evaluated.
-4. Application roles do not own protected security objects.
-5. Direct table privileges are minimized.
-6. RLS is defense in depth.
-7. Break-glass use is exceptional and reviewable.
-8. Decision Records remain protected from ordinary administrators.
+- [PostgreSQL Architecture](../postgresql.md)
+- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Decision Record Repository](decision-record-repository.md)
+- [SQL Migration Map](sql-migration-map.md)

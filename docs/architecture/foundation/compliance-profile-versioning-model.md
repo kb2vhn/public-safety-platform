@@ -1,100 +1,51 @@
-# Platform Compliance Profile Versioning Model
+# Compliance Profile Versioning Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines how external and internal requirements are mapped into versioned compliance profiles.
+Preserve the exact external or internal requirement set used for control mapping, assessment, and compliance reporting.
 
-## Compliance Profile
+## Architectural Requirements
 
-A profile represents a defined set of requirements for a scope.
+### Profile Identity
 
-Examples may include:
+A profile represents a governed source or baseline, such as a specific CJIS Security Policy release, HIPAA-derived baseline, IRS Publication 1075 edition, state requirement set, contract, or local policy.
 
-- CJIS Security Policy profile
-- HIPAA Security Rule profile
-- IRS Publication 1075 profile
-- PCI DSS profile
-- State records profile
-- Local policy profile
-- Contractual security profile
+### Profile Version
 
-## Profile Contents
+Every source revision is a separate version with source identifier, publication or adoption date, effective period, approval, lifecycle state, and integrity metadata.
 
-A profile should include:
+### Requirements
 
-- Stable profile identifier
-- Title
-- Issuing authority
-- Source framework
-- Source version or publication date
-- Internal version
-- Approval date
-- Effective period
-- Applicable scope
-- Requirement mappings
-- Required control versions
-- Evidence requirements
-- Assessment frequency
-- Exceptions policy
-- Transition rules
-- Integrity hash
-- Decision Record
+Individual requirements retain source identifiers, hierarchy, citations, applicability, and source-version relationship.
 
-## Requirement Mapping
+### Mapping
 
-Each profile requirement maps:
+Mappings connect a requirement version to one or more common-control versions with relationship type, rationale, coverage, and review state.
 
-```text
-External Requirement
-        ↓
-Internal Profile Requirement
-        ↓
-Common Control or Control Enhancement
-        ↓
-Required Implementation
-        ↓
-Required Evidence
-        ↓
-Assessment Procedure
-```
+### Historical Accuracy
 
-## Multiple Profiles
+An assessment or decision records the profile, requirement, control, and implementation versions evaluated at that time.
 
-A service may be subject to multiple profiles.
+### Update Process
 
-The effective requirement set is normally the union of all applicable obligations, with conflicts resolved through explicit legal, policy, and Data Owner review.
+A new source release does not overwrite the prior profile. Differences are reviewed, mappings are re-evaluated, and affected implementations are identified.
 
-## Version Changes
+## SQL Implementation Mapping
 
-When an external framework changes, the platform must preserve:
+Migration `088_compliance_profiles_and_requirement_mappings.sql` provides the principal structural implementation.
 
-- Previous source version
-- New source version
-- Changed requirements
-- Transition date
-- Grace period where legally permitted
-- Affected controls
-- Affected implementations
-- Reassessment requirements
-- Historical decisions
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-## Profile Activation
+## Validation Expectations
 
-A profile version must not become active without:
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-- Verified source reference
-- Internal review
-- Approval
-- Effective date
-- Scope
-- Integrity metadata
+## Related Documents
 
-## Architectural Invariants
-
-1. Compliance profiles are separate from Foundation control mechanics.
-2. Every profile is versioned and effective-dated.
-3. Requirement mappings are explicit.
-4. Multiple profiles may apply simultaneously.
-5. Missing required mappings fail safely.
-6. Historical assessments use historical profile versions.
-7. Current profiles do not rewrite prior compliance determinations.
+- [Compliance and Control Framework](compliance-and-control-framework.md)
+- [Common Security Control Catalog](common-security-control-catalog.md)
+- [Governed Document and Policy Versioning](governed-document-and-policy-versioning-model.md)

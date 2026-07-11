@@ -1,196 +1,61 @@
-# Platform Compliance and Control Framework
+# Compliance and Control Framework
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines the domain-neutral compliance capabilities provided by the Platform Foundation.
+Represent reusable controls and map them to external or internal requirements without treating a framework name as proof of security or compliance.
 
-The Foundation does not declare a system compliant merely because a named framework, encryption feature, certificate, MFA method, or audit log exists.
+## Architectural Requirements
 
-Compliance requires identifiable requirements, assigned controls, implemented safeguards, persistent evidence, assessment, findings, remediation, exceptions, risk decisions, and accountable authorization.
+### Framework-Neutral Layers
 
-## Core Principle
+The model separates:
 
-```text
-External or Internal Requirement
-        ↓
-Compliance Profile Requirement
-        ↓
-Common Control
-        ↓
-Control Implementation
-        ↓
-Implementation Evidence
-        ↓
-Assessment
-        ↓
-Finding or Satisfactory Result
-        ↓
-Remediation, Exception, or Risk Decision
-        ↓
-Current Attested Status
-```
+1. Common control definitions,
+2. Compliance profiles and requirement versions,
+3. Requirement-to-control mappings,
+4. Scoped control implementations,
+5. Assurance artifacts,
+6. Assessments,
+7. Findings and remediation,
+8. Exceptions and risk decisions.
 
-No layer may be skipped when policy requires it.
+### Common Controls
 
-## Foundation Responsibilities
+A common control states an intended security, privacy, resilience, governance, or operational outcome. It is not tied to one external framework.
 
-The Foundation provides reusable models for:
+### Requirement Mapping
 
-- Control identifiers and control families
-- Control objectives
-- Control ownership
-- Control applicability
-- Control implementations
-- Shared and inherited controls
-- Evidence requirements
-- Evidence collection
-- Assessments
-- Findings
-- Deficiencies
-- Corrective action
-- Remediation tracking
-- Compensating controls
-- Exceptions
-- Risk acceptance
-- Review schedules
-- Attestation
-- Historical status
-- Compliance profile mapping
-- Decision Records and Justification Chains
+A requirement from a specific source and version maps to one or more common controls with a documented relationship and rationale.
 
-## Foundation Non-Responsibilities
+### Implementation
 
-The Foundation does not hard-code:
+A control implementation explains how a particular organization, service, system, workload, or deployment satisfies the control.
 
-- CJIS-specific operational procedures
-- HIPAA-specific healthcare workflows
-- IRS Publication 1075 implementation details
-- PCI DSS payment-processing architecture
-- State-specific records schedules
-- Local facility procedures
-- Vendor implementation instructions
+### Assurance
 
-Those belong in compliance profiles, domain models, and deployment documentation.
+Assurance artifacts support evaluation but do not automatically prove effectiveness. Assessments determine whether the implementation is suitably designed, implemented, and operating as required.
 
-## Compliance Scope
+### Compliance Claims
 
-Compliance applicability may be scoped by:
+A compliance status or certification claim is outside the meaning of a simple mapping. Any claim must identify scope, source version, assessor, period, exceptions, and governing authority.
 
-- Organization
-- Service
-- Domain
-- Module
-- System
-- Environment
-- Facility
-- Network segment
-- Data classification
-- Record type
-- Provider
-- Jurisdiction
-- Regulatory authority
-- Effective period
+## SQL Implementation Mapping
 
-A control may be applicable in one scope and not applicable in another.
+Migrations `087–090` provide the principal structural implementation for control catalogs, compliance profiles, mappings, implementations, assurance artifacts, assessments, findings, remediation, exceptions, and risk.
 
-## Control States
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-A control implementation may have states such as:
+## Validation Expectations
 
-```text
-NOT_APPLICABLE
-PLANNED
-PARTIALLY_IMPLEMENTED
-IMPLEMENTED
-OPERATING
-INEFFECTIVE
-DEFICIENT
-SUSPENDED
-SUPERSEDED
-RETIRED
-```
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-A state alone is not sufficient. It must be supported by evidence and assessment records.
+## Related Documents
 
-## Assessment Results
-
-Assessment results may include:
-
-```text
-SATISFIED
-PARTIALLY_SATISFIED
-NOT_SATISFIED
-NOT_APPLICABLE
-NOT_TESTED
-INCONCLUSIVE
-```
-
-A required `NOT_TESTED` or `INCONCLUSIVE` result must not be represented as compliant.
-
-## Shared and Inherited Controls
-
-A service may inherit controls from:
-
-- Platform infrastructure
-- Identity provider
-- Network provider
-- Data center
-- Cloud provider
-- Managed service provider
-- Organizational policy
-- Shared security service
-
-Inheritance must be explicit and must identify:
-
-- Control source
-- Responsible organization
-- Scope
-- Evidence
-- Effective period
-- Review requirements
-- Limitations
-- Termination effects
-
-## Compliance Status
-
-Compliance status must be derived from current records, not manually asserted as an unsupported Boolean.
-
-A status calculation should consider:
-
-- Applicable profile requirements
-- Required controls
-- Control implementations
-- Evidence freshness
-- Assessment results
-- Open findings
-- Accepted risks
-- Active exceptions
-- Remediation deadlines
-- Expired documents
-- Scope changes
-
-## Prohibited Claims
-
-The platform must not infer:
-
-```text
-"Uses MFA" = Compliant
-"Uses encryption" = Compliant
-"Has a certificate" = Compliant
-"Uses Zero Trust" = Compliant
-"Has audit logs" = Compliant
-"Passed once" = Currently compliant
-```
-
-## Architectural Invariants
-
-1. Compliance is derived from persistent records.
-2. Every applicable requirement maps to one or more controls.
-3. Every implemented control identifies responsible parties and scope.
-4. Evidence has provenance, integrity, collection time, and retention.
-5. Assessments are attributable and versioned.
-6. Findings cannot be erased by changing status fields.
-7. Exceptions and risk acceptance are explicit, approved, scoped, and time-bounded.
-8. Compliance profiles are separate from the generic Foundation.
-9. Current compliance status does not rewrite historical status.
-10. Every material compliance action creates a Decision Record.
+- [Common Security Control Catalog](common-security-control-catalog.md)
+- [Compliance Profile Versioning](compliance-profile-versioning-model.md)
+- [Control Implementation and Assurance Artifact Model](control-implementation-and-assurance-artifact-model.md)
+- [Security Finding, Exception, and Remediation](security-finding-exception-and-remediation-model.md)

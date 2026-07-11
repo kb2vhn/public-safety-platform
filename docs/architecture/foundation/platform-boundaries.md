@@ -1,76 +1,51 @@
-# Platform Foundation Boundaries
+# Platform Boundaries
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines the responsibilities and limits of the reusable Platform Foundation.
+Define what belongs in the reusable Platform Foundation and prevent domain, provider, and deployment concerns from leaking into it.
 
-## Foundation Responsibilities
+## Architectural Requirements
 
-The Foundation owns reusable capabilities for:
+### Included in the Foundation
 
-- Cryptographic participation and device trust
-- Identity references and lifecycle
-- Organizations and jurisdictions
-- Service participation and federation
-- Attestation authorities
-- Access Eligibility
-- Approval
-- Authority and authorization policy
-- Authorization Leases
-- Decision Records and Justification Chains
-- Data classification and information governance
-- Policy and governed-document versioning
-- Lifecycle and historical lineage
-- Common security controls
-- Compliance profile mappings
-- Control implementations
-- Evidence and assessments
-- Findings, remediation, exceptions, and risk acceptance
-- Retention and legal holds
-- Integration contracts
-- Audit integrity
-- Platform configuration
-- Performance and resource governance
-- Client experience and accessibility
-- Canonical health, observability, and operational telemetry
-- Monitoring-provider subscription contracts
+The Foundation owns reusable capabilities for identity references, device trust, organizations, jurisdictions, platform services, participation, federation, attestations, approvals, authority, sessions, Authorization Leases, decision records, classification, governed documents, lifecycle history, controls, compliance mappings, assurance, risk, resilience, workload governance, observability, and integration delivery state.
 
-## Compliance Boundary
+### Excluded from the Foundation
 
-The Foundation defines how controls, evidence, assessments, findings, risk, exceptions, and profiles are represented.
+The Foundation does not own dispatch incidents, units, calls for service, case reports, criminal records, evidence custody, personnel scheduling, payroll, fleet maintenance, Fire/EMS clinical workflow, vendor-specific payloads, or user-interface behavior.
 
-The Foundation does not hard-code the substantive requirements of CJIS, HIPAA, IRS Publication 1075, PCI DSS, or any state-specific framework.
+### Dependency Rule
 
-Those requirements belong in separately versioned compliance profiles.
+Operational modules may depend on Foundation identifiers and controlled APIs. Foundation schemas must not reference domain tables or require a particular provider.
 
-## Domain Responsibilities
+### Data Ownership
 
-Domain platforms define domain objects, operations, workflows, classifications, authority definitions, lifecycle states, policies, and control implementations.
+Each domain owns its business records. The Foundation owns only the cross-domain trust, policy, governance, and accountability records necessary to evaluate or explain protected actions.
 
-## Deployment Responsibilities
+### Enforcement Boundary
 
-A deployment defines the actual administrative, technical, physical, personnel, facility, provider, and operational implementation for a specific environment.
+PostgreSQL enforces database-level invariants. Runtime services enforce protocol, orchestration, external identity-provider interaction, and user-facing workflow. Deployment controls protect the host, credentials, backups, logs, and recovery process.
 
-## External Providers
+### Shared Infrastructure
 
-External systems may supply inherited controls or evidence through explicit contracts.
+Multiple organizations may share infrastructure without sharing authority. Organization and jurisdiction scope must remain explicit in every protected relationship.
 
-Provider claims must not be accepted without scope, provenance, validation, and current evidence.
+## SQL Implementation Mapping
 
-## No Centralized Authority by Hosting
+Migrations `000–099` define the current Foundation range. Later migration ranges are reserved for operational resources and domain modules. The exact range allocation is maintained in `sql-migration-map.md`.
 
-The Platform Operator may host infrastructure without becoming Service Owner, Data Owner, Personnel Authority, Access Sponsor, Operational Supervisor, Approval Authority, Compliance Assessor, or Risk Accepting Authority.
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-## Architectural Invariants
+## Validation Expectations
 
-1. The Foundation remains domain-neutral and framework-neutral.
-2. Domain modules and compliance profiles depend on Foundation contracts.
-3. The Foundation does not depend on a domain, framework, or vendor.
-4. Shared hosting does not imply unrestricted authority.
-5. Compliance claims require records and assessment.
-6. External providers do not replace the Decision Record Repository.
-7. Every protected operation and material compliance action is scoped, attributable, effective-dated, and recorded.
-8. Performance, resource efficiency, and client accessibility are Foundation requirements.
-9. High-end hardware must not be required for normal core operation.
-10. Monitoring providers are replaceable consumers, not sources of truth.
-11. Every material workload and integration must be attributable, bounded, and failure-contained.
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
+
+## Related Documents
+
+- [SQL Migration Map](sql-migration-map.md)
+- [Database Security](database-security-model.md)
+- [Organization and Jurisdiction](organization-and-jurisdiction-model.md)

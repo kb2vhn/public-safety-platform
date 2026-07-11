@@ -1,97 +1,51 @@
-# Platform Risk Assessment and Treatment Model
+# Risk Assessment and Treatment Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines reusable risk identification, analysis, treatment, acceptance, review, and historical preservation.
+Represent risk consistently enough to support accountable treatment, exception, acceptance, and prioritization decisions.
 
-## Risk Record
+## Architectural Requirements
 
-A Risk Record should include:
+### Risk Context
 
-- Stable risk identifier
-- Title
-- Description
-- Threat
-- Vulnerability
-- Affected assets and services
-- Organization and jurisdiction scope
-- Data classification
-- Likelihood
-- Impact
-- Inherent risk
-- Existing controls
-- Residual risk
-- Risk owner
-- Treatment decision
-- Review date
-- Effective period
-- Status
-- Supporting evidence
-- Policy version
-- Decision Records
+A risk record identifies the affected organization, service, asset, process, data classification, threat or abuse case, vulnerability or condition, and business or operational impact.
 
-## Treatment Options
+### Assessment
 
-```text
-MITIGATE
-AVOID
-TRANSFER
-ACCEPT
-DEFER
-ESCALATE
-```
+Risk assessment records the method, assessor, assumptions, likelihood, impact, existing controls, residual risk, assessment period, and governing criteria.
 
-## Risk Acceptance
+### Treatment
 
-Risk acceptance must be:
+Treatment options include avoid, reduce, transfer, accept, or another governed response. A treatment plan identifies owners, actions, target state, deadlines, dependencies, and validation.
 
-- Explicit
-- Attributable
-- Authorized by policy
-- Scoped
-- Time-bounded
-- Supported by rationale
-- Linked to affected controls and findings
-- Reviewed before expiration
-- Unable to conceal mandatory legal obligations
+### Acceptance
 
-## Risk Assessment Lifecycle
+Risk acceptance is a material authorization decision. It is scoped, effective-dated, time-bounded where practical, approved by the appropriate authority, and linked to the applicable finding, exception, or treatment plan.
 
-Possible states include:
+### Reassessment
 
-```text
-IDENTIFIED
-UNDER_ANALYSIS
-TREATMENT_PLANNED
-TREATMENT_IN_PROGRESS
-ACCEPTED
-MONITORED
-ESCALATED
-CLOSED
-SUPERSEDED
-```
+Material change, control failure, new threat information, incident experience, or expiration requires reassessment.
 
-## Reassessment Triggers
+### Reporting
 
-Reassessment may be required by:
+Risk summaries must preserve traceability to the underlying assessment without exposing restricted details beyond authorized audiences.
 
-- Material software change
-- New provider
-- New data classification
-- New organization participation
-- Policy or regulatory change
-- Security incident
-- Significant finding
-- Architecture change
-- New threat intelligence
-- Expired evidence
-- Control failure
+## SQL Implementation Mapping
 
-## Architectural Invariants
+Migration `090` provides assessment, exception, treatment, and risk structures. Migration `091` adds threats and abuse-case context.
 
-1. Risk acceptance is not silent noncompliance.
-2. Risk owners and accepting authorities remain distinct when policy requires.
-3. Acceptance is scoped and expires.
-4. Regulatory prohibitions cannot be waived by ordinary risk acceptance.
-5. Risk history remains immutable.
-6. Every treatment and acceptance decision creates a Decision Record.
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
+
+## Validation Expectations
+
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
+
+## Related Documents
+
+- [Threat and Abuse Case](threat-and-abuse-case-model.md)
+- [Security Finding, Exception, and Remediation](security-finding-exception-and-remediation-model.md)
+- [Approval Framework](approval-framework.md)

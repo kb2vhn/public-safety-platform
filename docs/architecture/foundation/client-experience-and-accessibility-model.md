@@ -1,171 +1,53 @@
-# Platform Client Experience and Accessibility Model
+# Client Experience and Accessibility Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines Foundation requirements for user-facing performance, modest client hardware, multi-monitor operation, network efficiency, graceful degradation, accessibility, and interaction quality.
+Define responsive, understandable, and accessible behavior across modest hardware, constrained networks, and degraded platform conditions.
 
-## Core Principle
+## Architectural Requirements
 
-> All user-facing modules must provide complete core functionality on an approved modest client reference profile. High-end processors, discrete graphics, excessive memory, or unusually fast networks must not be prerequisites for normal operation.
+### Experience Profiles
 
-## Reference Client Profile
+Client profiles describe expected device class, display constraints, input methods, network conditions, accessibility requirements, and supported operational role.
 
-A practical baseline should support:
+Deployment profiles describe expected scale, latency, availability, and resource limits.
 
-```text
-Low-power 4-core CPU
-8 GB RAM
-Integrated graphics
-Standard SSD
-Two or three 1080p displays
-Current supported browser
-Typical municipal LAN or VPN connection
-```
+### Responsiveness
 
-The application may support lower-end systems, but release testing must include this profile or a comparably modest target.
+Critical workflows define user-visible response budgets and progressive feedback. Long-running operations must expose status and allow safe retry or cancellation where appropriate.
 
-## Multi-Monitor Operation
+### Low-Bandwidth Operation
 
-The client must support multiple displays without wasteful duplication.
+The platform minimizes unnecessary payloads, repeated polling, oversized assets, and chatty request patterns. Critical status and action paths remain usable under constrained links.
 
-Requirements include:
+### Accessibility
 
-- One authenticated session
-- Shared state where practical
-- Independent workspaces
-- Detachable views
-- No duplicate polling per window
-- Controlled synchronization
-- Efficient focus and keyboard behavior
-- Predictable reconnect behavior
+Interfaces must support keyboard operation, readable contrast, clear focus, meaningful labels, scalable text, non-color-only status indicators, and compatible assistive technology.
 
-## Client Resource Budgets
+### Error Behavior
 
-Each major view should define budgets for:
+Errors identify what failed, whether the action was committed, whether retry is safe, and what the user should do next. Security-sensitive details remain protected.
 
-- Initial download size
-- Memory use
-- CPU use while active
-- CPU use while idle
-- Number of requests
-- Background update frequency
-- Maximum rendered items
-- Interaction latency
-- Search latency
-- Reconnect time
+### Degraded Conditions
 
-## Frontend Efficiency
+Clients clearly distinguish stale, queued, degraded, unavailable, and unknown states. They must not present stale authority or status as current fact.
 
-The client should favor:
+## SQL Implementation Mapping
 
-- Server-side pagination
-- Virtualized long lists
-- Incremental updates
-- Small API payloads
-- Lazy loading
-- Bounded caches
-- Efficient DOM updates
-- Cleanup of listeners and subscriptions
-- Limited animation
-- Minimal client dependency count
+Migration `094_client_and_deployment_performance_profiles.sql` provides the initial structural implementation for client and deployment expectations.
 
-The application must not load every module, workflow, record type, or asset at login.
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-## Network Efficiency
+## Validation Expectations
 
-The client must behave well over constrained links.
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-Requirements include:
+## Related Documents
 
-- Compressed responses
-- Delta updates
-- Request cancellation
-- Bounded retries
-- Exponential backoff
-- Explicit timeouts
-- Reconnection handling
-- Idempotent retry where appropriate
-- No aggressive polling
-- No repeated transfer of unchanged reference data
-
-## Map and Graphics Efficiency
-
-Maps and visual components should use:
-
-- Limited visible layers
-- Server-side filtering
-- Clustering
-- Simplified geometry
-- Incremental loading
-- Controlled refresh
-- Graceful fallback
-
-Advanced graphics must be optional enhancements, not requirements for core use.
-
-## Graceful Degradation
-
-The platform must remain usable when:
-
-- A monitor is disconnected
-- A browser window changes size
-- Latency increases
-- Live updates disconnect
-- Mapping is unavailable
-- A provider is slow
-- A search takes longer
-- Connectivity is temporarily lost
-
-Failure of a secondary feature must not freeze the entire application.
-
-## Accessibility
-
-User interfaces should support:
-
-- Keyboard navigation
-- Visible focus
-- Screen-reader compatibility
-- Sufficient contrast
-- Scalable text
-- Clear error messages
-- Non-color-only status indicators
-- Reduced-motion support
-- Predictable interaction patterns
-
-Accessibility is a platform requirement, not a module-specific afterthought.
-
-## Perceived Performance
-
-The platform should provide:
-
-- Fast initial usable state
-- Clear loading indicators
-- Immediate acknowledgement of submitted work
-- Progressive display of large results
-- Stable layout
-- Clear degraded-state indicators
-- Useful error recovery
-
-## Testing
-
-Release testing should include:
-
-- Modest laptop hardware
-- Multi-window and multi-monitor use
-- High-latency connections
-- Intermittent connectivity
-- Large result sets
-- Long-running sessions
-- Memory-leak checks
-- Browser reconnect scenarios
-- Accessibility validation
-
-## Architectural Invariants
-
-1. Core functionality works on modest client hardware.
-2. Multi-monitor use does not require duplicate full clients.
-3. Client resource budgets are explicit.
-4. Network behavior is bounded and efficient.
-5. Secondary feature failure does not disable core operation.
-6. Accessibility is mandatory.
-7. Performance measured only on development-class hardware is insufficient.
-8. Client regressions create findings and remediation.
+- [Performance and Efficiency Goals](../../goals/performance-and-efficiency-goals.md)
+- [Performance, Efficiency, and Resource Governance](performance-efficiency-and-resource-governance-model.md)
+- [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)

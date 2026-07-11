@@ -1,90 +1,63 @@
-# Platform Authorization Lease Model
+# Authorization Lease Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-An Authorization Lease is a short-lived PostgreSQL authorization object issued after independent database verification.
+Represent a short-lived, revocable, operation-bound capability issued only after a successful authorization decision.
 
-## Core Principle
+## Architectural Requirements
 
-Go requests. PostgreSQL decides.
+### Lease Properties
 
-## Lease Binding
+An Authorization Lease binds:
 
-A lease may bind:
+- Authorized identity and account,
+- Organization and service,
+- Session and trusted device context,
+- Purpose,
+- Operation and resource scope,
+- Jurisdiction and classification limits,
+- Governing policy and decision record,
+- Issue, activation, and expiration times,
+- Revocation and consumption state.
 
-- Trust Provider
-- Database role
-- Identity
-- Device and certificate
-- Session
-- Service
-- Organization
-- Eligibility
-- Assignment
-- Authority Grants
-- Approval state
-- Purpose
-- Data classification
-- Organization and jurisdiction scope
-- Policy versions
-- Decision Record
-- Issue and expiration times
+### Secret
 
-## Separate Lifetimes
+When a lease uses a bearer secret, the secret must be cryptographically random and high entropy. PostgreSQL stores only a verifier when possible. Secrets must not appear in logs, decision explanations, URLs, or general telemetry.
 
-| Object | Typical duration |
-|---|---:|
-| Certificate | Days |
-| Trust Assertion | Seconds |
-| Eligibility | Months or policy-defined |
-| Assignment or authority | Hours or policy-defined |
-| Session | Policy-controlled |
-| Authorization Lease | Short renewable interval |
+### Verification
 
-## Maximum Expiration
+A controlled operation verifies the lease secret, audience, scope, current time, revocation, session, and any single-use or consumption requirement.
 
-A lease must not outlive any required supporting record.
+Time evaluation must use a documented statement- or transaction-consistent clock unless a different behavior is explicitly justified.
 
-## Database Time
+### Lifetime
 
-PostgreSQL time is authoritative.
+Leases are short-lived and renewable only through a new decision or a narrowly defined renewal policy. Expiration is automatic and cannot be bypassed by client clock values.
 
-## Lease Proof
+### Revocation
 
-A plain UUID is insufficient.
+Security action, session termination, identity ineligibility, device distrust, policy change, or explicit administrative revocation may invalidate a lease.
 
-Use protected proof of possession or transaction-local verified context.
+### Fail Closed
 
-## Connection Pooling
+Missing, expired, revoked, consumed, wrong-audience, wrong-operation, or wrong-scope leases deny the operation without revealing secret-verification detail.
 
-Trusted context must not survive into unrelated pooled requests.
+## SQL Implementation Mapping
 
-## Renewal
+Migration `065_authorization_leases.sql` establishes the lease model. Migration `075_controlled_authorization_api.sql` provides the initial controlled verification API.
 
-Renewal is a new decision and requires current-state verification.
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-## Revocation
+## Validation Expectations
 
-Revocation may result from:
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-- Device or certificate revocation
-- Identity disablement
-- Participation suspension
-- Eligibility revocation
-- Assignment end
-- Approval withdrawal
-- Authority revocation
-- Policy change
-- Classification change
-- Trust Provider revocation
+## Related Documents
 
-## Architectural Invariants
-
-1. Only PostgreSQL issues leases.
-2. Lease creation requires independent verification.
-3. Lease duration is short.
-4. PostgreSQL time is authoritative.
-5. Renewal is a new decision.
-6. Revocation takes effect before natural expiration.
-7. A plain UUID is not proof.
-8. Every lease event creates a Decision Record.
+- [Authority and Authorization](authority-and-authorization-model.md)
+- [Database Security](database-security-model.md)
+- [Decision Record Repository](decision-record-repository.md)

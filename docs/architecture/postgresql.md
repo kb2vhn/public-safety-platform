@@ -1,478 +1,74 @@
-# Decision: PostgreSQL as the Platform Data Foundation
+# PostgreSQL Architecture
 
-## Status
-
-Accepted
-
-## Date
-
-2026-07-10
+> **Status:** Adopted architectural direction with an active Foundation migration implementation.
 
 ## Decision
 
-The Public Safety Platform will use PostgreSQL as the authoritative relational data store for core platform data and operational module data.
+PostgreSQL is the authoritative transactional database for the Platform Foundation and future operational modules.
 
-PostgreSQL was selected because it provides the reliability, consistency, security controls, extensibility, and operational maturity required for a public safety platform.
+The platform uses PostgreSQL for more than persistence. PostgreSQL independently verifies selected trust and authorization conditions so that application compromise does not automatically become unrestricted database authority.
 
-The database is not considered a CAD database.
+## Design Principles
 
-It is the canonical data foundation for the entire Public Safety Platform.
+1. **The application does not receive unrestricted table access.**
+2. **Protected writes use controlled database functions or narrowly scoped repository roles.**
+3. **Constraints, foreign keys, privileges, row policies, and functions enforce invariants close to the data.**
+4. **Security-sensitive functions use schema-qualified references and controlled `search_path` settings.**
+5. **Ownership is separated from runtime login roles.**
+6. **Historical and decision records use append-oriented correction and supersession models.**
+7. **Migration order is explicit and manifest-driven.**
+8. **Every migration must install on a clean database and pass automated validation.**
+9. **Database features should be simple, mature, and well understood.**
 
----
+## Version and Feature Policy
 
-# Context
+The active development target is PostgreSQL 18.
 
-The Public Safety Platform is designed as a modular system consisting of:
+Except where a newer feature is the only sound solution, the platform should prefer PostgreSQL features that were supported by at least one prior major release. This reduces unnecessary novelty and makes future upgrades and troubleshooting easier.
 
-* Platform Foundation
-* Operational Resources
-* CAD
-* RMS
-* Evidence / Property
-* Personnel Management Extensions
-* Fleet Management Extensions
-* Fire / EMS Modules
-* Future operational modules
+Extensions must be justified, explicitly installed, and isolated. The current Foundation uses `pgcrypto` for cryptographic primitives and stores extension objects outside the application schemas.
 
-Multiple modules require shared concepts including:
+## Access Pattern
 
-* Identity
-* Organizations
-* Resources
-* Authority
-* Decisions
-* Audit records
-* Historical information
+End-user clients must not connect directly to PostgreSQL.
 
-A database design based around a single application would create duplication and inconsistent sources of truth.
+The intended path is:
 
-The database must support a platform architecture.
-
----
-
-# Requirements
-
-The database must support:
-
-## Security
-
-* Strong authentication controls
-* Role separation
-* Least privilege
-* Row Level Security
-* Secure function execution
-* Auditable access patterns
-
-## Integrity
-
-* Transaction consistency
-* Referential integrity
-* Historical preservation
-* Immutable decision records where appropriate
-
-## Extensibility
-
-The schema must allow additional modules without redesigning foundational concepts.
-
-## Auditability
-
-The system must support:
-
-* Operational audit
-* Security audit
-* Legal review
-* Incident reconstruction
-
----
-
-# Architectural Model
-
-PostgreSQL supports the following logical layers:
-
-```text id="jv7x4h"
-PostgreSQL Platform Database
-
-
-000-099 Platform Foundation
-
-        |
-
-        |
-
-100-199 Operational Resources
-
-        |
-
-        |
-
-200-899 Operational Modules
-
-        |
-
-        |
-
-900-999 Deployment / Bootstrap
+```text
+User or system
+      ↓
+Authenticated platform service
+      ↓
+Trust and authorization evaluation
+      ↓
+Controlled PostgreSQL API
+      ↓
+Protected data
 ```
 
----
+The future Go backend will use prepared statements, bounded transactions, context cancellation, timeouts, and narrowly scoped credentials.
 
-# Schema Organization
+## Migration Layout
 
-Schemas should follow ownership boundaries.
-
-Example:
-
-```text id="m0w7ka"
-platform_identity
-
-platform_trust
-
-platform_authorization
-
-platform_decisions
-
-platform_audit
-
-operational_resources
-
-cad
-
-rms
-
-evidence
-
-fleet
-
-personnel
+```text
+sql/schema/manifests/foundation.manifest
+sql/schema/migrations/foundation/
+sql/schema/scripts/apply_foundation.sh
+sql/schema/scripts/validate_foundation.sh
 ```
 
-Each schema owns its domain.
+Foundation migrations occupy `000–099`. Later ranges are reserved for operational resources, CAD, RMS, Evidence and Property, personnel, fleet, Fire/EMS, future modules, and deployment/bootstrap work.
 
----
+## Testing
 
-# Data Ownership
+The SQL test framework remains intentionally separate from deployable migrations:
 
-The database follows the platform data ownership model.
-
-Examples:
-
-| Domain                  | Owner                        |
-| ----------------------- | ---------------------------- |
-| Identity                | Platform Foundation          |
-| Device Trust            | Platform Foundation          |
-| Authorization Decisions | Platform Foundation          |
-| Operational Resources   | Operational Resources Module |
-| Incidents               | CAD                          |
-| Reports                 | RMS                          |
-| Evidence Custody        | Evidence Module              |
-| Maintenance             | Fleet Module                 |
-
----
-
-# Security Model
-
-The database must not be directly exposed to end-user applications.
-
-Application access should occur through controlled service layers.
-
-The preferred architecture:
-
-```text id="6p2f8s"
-User Application
-
-        |
-
-        |
-
-API / Service Layer
-
-        |
-
-        |
-
-Authorization Framework
-
-        |
-
-        |
-
-PostgreSQL
+```text
+sql/test-framework/
 ```
 
----
+It creates a disposable database, applies the live Foundation manifest, runs test-only assertions, and writes reviewable logs.
 
-# Database Roles
+## Current Limitations
 
-Database access must follow separation of duties.
-
-Examples:
-
-```text id="4h9v2m"
-Database Owner
-
-    |
-    |
-Migration Role
-
-    |
-    |
-Application Roles
-
-    |
-    |
-Read-Only Reporting Roles
-```
-
-No application account should have unrestricted database ownership privileges.
-
----
-
-# Application Access Model
-
-Applications should not directly execute unrestricted SQL.
-
-The application should request operations through controlled interfaces.
-
-Example:
-
-Incorrect:
-
-```text id="5p3v8q"
-Application
-
-SELECT *
-FROM evidence_items;
-```
-
-Correct:
-
-```text id="1n9c5v"
-Application
-
-Request:
-
-View Evidence Item
-
-
-Authorization Engine
-
-        |
-
-PostgreSQL Function/API
-
-        |
-
-Decision Record Created
-```
-
----
-
-# PostgreSQL Features Used
-
-The platform may leverage:
-
-## Row Level Security
-
-Purpose:
-
-Ensure data access follows organizational and authorization boundaries.
-
----
-
-## Security Definer Functions
-
-Purpose:
-
-Provide controlled operations while limiting direct table access.
-
-Requirements:
-
-* Explicit search_path
-* Reviewed ownership
-* Audited changes
-
----
-
-## UUID Identifiers
-
-Purpose:
-
-Avoid predictable sequential identifiers.
-
----
-
-## JSONB
-
-Purpose:
-
-Support flexible configuration and future module expansion.
-
-JSONB should not replace relational modeling where relationships are important.
-
----
-
-## Extensions
-
-Potential extensions:
-
-* uuid-ossp
-* pgcrypto
-* PostGIS
-
-Additional extensions require architectural review.
-
----
-
-# Audit and Decision Storage
-
-PostgreSQL stores canonical platform decision records.
-
-A decision record includes:
-
-* Decision ID
-* Timestamp
-* Requesting identity
-* Device context
-* Session context
-* Operation
-* Result
-* Policy version
-* Authorization version
-* Engine version
-* Justification Chain
-
-Example:
-
-```text id="8m4qzs"
-Decision:
-
-ALLOW
-
-
-Operation:
-
-Approve Evidence Transfer
-
-
-Validation:
-
-Certificate Chain Valid
-
-Device Trusted
-
-Identity Authenticated
-
-Authority Valid
-
-Approval Framework Passed
-
-
-Policy Version:
-
-8.3
-
-
-Authorization Engine:
-
-2.4.1
-```
-
----
-
-# External Logging Integration
-
-PostgreSQL remains the system of record.
-
-External platforms receive exported records.
-
-Example:
-
-```text id="1q8r6w"
-PostgreSQL
-
-Decision Records
-
-        |
-
-        |
-
-Platform Provider Streaming Service
-
-        |
-
-        |
-
-Graylog
-Security Onion
-Elastic
-Splunk
-```
-
-External systems provide:
-
-* Monitoring
-* Alerting
-* Search
-* Correlation
-
-They do not replace the canonical record.
-
----
-
-# Migration Philosophy
-
-Database changes should be:
-
-* Version controlled
-* Reviewed
-* Documented
-* Repeatable
-
-Migrations should follow architectural ownership boundaries.
-
-Example:
-
-```text id="5k2v9m"
-000-099 Foundation
-
-100-199 Operational Resources
-
-200-299 CAD
-
-300-399 RMS
-```
-
----
-
-# Why PostgreSQL
-
-PostgreSQL provides:
-
-* Mature relational modeling
-* Strong consistency
-* Advanced security features
-* Row Level Security
-* JSON capabilities
-* Geographic extensions
-* Long-term operational stability
-* Large ecosystem support
-
-It aligns with the platform goals of:
-
-* Security
-* Reliability
-* Transparency
-* Auditability
-
----
-
-# Final Decision Statement
-
-PostgreSQL will serve as the authoritative data foundation for the Public Safety Platform.
-
-The database design will follow platform boundaries, clear ownership, least privilege, and auditable decision-making.
-
-The goal is not simply to store information.
-
-The goal is to maintain a trusted operational record of public safety activity.
-
+The schema is still pre-alpha. Final deployment roles, ownership transfers, complete append-only enforcement, populated migration checksums, off-host integrity anchoring, production backup protection, and the production Go data-access layer remain future work.

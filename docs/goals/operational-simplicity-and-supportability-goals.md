@@ -1,78 +1,42 @@
-# Platform Operational Simplicity and Supportability Goals
+# Operational Simplicity and Supportability Goals
 
-## Purpose
+## Goal
 
-This document defines the long-term operational simplicity, transparency, diagnosability, and supportability goals for the platform.
+The platform must be understandable, diagnosable, recoverable, and maintainable by a small technical team without requiring constant vendor intervention or specialist-only knowledge.
 
-The platform must remain understandable and supportable without requiring undocumented server dependencies, hidden database workloads, oversized infrastructure, or vendor-only knowledge.
+## Required Qualities
 
-## Core Goal
+- Configuration must have clear ownership, defaults, validation, and change history.
+- Failure messages must identify the affected service, organization, workload, and likely operational impact.
+- Health checks must describe meaningful platform capability rather than only process liveness.
+- Deployment and recovery procedures must be documented and repeatable.
+- Logs and events must use stable identifiers and correlation context.
+- Administrative actions must be attributable.
+- Provider integrations must remain replaceable.
+- Migrations must be deterministic, ordered, and testable from a clean database.
+- Backups must be protected, restorable, and periodically validated.
+- Break-glass access must be limited, recorded, reviewed, and recoverable.
+- Rebuild procedures must start from trusted artifacts and verified configuration.
+- Complexity must be justified by a concrete requirement.
 
-> Every service, workload, query, integration, background process, storage consumer, and external dependency must be attributable, documented, versioned, owned, observable, resource-bounded, failure-contained, testable, and removable.
+## Avoided Failure Modes
 
-## Operational Simplicity
+The project must avoid:
 
-The preferred operational shape is intentionally small:
+- Hidden configuration distributed across unrelated files,
+- Undocumented manual database changes,
+- Monitoring that only says a host is up or down,
+- Unbounded retry loops,
+- Silent data repair,
+- Permanent emergency access,
+- Provider-specific data models in core tables,
+- Operational procedures that depend on one person's memory.
 
-```text
-PostgreSQL
-Go application services
-Optional bounded workers
-Provider adapters
-Web client
-```
+## Foundation Translation
 
-Additional services must be introduced only when they satisfy a documented requirement that cannot be met cleanly within the existing architecture.
+These goals are represented through:
 
-## No Hidden Workloads
-
-No material SQL statement, scheduled task, report, import, export, provider job, or maintenance process may operate anonymously.
-
-Every workload must identify:
-
-- Stable workload identifier
-- Owning component
-- Owning organization or team
-- Application and version
-- Database role
-- Workload class
-- Purpose
-- Trigger
-- Expected frequency
-- Resource budget
-- Failure behavior
-- Retirement path
-
-## No Capacity Masking
-
-Increasing CPU, memory, storage, or server count may be used for temporary containment, but it must not be treated as remediation for unexplained or unbounded resource growth.
-
-An unexplained workload consuming hundreds of gigabytes of temporary storage is an unresolved high-severity operational finding.
-
-## Failure Containment
-
-A failed provider, report, background job, integration, export, or maintenance task must degrade only the dependent capability.
-
-It must not cascade into unrelated operational services.
-
-## Diagnosability
-
-An operator should be able to determine quickly:
-
-- What failed
-- Which service caused it
-- Which version was running
-- Which workload or query was responsible
-- Which organization owns it
-- What users are affected
-- What resource budget was exceeded
-- What automatic containment occurred
-- What recovery action is recommended
-
-## Documentation Goal
-
-Operational knowledge must reside in version-controlled documentation and system records rather than only in vendor support staff, individual memory, or undocumented server configurations.
-
-## Final Principle
-
-> A mission-critical system must be easier to understand during failure than during normal operation, not harder.
+- [Resilience, Availability, and Recovery](../architecture/foundation/resilience-availability-and-recovery-model.md)
+- [Observability, Health, and Operational Telemetry](../architecture/foundation/observability-health-and-operational-telemetry-model.md)
+- [Performance, Efficiency, and Resource Governance](../architecture/foundation/performance-efficiency-and-resource-governance-model.md)
+- [Lifecycle Versioning and Historical Lineage](../architecture/foundation/lifecycle-versioning-and-historical-lineage-model.md)

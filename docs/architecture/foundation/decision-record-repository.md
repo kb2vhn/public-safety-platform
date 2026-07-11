@@ -1,90 +1,65 @@
-# Platform Decision Record Repository
+# Decision Record Repository
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-The Decision Record Repository is the authoritative store of decisions and Justification Chains.
+Preserve an attributable and explainable record of material allowed, denied, not-required, and not-evaluated decision stages.
 
-It is not merely a log, SIEM, or evidence repository.
+## Architectural Requirements
 
-## Decision Record Contents
+### Record Content
 
-- Decision identifier
-- Parent and correlation identifiers
-- Requested operation
-- Final result
-- Request and decision timestamps
-- Identity, device, session, and provider
-- Service and organization
-- Eligibility, assignment, authority, approval, purpose, and classification
-- Organization and jurisdiction scope
-- Policy, agreement, and governed-document versions
-- Engine, build, database, and schema versions
-- Authorization Lease
-- Evaluation duration
-- Historical context snapshot
+A Decision Record captures:
 
-## Evaluation Record Contents
+- Decision identifier and correlation context,
+- Requester, actor, organization, service, session, and device context,
+- Purpose, operation, target, jurisdiction, and classification scope,
+- Governing policy and document versions,
+- Required and observed approvals,
+- Stage results and reason codes,
+- Final result,
+- Decision and evaluation timestamps,
+- Integrity metadata.
 
-- Evaluation identifier
-- Parent evaluation
-- Order
-- Required or optional status
-- Result
-- Reason code
-- Human-readable explanation
-- Supporting record references
-- Supporting record versions
-- Policy and rule references
-- Evaluating engine and version
-- Timestamp and duration
+### Append-Oriented Model
 
-## Result Requirements
+A material Decision Record is not edited to change history. Corrections, annotations, revocations, and supersession are represented by new linked records.
 
-### PASS
+### Integrity
 
-Requires authoritative records proving the condition.
+Database privileges, controlled write paths, triggers where appropriate, hashes, sequence or chain metadata, protected export, and off-host anchoring provide layered integrity.
 
-### FAIL
+No database-only mechanism can make data immutable against the database owner or superuser. Operational controls are therefore part of the complete model.
 
-Records expected state, actual state, and reason.
+### Disclosure
 
-### NOT_REQUIRED
+Decision explanations must be useful to authorized reviewers without exposing credentials, token verifiers, unnecessary personal information, or protected provider payloads.
 
-References the exact rule making the stage unnecessary.
+### Retention
 
-### NOT_EVALUATED
+Retention follows legal, regulatory, operational, and classification requirements. Deletion or disposition requires governed authority and an attributable record.
 
-Records why evaluation did not occur.
+### Availability
 
-## Append-Only Principle
+Critical decision records must remain available during investigation and recovery. Replication or backup does not replace integrity validation.
 
-Material Decision Records and evaluation records are append-only.
+## SQL Implementation Mapping
 
-Corrections and reviews create linked records.
+Migration `080_decision_record_repository.sql` provides the initial structural implementation. Migration `099` inventories append-only candidates and security posture.
 
-## Protection from Administrators
+Complete runtime privileges, immutable write controls, correction APIs, and off-host integrity anchoring remain pending.
 
-Ordinary platform, service, security, and application administrators must not be able to rewrite prior Decision Records.
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-## Integrity
+## Validation Expectations
 
-Controls may include:
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-- Canonical serialization
-- Record hashing
-- Hash linkage
-- Signatures
-- External integrity checkpoints
-- Restricted insert functions
-- Role separation
+## Related Documents
 
-## Architectural Invariants
-
-1. Every significant decision creates a Decision Record.
-2. Every required evaluation has a result.
-3. Pass and fail results are both preserved.
-4. Records are append-only.
-5. Historical context remains reconstructable.
-6. Reusable secrets are never stored.
-7. Ordinary administrators cannot alter prior meaning.
-8. External systems do not replace the repository.
+- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Database Security](database-security-model.md)
+- [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)

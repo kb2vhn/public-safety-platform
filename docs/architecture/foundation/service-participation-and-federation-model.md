@@ -1,115 +1,59 @@
-# Platform Service Participation and Federation Model
+# Service Participation and Federation Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines how independent organizations participate in shared services.
+Govern how organizations participate in platform services and how authority crosses organizational boundaries.
 
-## Core Principle
+## Architectural Requirements
 
-Shared infrastructure does not create centralized authority.
+### Platform Services
 
-Each organization remains authoritative for the facts and responsibilities it owns.
+A platform service is a governed capability offered through the shared platform. Service registration identifies ownership, criticality, lifecycle, and configuration boundaries.
 
-## Platform Service
+### Participation
 
-A service has:
+An organization must explicitly participate in a service before its identities, devices, or resources can receive authority within that service.
 
-- Stable identifier
-- Service Owner
-- Platform Operator
-- Policy
-- Effective period
-- Status
-- Supported domain modules
+Participation is effective-dated, revocable, and independent of infrastructure tenancy.
 
-## Service Participation Agreement
+### Federation
 
-An agreement may define:
+Federation records the governed relationship that permits one organization or service to rely on another organization's identity, authority, data, or operational action.
 
-- Service
-- Service Owner
-- Participating Organization
-- Platform Operator
-- Permitted operations
-- Organization and jurisdiction scope
-- Data ownership and custody
-- Accepted authorities
-- Required approvals
-- Delegation rules
-- Effective, review, expiration, suspension, and termination dates
-- Governing document version and hash
+Federation must define:
 
-## Agreement States
+- Participating parties,
+- Services and operations,
+- Jurisdiction and classification limits,
+- Purpose,
+- Effective period,
+- Approval and revocation authority,
+- Governing agreement or policy version.
 
-```text
-DRAFT
-PENDING_APPROVAL
-ACTIVE
-SUSPENDED
-EXPIRED
-TERMINATED
-SUPERSEDED
-```
+### Fail-Closed Behavior
 
-## Federation
+Missing, expired, revoked, or non-applicable participation or federation denies the cross-boundary operation.
 
-The Foundation supports multiple:
+### Provider Separation
 
-- Identity Authorities
-- Technical Authorities
-- Personnel Authorities
-- Access Sponsors
-- Supervisor Authorities
-- Service Owners
-- Data Owners
-- Data Custodians
+An external identity, monitoring, or integration provider does not become a federation authority merely because it supplies infrastructure.
 
-Each may act only within an explicit scope.
+## SQL Implementation Mapping
 
-## Delegation
+Migration `035_platform_services_and_configuration.sql` establishes platform services. Migration `040_service_participation_and_federation.sql` establishes participation and federation structures.
 
-Delegation must be:
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-- Explicit
-- Scoped
-- Time-bounded
-- Versioned
-- Approved
-- Attributable
-- Revocable
+## Validation Expectations
 
-Re-delegation is prohibited by default.
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-## Cross-Organization Access
+## Related Documents
 
-Cross-organization access requires:
-
-- Active participation
-- Data Owner permission
-- Purpose authorization
-- Classification compatibility
-- Scope match
-- Approval where required
-- Current authority
-- Valid lease
-
-## Record Trail
-
-Every participation, suspension, delegation, amendment, and termination must reference:
-
-- Governing agreement
-- Exact version
-- Effective dates
-- Acting identities
-- Approvals
-- Decision Record
-
-## Architectural Invariants
-
-1. Hosting does not create organizational authority.
-2. Participation in one service does not imply another.
-3. Agreements are explicit, scoped, versioned, and effective-dated.
-4. Delegation is revocable.
-5. Cross-organization access is policy-controlled.
-6. Data ownership is not inferred from custody.
-7. PostgreSQL verifies agreements, delegation, scope, and expiration.
+- [Organization and Jurisdiction](organization-and-jurisdiction-model.md)
+- [Authority and Authorization](authority-and-authorization-model.md)
+- [Governed Document and Policy Versioning](governed-document-and-policy-versioning-model.md)

@@ -1,127 +1,57 @@
-# Platform Authority and Authorization Model
+# Authority and Authorization Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines generic authority, authorization policy, purpose, scope, delegation, and separation-of-duty controls.
+Distinguish durable sources of authority from individual, time-bounded authorization decisions.
 
-## Identity Is Not Authority
+## Architectural Requirements
 
-Authentication identifies the requester.
+### Authority
 
-Authority determines what the organization has granted the requester permission to do.
+Authority describes what an identity, organization, role, office, service, or delegated relationship is permitted to authorize or perform under a governing policy.
 
-## Authority Definition
+Authority must be scoped by organization, service, purpose, operation, jurisdiction, classification, and effective period.
 
-An Authority Definition describes a capability recognized by the platform.
+### Purpose
 
-Examples:
+Every protected request identifies a declared purpose selected from governed purpose definitions. Free-form purpose text may supplement but must not replace the governed purpose identifier.
 
-```text
-VIEW_CLASSIFIED_RECORD
-APPROVE_FINANCIAL_REPORT
-CREATE_OPERATIONAL_ASSIGNMENT
-EXPORT_RESTRICTED_DATA
-MANAGE_SERVICE_PARTICIPATION
-```
+### Authorization Policy
 
-Authority definitions must describe capabilities, not event reasons.
+A policy version defines required trust, eligibility, approval, classification, scope, risk, and lease conditions for an operation.
 
-## Authority Grant
+### Separation of Duties
 
-A grant includes:
+Authority to request, approve, issue, execute, audit, and alter policy must be separated where the risk warrants it. Role accumulation is evaluated across effective memberships and delegations.
 
-- Recipient
-- Authority Definition
-- Service
-- Organization
-- Jurisdiction
-- Purpose
-- Scope
-- Effective period
-- Granting identity and authority
-- Approval requirements
-- Delegation state
-- Revocation state
-- Policy version
-- Decision Records
+### Delegation
 
-## Purpose
+Delegation is explicit, bounded, effective-dated, attributable, revocable, and never broader than the delegator's authority.
 
-Purpose may be required independently of authority.
+### Authorization Decision
 
-Examples:
+Authorization is a specific decision for a specific operation. Durable authority does not create a permanent session or unrestricted capability.
 
-- Operational response
-- Financial reporting
-- Audit
-- Records administration
-- Legal review
-- Security review
-- Public-record response
+### Denial
 
-Authority for one purpose does not automatically authorize another.
+Missing policy, ambiguous scope, invalid purpose, conflicting authority, or required `NOT_EVALUATED` stages deny the operation.
 
-## Scope
+## SQL Implementation Mapping
 
-Authority may be scoped by:
+Migration `055_authority_purpose_and_authorization_policy.sql` provides the principal structural implementation. Migrations `065`, `070`, `075`, and `080` apply and record the resulting authorization.
 
-- Service
-- Module
-- Organization
-- Jurisdiction
-- Operation
-- Resource type
-- Individual resource
-- Classification
-- Data Owner
-- Purpose
-- Time
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-## Delegation
+## Validation Expectations
 
-A person may not delegate authority:
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-- They do not possess
-- Outside their scope
-- Beyond their expiration
-- When policy prohibits delegation
+## Related Documents
 
-Re-delegation is prohibited by default.
-
-## No Self-Elevation
-
-An identity may not:
-
-- Grant itself authority
-- Extend its own authority
-- Broaden its own scope
-- Remove its own restrictions
-- Approve its own independent elevation
-- Circumvent policy through another identity
-
-## Separation of Duties
-
-The authorization model must evaluate incompatible combinations.
-
-No non-infrastructure identity may independently control all of:
-
-- Policy creation
-- Policy activation
-- Identity lifecycle
-- Eligibility
-- Approval
-- Authority granting
-- Operational execution
-- Decision-record administration
-- Audit review
-
-## Architectural Invariants
-
-1. Identity is not authority.
-2. Approval is not authority.
-3. Eligibility is not authority.
-4. Authority is explicit, scoped, effective-dated, and revocable.
-5. Purpose is independently evaluated where required.
-6. No self-elevation.
-7. Role accumulation is evaluated.
-8. Every grant and revocation has a Decision Record.
+- [Approval Framework](approval-framework.md)
+- [Authorization Lease](authorization-lease-model.md)
+- [Trust and Decision Engine](trust-and-decision-engine-model.md)

@@ -1,128 +1,58 @@
-# Platform Organizational Attestation and Access Eligibility Model
+# Organizational Attestation and Access Eligibility Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines persistent organizational attestations and the scoped Access Eligibility Grants created from them.
+Represent time-bounded assertions that an identity, account, device, role, or relationship is eligible for a protected purpose.
 
-Eligibility is a prerequisite boundary. It is not active access.
+## Architectural Requirements
 
-## Attestation Responsibilities
+### Attestation Meaning
 
-### Identity Authority
+An attestation is a signed or otherwise attributable statement from an authorized issuer. It is not permanent truth and is never authority by itself.
 
-Attests to identity establishment and lifecycle.
+Examples include active employment, current training, device compliance, supervisor confirmation, on-duty status, or membership in an eligible group.
 
-### Technical Authority
+### Required Properties
 
-Attests to identity provisioning, device enrollment, certificates, technical readiness, and technical suspension.
+An attestation identifies:
 
-### Personnel Authority
+- Subject,
+- Issuer and issuer authority,
+- Attestation type,
+- Organization and service audience,
+- Purpose or eligibility scope,
+- Issued, effective, and expiration times,
+- Revocation and replacement state,
+- Source and correlation context.
 
-Attests to the person’s valid employment, membership, appointment, contract, volunteer, or affiliate relationship.
+### Eligibility
 
-### Access Sponsor
+Eligibility combines relevant attestations, lifecycle state, policy, and current time. A stale or unverified attestation must not silently remain valid.
 
-Attests to legitimate need, service, module, authority, scope, reason, review date, and expected expiration.
+### Independence
 
-### Service Owner
+The issuer must possess current authority to make the attestation. Self-attestation is prohibited where policy requires independent verification.
 
-Attests that requested participation and scope comply with service rules.
+### Re-evaluation
 
-### Operational Supervisor Authority
+Changes to employment, organization, security status, device state, or required qualification must invalidate or supersede dependent eligibility as policy requires.
 
-Attests to current assignment and presence after eligibility already exists.
+## SQL Implementation Mapping
 
-Department names such as IT or HR must not be hard-coded.
+Migrations `020` and `025` establish identity and lifecycle context. Migration `045_attestations_and_access_eligibility.sql` establishes the principal attestation and eligibility structures.
 
-## Attestation Authority Record
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-An authority record defines:
+## Validation Expectations
 
-- Category
-- Authorizing organization
-- Attesting organization
-- Authorized role or identity
-- Service, module, organization, and jurisdiction scope
-- Effective and expiration dates
-- Delegation source
-- Status and revocation state
-- Governing policy version
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-## Organizational Attestation
+## Related Documents
 
-An attestation is a persistent record containing:
-
-- Subject
-- Category
-- Attesting organization
-- Acting identity
-- Acting authority
-- Scope
-- Effective period
-- Review date
-- Reason
-- Restrictions
-- Policy identifier and version
-- Status
-- Decision Record
-
-## Access Eligibility Grant
-
-A grant contains:
-
-- Person and identity
-- Employing and participating organizations
-- Service and module
-- Eligible authority definitions
-- Organization and jurisdiction scope
-- Required attestations
-- Participation Agreement
-- Eligibility Policy version
-- Effective, review, and expiration dates
-- Restrictions
-- Status
-- Decision Records
-
-There must be no global `is_eligible` flag.
-
-## Scope Intersection
-
-```text
-Eligibility Scope =
-    Requested Scope
-    ∩ Participation Scope
-    ∩ Sponsorship Scope
-    ∩ Attestation Scope
-    ∩ Qualification Scope
-    ∩ Approval Scope
-    ∩ Policy Scope
-```
-
-## Activation Boundary
-
-```text
-Active Authority
-    ⊆ Assignment
-    ⊆ Eligibility
-    ⊆ Participation Agreement
-```
-
-Supervisors may activate less authority, never more.
-
-## Revocation Propagation
-
-Revocation of a required attestation invalidates only dependent eligibility, assignments, validations, and leases.
-
-## Record Trail
-
-Every eligibility `PASS` must identify each required attestation, its issuer, organization, scope, effective period, policy version, and revocation state.
-
-## Architectural Invariants
-
-1. Eligibility exists before active authority.
-2. Eligibility is scoped and effective-dated.
-3. Every attestation is persistent.
-4. Delegation is explicit and revocable.
-5. Supervisors cannot expand eligibility.
-6. PostgreSQL verifies supporting records.
-7. Every result has a Decision Record and Justification Chain.
+- [Trust and Decision Engine](trust-and-decision-engine-model.md)
+- [Approval Framework](approval-framework.md)
+- [Lifecycle Versioning and Historical Lineage](lifecycle-versioning-and-historical-lineage-model.md)

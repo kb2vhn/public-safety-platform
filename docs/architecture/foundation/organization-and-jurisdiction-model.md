@@ -1,109 +1,49 @@
-# Platform Organization and Jurisdiction Model
+# Organization and Jurisdiction Model
+
+> **Document status:** Normative Platform Foundation architecture.
+>
+> **Implementation status:** The Foundation SQL migrations provide an initial structural implementation. A requirement described here is not considered fully enforced until the applicable database controls, deployment roles, runtime behavior, automated tests, and operational safeguards are in place.
 
 ## Purpose
 
-This document defines organizations, organizational units, relationships, jurisdictions, ownership roles, and authority boundaries.
+Represent independent organizations and the geographic, legal, operational, and service scopes within which they may act.
 
-## Organization
+## Architectural Requirements
 
-An Organization is an independently identifiable legal, administrative, operational, or contractual entity with a stable identifier.
+### Organization Independence
 
-Names may change without changing identity.
+An organization retains authority over its people, participation, policies, data, approvals, and delegated relationships. Shared hosting does not transfer that authority to the hosting organization.
 
-## Organizational Unit
+### Jurisdiction
 
-An Organizational Unit is an internal subdivision such as a department, bureau, station, division, office, or team.
+Jurisdictions may represent geographic areas, legal authority, dispatch responsibility, service coverage, mutual-aid scope, or another governed boundary.
 
-The model must support organizations with complex hierarchies and small organizations with minimal structure.
+A jurisdiction record must identify its type, owning organization, validity period, and lifecycle state.
 
-## Organizational Roles
+### Relationships
 
-The Foundation distinguishes:
+Organization relationships, delegated authority, and cross-jurisdiction access must be explicit, versioned, scoped, and revocable.
 
-- Platform Operator
-- Service Owner
-- Participating Organization
-- Employing Organization
-- Identity Authority
-- Technical Authority
-- Personnel Authority
-- Access Sponsor
-- Operational Supervisor Authority
-- Data Owner
-- Data Custodian
-- Jurisdiction Authority
+### Authorization Use
 
-No role is inferred from another.
+Protected decisions must evaluate the actor organization, target organization, requested service, applicable jurisdiction, and any governing participation or federation agreement.
 
-## Relationships
+### History
 
-Relationships must be explicit, scoped, effective-dated, versioned, and historically preserved.
+Mergers, renaming, boundary changes, temporary coverage, and supersession must preserve historical identifiers and effective periods.
 
-Examples:
+## SQL Implementation Mapping
 
-```text
-OPERATES_PLATFORM_FOR
-OWNS_SERVICE_FOR
-PARTICIPATES_IN_SERVICE
-PROVIDES_TECHNICAL_SERVICES_FOR
-PROVIDES_PERSONNEL_ADMINISTRATION_FOR
-HOLDS_DATA_CUSTODY_FOR
-OWNS_DATA_FOR
-SUPERVISES_ASSIGNMENTS_FOR
-DELEGATES_AUTHORITY_TO
-```
+Migration `030_organizations_and_jurisdictions.sql` provides the principal structural implementation. Migrations `040`, `045`, and `055` consume organization and jurisdiction scope.
 
-## Jurisdiction
+The migration mapping identifies the current structural implementation. It does not, by itself, prove that every requirement in this document is operationally enforced.
 
-A Jurisdiction is a legal, geographic, administrative, operational, or service boundary.
+## Validation Expectations
 
-It is separate from Organization.
+The Foundation SQL test framework must test the requirements that can be demonstrated at the database boundary. Runtime, deployment, recovery, and provider behavior must be tested in their respective layers.
 
-Jurisdictions may overlap.
+## Related Documents
 
-## Jurisdiction Authority
-
-Jurisdiction Authority must identify the purpose for which authority applies.
-
-Examples:
-
-- Dispatch
-- Law enforcement
-- Fire response
-- EMS response
-- Record creation
-- Data ownership
-- Evidence custody
-- Mutual aid
-
-Authority for one purpose does not imply another.
-
-## Scope Intersection
-
-Effective authority must remain inside the intersection of:
-
-- Requested scope
-- Participation scope
-- Eligibility scope
-- Assignment scope
-- Authority scope
-- Approval scope
-- Classification scope
-- Supervisor scope
-
-An empty intersection results in denial.
-
-## Historical Preservation
-
-Renames, mergers, splits, transfers, and dissolutions must not rewrite historical context.
-
-## Architectural Invariants
-
-1. Organizations use stable identifiers.
-2. Organization name is not identity.
-3. Platform Operator, Service Owner, Data Owner, and Data Custodian remain distinct.
-4. Jurisdiction is separate from Organization.
-5. Overlapping jurisdictions are supported.
-6. Relationships are effective-dated and versioned.
-7. Hosting does not imply ownership.
-8. PostgreSQL independently verifies organization and jurisdiction claims.
+- [Service Participation and Federation](service-participation-and-federation-model.md)
+- [Organizational Attestation and Access Eligibility](organizational-attestation-and-access-eligibility-model.md)
+- [Authority and Authorization](authority-and-authorization-model.md)
