@@ -17,7 +17,11 @@ The Foundation does not contain CAD, RMS, Evidence and Property, payroll, procur
 1. Trust must be established before protected identity and authority are accepted.
 2. A certificate, password, MFA result, session, or role does not independently grant access.
 3. Authentication establishes identity; authorization establishes bounded authority.
-4. The Go backend will evaluate and attest; PostgreSQL will independently verify selected protected operations.
+4. Future runtime services will assemble explicit authorization inputs and
+   Decision Supporting Records, invoke controlled workflows, and coordinate
+   external interactions. PostgreSQL will independently verify the minimum
+   database-boundary conditions required before completing a Protected
+   Operation.
 5. No non-infrastructure actor may possess unrestricted platform authority.
 6. Role accumulation must not create an effective unrestricted account.
 7. Required decision stages fail closed when they return `FAIL` or `NOT_EVALUATED`.
@@ -26,7 +30,8 @@ The Foundation does not contain CAD, RMS, Evidence and Property, payroll, procur
 10. Current state must not silently overwrite historical state.
 11. Shared infrastructure does not create centralized organizational authority.
 12. Authorization is bounded by identity, organization, service, purpose, operation, governed scope, classification, and time.
-13. Monitoring and integration providers remain replaceable.
+13. External Monitoring Systems, Delivery Destinations, Integration Contracts,
+    and External-System Adapters must remain replaceable.
 14. Workloads and resource consumption must be attributable and bounded.
 15. Availability, recovery, and degraded operation must be governed before production use.
 16. Domain-specific concepts belong in modules; the Foundation uses neutral shared concepts and extension points.
