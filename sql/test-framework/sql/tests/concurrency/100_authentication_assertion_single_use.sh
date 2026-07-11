@@ -366,12 +366,11 @@ for ((attempt = 1; attempt <= 200; attempt++)); do
             --no-align \
             --set=ON_ERROR_STOP=1 \
             --set=barrier_id="$barrier_id" \
-            --dbname="$test_database" \
-            --command="
-                SELECT CASE WHEN controller_locked THEN 1 ELSE 0 END
-                FROM sql_test.concurrency_barriers
-                WHERE barrier_id = :'barrier_id';
-            "
+            --dbname="$test_database" <<'SQL'
+SELECT CASE WHEN controller_locked THEN 1 ELSE 0 END
+FROM sql_test.concurrency_barriers
+WHERE barrier_id = :'barrier_id';
+SQL
     )"
 
     [[ "$controller_locked" == "1" ]] && break
@@ -471,12 +470,11 @@ ready_count="$(
         --no-align \
         --set=ON_ERROR_STOP=1 \
         --set=barrier_id="$barrier_id" \
-        --dbname="$test_database" \
-        --command="
-            SELECT count(*)
-            FROM sql_test.concurrency_readiness
-            WHERE barrier_id = :'barrier_id';
-        "
+        --dbname="$test_database" <<'SQL'
+SELECT count(*)
+FROM sql_test.concurrency_readiness
+WHERE barrier_id = :'barrier_id';
+SQL
 )"
 
 success_count=0
@@ -512,14 +510,13 @@ final_row="$(
         --no-align \
         --set=ON_ERROR_STOP=1 \
         --set=authentication_assertion_id="$authentication_assertion_id" \
-        --dbname="$test_database" \
-        --command="
-            SELECT
-                status || '|' ||
-                CASE WHEN consumed_at IS NULL THEN '0' ELSE '1' END
-            FROM access_control.authentication_assertions
-            WHERE authentication_assertion_id = :'authentication_assertion_id'::uuid;
-        "
+        --dbname="$test_database" <<'SQL'
+SELECT
+    status || '|' ||
+    CASE WHEN consumed_at IS NULL THEN '0' ELSE '1' END
+FROM access_control.authentication_assertions
+WHERE authentication_assertion_id = :'authentication_assertion_id'::uuid;
+SQL
 )"
 
 IFS='|' read -r final_status consumed_timestamp_count <<<"$final_row"
