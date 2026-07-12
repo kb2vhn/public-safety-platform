@@ -159,9 +159,9 @@ finalization-once Decision Records, and caller-result rejection through
 3 understood WARN
 ```
 
-### Current Step 4 candidate
+### Completed Phase 3 Step 4
 
-Step 4 adds the controlled lease path in migration `081`:
+Step 4 added the controlled lease path in migration `081`:
 
 ```text
 access_control.issue_authorization_lease_from_decision(uuid, text)
@@ -170,24 +170,6 @@ access_control.consume_authorization_lease(...)
 access_control.expire_authorization_lease(uuid)
 access_control.revoke_lease(uuid, text)
 ```
-
-The Step 4 test and phase gate are:
-
-```text
-test-framework/sql/tests/foundation/
-150_authorization_lease_issuance_and_use.sql
-
-tools/validation/phase-gates/
-validate_phase3_step4.sh
-```
-
-Step 4 enforces one issuing decision per lease, permits reusable leases to be
-referenced by multiple separately attributable protected-operation decisions,
-revalidates the selected policy, required evidence, linked authority, active
-session, and locally owned trust, verifies exact context and audience, and
-atomically records successful use.
-
-The Step 4 target is:
 
 ```text
 33 manifest migrations
@@ -199,9 +181,39 @@ The Step 4 target is:
 3 understood WARN
 ```
 
-Later Phase 3 gates still must add wider negative-path coverage,
-independent-connection finalization/issuance/consumption/revocation races, and
-formal Phase 3 acceptance evidence.
+### Current Step 5 candidate
+
+Step 5 adds `160_authorization_lease_fail_closed_behavior.sql` and strengthens
+required-authority continuity during lease verification. The expanded tests
+prove that stale session, identity, device, Trust Provider, Platform Service,
+policy, required evidence, and linked authority state all fail closed. They
+also prove that request, correlation, final decision state, and target
+attribution mismatches cannot consume a lease or append a use event.
+
+The Step 5 test and phase gate are:
+
+```text
+test-framework/sql/tests/foundation/
+160_authorization_lease_fail_closed_behavior.sql
+
+tools/validation/phase-gates/
+validate_phase3_step5.sh
+```
+
+The Step 5 target is:
+
+```text
+33 manifest migrations
+33 registered migrations
+16 sequential test files
+4 concurrency test files
+353 PASS
+0 FAIL
+3 understood WARN
+```
+
+Step 6 still must add independent-connection finalization, issuance,
+consumption, expiration, and revocation races before formal Phase 3 acceptance.
 
 ## Documentation Groups
 

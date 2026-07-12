@@ -205,7 +205,7 @@ before `082_data_classification_and_governance.sql`.
 | `072_postgresql_session_control.sql` | Accepted Phase 2 session boundary; unchanged |
 | `075_controlled_authorization_api.sql` | Existing lease hashing, baseline verification, and revocation API |
 | `080_decision_record_repository.sql` | Existing Decision Record, evaluation, and supporting-record structures |
-| `081_postgresql_authorization_decision_and_lease_issuance.sql` | Step 2 typed structure plus Step 3 deterministic policy resolution, controlled policy binding, stage closure, supporting-evidence enforcement, finalization-once behavior, and caller-result rejection; Step 4 adds lease behavior |
+| `081_postgresql_authorization_decision_and_lease_issuance.sql` | Step 2 typed structure; Step 3 deterministic policy resolution and finalization; Step 4 controlled lease issuance and use; Step 5 required-authority continuity and broader fail-closed behavioral hardening |
 
 Migration `081` is part of the Foundation manifest during Step 2.
 
@@ -321,4 +321,29 @@ The phase gate is:
 
 ```text
 tools/validation/phase-gates/validate_phase3_step4.sh
+```
+
+### Phase 3 Step 5 Result Target
+
+Step 5 adds the sequential negative-path test:
+
+```text
+test-framework/sql/tests/foundation/
+160_authorization_lease_fail_closed_behavior.sql
+```
+
+```text
+33 manifest migrations
+33 registered migrations
+16 sequential test files
+4 concurrency test files
+353 PASS
+0 FAIL
+3 understood WARN
+```
+
+The phase gate is:
+
+```text
+tools/validation/phase-gates/validate_phase3_step5.sh
 ```

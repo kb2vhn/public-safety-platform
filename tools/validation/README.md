@@ -8,7 +8,7 @@ validation scripts do not clutter the repository root.
 Run a gate from the repository root. The current gate is:
 
 ```bash
-./tools/validation/phase-gates/validate_phase3_step4.sh
+./tools/validation/phase-gates/validate_phase3_step5.sh
 ```
 
 Each gate performs a complete dependency preflight, validates its accepted

@@ -692,3 +692,22 @@ exact lease, protected-operation decision, request identifier, correlation
 identifier, context, audience, and remaining use allowance. Single-use and
 limited-use consumption is atomic and writes an attributable use event in the
 same transaction. Concurrency proof remains a later Phase 3 gate.
+## Phase 3 Step 5 Fail-Closed Lease Behavior
+
+Step 5 expands the controlled lease boundary with sequential negative-path
+proof. Lease issuance and use must fail closed when the current session,
+identity, device, Trust Provider, Platform Service, selected policy, required
+supporting evidence, or linked authority is no longer valid.
+
+When an `AUTHORITY` stage is required, usability requires at least one current
+authority linkage that remains bound to the issuing Decision Record, its PASS
+evaluation, a required `AUTHORITY_GRANT` supporting record, the same identity,
+and the exact service, purpose, operation, organization, scope, and target.
+Deleting the linkage or retargeting the grant invalidates the lease.
+
+Protected-operation consumption rejects request, correlation, record-state,
+result, and target mismatches. A denied attempt must not increment
+`successful_use_count` and must not append an Authorization Lease Use Event.
+
+The Step 5 regression target is 33 migrations, 16 sequential tests, 4 accepted
+concurrency tests, 353 PASS, 0 FAIL, and 3 understood WARN results.

@@ -6,11 +6,11 @@
 >
 > **Phase:** 3 — Authorization Decision and Controlled Lease Issuance
 >
-> **Status:** Normative Phase 3 contract; Step 4 controlled lease-issuance and use implementation candidate
+> **Status:** Normative Phase 3 contract; Step 5 fail-closed behavioral expansion candidate
 >
 > **Accepted prerequisite:** `phase-2-session-control-complete-v1`
 >
-> **Step 4 implementation migration:**
+> **Active implementation migration:**
 > `081_postgresql_authorization_decision_and_lease_issuance.sql`
 
 ## 1. Purpose
@@ -916,6 +916,18 @@ The Phase 3 Step 3 target adds one 24-assertion controlled behavior test:
 3 understood WARN results
 ```
 
+The accepted Phase 3 Step 4 target adds one 32-assertion controlled lease test:
+
+```text
+33 manifest migrations
+33 registered migrations
+15 sequential test files
+4 concurrency test files
+329 PASS assertions
+0 FAIL assertions
+3 understood WARN results
+```
+
 ## 20. Implementation Sequence
 
 ### Step 1 — Contract Freeze
@@ -1014,10 +1026,35 @@ Step 4 implements:
 
 Step 4 does not yet add multi-connection lease issuance, consumption, or revocation races; those remain Step 6.
 
-### Step 5 — Sequential Tests
+### Step 5 — Fail-Closed Sequential Behavioral Expansion
 
-- Add complete positive, negative, chronology, privilege, and event tests.
-- Run the complete Foundation regression path.
+Implementation candidate:
+
+```text
+test-framework/sql/tests/foundation/
+160_authorization_lease_fail_closed_behavior.sql
+```
+
+Step 5 proves that issuance and use fail closed when current session, identity,
+device, Trust Provider, Platform Service, selected policy, required supporting
+evidence, or required authority is no longer valid. Required authority must
+remain linked to the issuing Decision Record through a current PASS evaluation
+and required supporting record. A missing link or authority retargeted to a
+different identity invalidates the lease.
+
+Protected-operation consumption must also reject request, correlation, draft,
+deny, and target mismatches without changing successful-use counters or
+appending use events. Step 5 adds 24 assertions for a total target of:
+
+```text
+33 manifest migrations
+33 registered migrations
+16 sequential test files
+4 concurrency test files
+353 PASS assertions
+0 FAIL assertions
+3 understood WARN results
+```
 
 ### Step 6 — Concurrency Tests
 

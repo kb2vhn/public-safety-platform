@@ -25,11 +25,11 @@ Phase 2 session control is accepted at
 `phase-2-session-control-complete-v1` with 213 PASS, 0 FAIL, and 3 understood
 warnings.
 
-Phase 3 Step 3 is validated with 33 migrations, 14 sequential tests,
-4 concurrency tests, 297 PASS, 0 FAIL, and 3 understood warnings.
+Phase 3 Step 4 is validated with 33 migrations, 15 sequential tests,
+4 concurrency tests, 329 PASS, 0 FAIL, and 3 understood warnings.
 
-Phase 3 Step 4 adds controlled Authorization Lease issuance, exact-context
-usability, atomic consumption, materialized expiration, and revocation.
+Phase 3 Step 5 expands fail-closed issuance, verification, and consumption
+behavior for stale trust, policy, evidence, authority, and operation context.
 
 ## Change Discipline
 

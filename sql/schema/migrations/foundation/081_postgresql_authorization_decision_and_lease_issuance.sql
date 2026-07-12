@@ -2,7 +2,7 @@
 -- Migration: 081_postgresql_authorization_decision_and_lease_issuance.sql
 -- Title: PostgreSQL authorization decision and lease issuance structure
 -- Layer: Platform Foundation
--- Status: PHASE 3 STEP 4 IMPLEMENTATION CANDIDATE
+-- Status: PHASE 3 STEP 5 IMPLEMENTATION CANDIDATE
 -- Target: PostgreSQL 18
 -- Compatibility policy: prefer mature features supported before PostgreSQL 18.
 -- ============================================================================
@@ -14,8 +14,10 @@
 --
 -- Step 3 added deterministic policy resolution, controlled policy binding,
 -- required-stage closure, and finalization-once Decision Record behavior.
--- Step 4 adds controlled lease issuance, exact-context usability, atomic use,
+-- Step 4 added controlled lease issuance, exact-context usability, atomic use,
 -- materialized expiration, and revocation behavior.
+-- Step 5 adds broader fail-closed behavioral coverage and strengthens required
+-- authority continuity during lease verification and consumption.
 --
 -- Accepted-boundary rule:
 -- Migrations 055, 060, 065, 070, 072, 075, and 080 remain unchanged.
@@ -1674,7 +1676,8 @@ AS $function$
               WHERE lease_authority.authorization_lease_id =
                     lease.authorization_lease_id
                 AND (
-                    authority_grant.status <> 'ACTIVE'
+                    authority_grant.identity_id <> lease.identity_id
+                    OR authority_grant.status <> 'ACTIVE'
                     OR authority_grant.valid_from >
                        pg_catalog.statement_timestamp()
                     OR (
@@ -1717,6 +1720,84 @@ AS $function$
                         )
                     )
                 )
+          )
+          AND (
+              NOT EXISTS (
+                  SELECT 1
+                  FROM access_control.authorization_policy_stage_requirements AS required_authority_stage
+                  WHERE required_authority_stage.authorization_policy_version_id =
+                        lease.authorization_policy_version_id
+                    AND required_authority_stage.stage_key = 'AUTHORITY'
+                    AND required_authority_stage.required
+              )
+              OR EXISTS (
+                  SELECT 1
+                  FROM access_control.lease_authority_grants AS required_lease_authority
+                  JOIN decision.evaluation_records AS authority_evaluation
+                    ON authority_evaluation.evaluation_id =
+                       required_lease_authority.evaluation_id
+                   AND authority_evaluation.decision_id =
+                       required_lease_authority.decision_id
+                  JOIN decision.supporting_records AS authority_supporting
+                    ON authority_supporting.evaluation_id =
+                       authority_evaluation.evaluation_id
+                   AND authority_supporting.record_type = 'AUTHORITY_GRANT'
+                   AND authority_supporting.record_id =
+                       required_lease_authority.authority_grant_id::text
+                   AND authority_supporting.required_for_result
+                  JOIN access_control.authority_grants AS required_authority_grant
+                    ON required_authority_grant.authority_grant_id =
+                       required_lease_authority.authority_grant_id
+                  WHERE required_lease_authority.authorization_lease_id =
+                        lease.authorization_lease_id
+                    AND required_lease_authority.decision_id =
+                        issuing_decision.decision_id
+                    AND authority_evaluation.evaluation_key = 'AUTHORITY'
+                    AND authority_evaluation.result = 'PASS'
+                    AND required_authority_grant.identity_id = lease.identity_id
+                    AND required_authority_grant.status = 'ACTIVE'
+                    AND required_authority_grant.valid_from <=
+                        pg_catalog.statement_timestamp()
+                    AND (
+                        required_authority_grant.valid_until IS NULL
+                        OR pg_catalog.statement_timestamp() <
+                           required_authority_grant.valid_until
+                    )
+                    AND (
+                        required_authority_grant.service_id IS NULL
+                        OR required_authority_grant.service_id = lease.service_id
+                    )
+                    AND (
+                        required_authority_grant.purpose_definition_id IS NULL
+                        OR required_authority_grant.purpose_definition_id IS NOT DISTINCT FROM
+                           lease.purpose_definition_id
+                    )
+                    AND (
+                        required_authority_grant.operation_definition_id IS NULL
+                        OR required_authority_grant.operation_definition_id =
+                           lease.operation_definition_id
+                    )
+                    AND (
+                        required_authority_grant.organization_id IS NULL
+                        OR required_authority_grant.organization_id IS NOT DISTINCT FROM
+                           lease.requester_organization_id
+                    )
+                    AND required_authority_grant.scope_reference IS NULL
+                    AND (
+                        required_authority_grant.applies_to_all_governed_scopes
+                        OR required_authority_grant.governed_scope_id IS NOT DISTINCT FROM
+                           lease.governed_scope_id
+                    )
+                    AND (
+                        required_authority_grant.applies_to_all_targets
+                        OR (
+                            required_authority_grant.protected_target_type IS NOT DISTINCT FROM
+                                lease.protected_target_type
+                            AND required_authority_grant.protected_target_reference IS NOT DISTINCT FROM
+                                lease.protected_target_reference
+                        )
+                    )
+              )
           )
           AND session_record.status = 'ACTIVE'
           AND session_record.authenticated_at <=
@@ -2000,7 +2081,7 @@ SELECT foundation_meta.register_migration(
     p_migration_name => 'PostgreSQL authorization decision and lease issuance structure',
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes => 'Added typed policy applicability, exact policy-stage mapping, lease-request Decision Record fields, one issuing-decision/one issued-lease cardinality, core decision-to-lease context binding, lease chronology and state shape, attributable authority and use evidence, deterministic policy resolution, controlled policy binding, finalization-once Decision Record closure, controlled lease issuance, exact-context usability, atomic use, expiration, and revocation.'
+    p_notes => 'Added typed policy applicability, exact policy-stage mapping, lease-request Decision Record fields, one issuing-decision/one issued-lease cardinality, core decision-to-lease context binding, lease chronology and state shape, attributable authority and use evidence, deterministic policy resolution, controlled policy binding, finalization-once Decision Record closure, controlled lease issuance, exact-context usability, atomic use, expiration, revocation, broader fail-closed negative-path behavior, and evidence-backed required-authority continuity.'
 );
 
 COMMIT;

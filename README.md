@@ -65,21 +65,22 @@ Tag: `phase-2-session-control-complete-v1`
 
 ### Phase 3 — Authorization Decision and Controlled Lease Issuance
 
-Step 3 is validated at:
+Step 4 is validated at:
 
 ```text
 33 manifest migrations
 33 registered migrations
-14 sequential test files
+15 sequential test files
 4 concurrency test files
-297 PASS
+329 PASS
 0 FAIL
 3 understood WARN
 ```
 
-Step 4 adds controlled Authorization Lease issuance, exact-context usability,
-atomic use, expiration, and revocation. Its target is 15 sequential tests and
-329 passes while preserving the same 33 migrations and 4 accepted concurrency
+Step 5 expands fail-closed lease behavior for stale session, identity, device,
+Trust Provider, Platform Service, policy, supporting evidence, authority, and
+protected-operation attribution. Its target is 16 sequential tests and 353
+passes while preserving the same 33 migrations and 4 accepted concurrency
 tests.
 
 ## Core Principles
@@ -123,7 +124,7 @@ Phase validators are intentionally kept out of the repository root.
 Run the current phase gate from the repository root:
 
 ```bash
-./tools/validation/phase-gates/validate_phase3_step4.sh
+./tools/validation/phase-gates/validate_phase3_step5.sh
 ```
 
 Run the complete Foundation SQL suite directly:
