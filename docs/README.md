@@ -14,6 +14,7 @@
 - [Platform Foundation Documentation](architecture/foundation/README.md)
 - [Approval Independence and Separation of Duties](architecture/foundation/approval-independence-and-separation-of-duties-model.md)
 - [Resource Telemetry and Performance-Regression Testing](architecture/foundation/resource-telemetry-and-performance-regression-testing-model.md)
+- [Foundation Migration Timeout and Execution Performance Standard](architecture/foundation/foundation-migration-timeout-and-execution-performance-standard.md)
 - [Phase 3 Authorization Acceptance](architecture/foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 - [Project Goals](goals/README.md)
 - [Compliance Profiles](compliance-profiles/README.md)
@@ -65,3 +66,19 @@ A phase step is not complete until the root README, documentation indexes,
 architecture status, test documentation, validation documentation, active gate,
 counts, terminology, and next-step statement all describe the same accepted
 repository state.
+
+## Foundation Migration Execution Standard
+
+Ordinary clean-install Foundation migrations use transaction-local limits of
+`5s` for lock waits, `1min` per statement, and `1min` for an idle open
+transaction. Statements observed above ten seconds require investigation.
+
+Static validation:
+
+```bash
+./tools/validation/validate_foundation_migration_timeouts.sh
+```
+
+The active Phase 4 Step 4 gate invokes this validator automatically. It can
+also be run independently. The repository-policy check does not add SQL PASS
+rows or activate a general performance-regression threshold.

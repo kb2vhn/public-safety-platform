@@ -29,6 +29,7 @@ monitoring vendor, identity provider, or compliance framework.
 - [Platform Foundation Documentation](foundation/README.md)
 - [Approval Independence and Separation of Duties](foundation/approval-independence-and-separation-of-duties-model.md)
 - [Resource Telemetry and Performance-Regression Testing](foundation/resource-telemetry-and-performance-regression-testing-model.md)
+- [Foundation Migration Timeout and Execution Performance Standard](foundation/foundation-migration-timeout-and-execution-performance-standard.md)
 - [Performance, Efficiency, and Resource Governance](foundation/performance-efficiency-and-resource-governance-model.md)
 - [Observability, Health, and Operational Telemetry](foundation/observability-health-and-operational-telemetry-model.md)
 - [Approval Framework](foundation/approval-framework.md)
@@ -63,3 +64,12 @@ text.
 Step 5 incompatible-authority and duty-conflict enforcement, Step 6 stage
 satisfaction and finalization, and Step 7 independent-connection approval races
 remain future work.
+
+## Migration Execution Boundary
+
+The current clean-install Foundation migration contract is `5s` lock wait,
+`1min` statement execution, and `1min` idle-in-transaction, all established
+with `SET LOCAL`. A statement observed above ten seconds requires investigation
+even while broader performance budgets remain observation-only. The active
+phase gate executes the static migration-timeout validator before database
+execution.

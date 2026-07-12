@@ -280,9 +280,29 @@ Phase 4 Step 3 validation requires:
 
 The first successful Step 2 run becomes a baseline observation, not a budget.
 
-## 13. Related Documents
+
+## 13. Relationship to the Migration Execution Standard
+
+The Foundation Migration Timeout and Execution Performance Standard defines
+hard safety ceilings for each clean-install migration statement and a review
+trigger for individual statements observed above ten seconds.
+
+Those controls do not replace this model and do not activate a suite-wide
+performance budget. The outcomes remain distinct:
+
+- A PostgreSQL timeout is an execution failure.
+- A statement above ten seconds is an investigation trigger.
+- Resource telemetry remains recorded observation.
+- A performance-regression warning or failure requires a separately governed
+  budget based on representative comparable runs.
+
+The active Phase 4 Step 4 gate invokes the static timeout validator before
+database execution. The validator contributes no SQL PASS rows.
+
+## 14. Related Documents
 
 - [Performance, Efficiency, and Resource Governance](performance-efficiency-and-resource-governance-model.md)
 - [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)
 - [Approval Independence and Separation of Duties](approval-independence-and-separation-of-duties-model.md)
 - [SQL Migration Map](sql-migration-map.md)
+- [Foundation Migration Timeout and Execution Performance Standard](foundation-migration-timeout-and-execution-performance-standard.md)

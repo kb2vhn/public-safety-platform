@@ -200,6 +200,7 @@ See:
 
 - [Approval Independence and Separation of Duties](approval-independence-and-separation-of-duties-model.md)
 - [Resource Telemetry and Performance-Regression Testing](resource-telemetry-and-performance-regression-testing-model.md)
+- [Foundation Migration Timeout and Execution Performance Standard](foundation-migration-timeout-and-execution-performance-standard.md)
 
 ## Documentation Groups
 
@@ -252,6 +253,7 @@ See:
 - [Resilience, Availability, and Recovery](resilience-availability-and-recovery-model.md)
 - [Performance, Efficiency, and Resource Governance](performance-efficiency-and-resource-governance-model.md)
 - [Resource Telemetry and Performance-Regression Testing](resource-telemetry-and-performance-regression-testing-model.md)
+- [Foundation Migration Timeout and Execution Performance Standard](foundation-migration-timeout-and-execution-performance-standard.md)
 - [Client Experience and Accessibility](../user-interface/client-experience-and-accessibility-model.md)
 - [Accessibility and Inclusive Interaction](../user-interface/accessibility-and-inclusive-interaction-model.md)
 - [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)
@@ -275,6 +277,34 @@ The following remain incomplete until separately implemented and tested:
 - Backup protection and restoration validation,
 - Break-glass procedures,
 - Trusted rebuild and compromise recovery.
+
+
+## Foundation Migration Execution Contract
+
+Every ordinary migration listed by `sql/schema/manifests/foundation.manifest`
+uses transaction-local limits of:
+
+```sql
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '1min';
+SET LOCAL idle_in_transaction_session_timeout = '1min';
+```
+
+Ordinary DDL should finish within a few seconds. An individual statement
+observed above ten seconds requires investigation. The one-minute statement
+limit is a hard execution-safety ceiling, not an expected duration and not a
+general performance-regression budget.
+
+The static contract validator is:
+
+```bash
+./tools/validation/validate_foundation_migration_timeouts.sh
+```
+
+The active Phase 4 Step 4 gate invokes the validator before database execution.
+It remains independently runnable for focused migration review.
+
+See [Foundation Migration Timeout and Execution Performance Standard](foundation-migration-timeout-and-execution-performance-standard.md).
 
 ## Change Discipline
 

@@ -22,3 +22,24 @@ assertions, synchronized status documentation, correctness totals, and the
 resource-observation contract.
 
 Historical gates remain available for their own checkpoint trees.
+
+
+## Cross-Phase Foundation Migration Timeout Contract
+
+Validate every migration listed in the authoritative Foundation manifest:
+
+```bash
+./tools/validation/validate_foundation_migration_timeouts.sh
+```
+
+The validator enforces one transaction-local header in each migration:
+
+```sql
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '1min';
+SET LOCAL idle_in_transaction_session_timeout = '1min';
+```
+
+It is a static repository-policy check and contributes no SQL PASS rows. The
+active Phase 4 Step 4 gate invokes it automatically before database execution;
+it remains independently runnable for focused migration review.

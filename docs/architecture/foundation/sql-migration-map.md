@@ -68,6 +68,31 @@ sql/schema/manifests/foundation.manifest
 
 The filesystem directory listing is not the migration-order authority.
 
+
+### Foundation Clean-Install Execution Contract
+
+Every migration in the authoritative Foundation manifest must establish this
+transaction-local contract immediately after `BEGIN;`:
+
+```sql
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '1min';
+SET LOCAL idle_in_transaction_session_timeout = '1min';
+```
+
+Ordinary DDL should complete within a few seconds. Any individual statement
+observed above ten seconds requires investigation. The one-minute limit is a
+hard safety ceiling, not an expected duration.
+
+Static validation is performed by:
+
+```text
+tools/validation/validate_foundation_migration_timeouts.sh
+```
+
+The timeout contract is governed by [Foundation Migration Timeout and Execution
+Performance Standard](foundation-migration-timeout-and-execution-performance-standard.md).
+
 ### Operational Scripts
 
 ```text
@@ -254,7 +279,8 @@ A migration is not complete merely because it executes. It should:
 4. Preserve prior migration invariants,
 5. Pass structural and security tests,
 6. Add behavioral and negative tests where applicable,
-7. Update this map and related documentation.
+7. Satisfy the Foundation migration timeout and execution contract,
+8. Update this map and related documentation.
 
 ### Current Integrity Limitation
 
@@ -280,6 +306,7 @@ The Foundation SQL test framework must test the requirements that can be demonst
 - [Phase 2 Session Establishment, Step-Up, and Lifecycle Acceptance](phase-2-session-establishment-step-up-and-lifecycle-acceptance.md)
 - [Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md)
 - [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md)
+- [Foundation Migration Timeout and Execution Performance Standard](foundation-migration-timeout-and-execution-performance-standard.md)
 
 ### Phase 3 Step 3 Result Target
 

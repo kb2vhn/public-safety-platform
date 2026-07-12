@@ -391,6 +391,13 @@ telemetry begins as observation-only data. Performance thresholds are not
 promoted into pass/fail gates until representative same-environment runs
 establish defensible budgets.
 
+Ordinary clean-install Foundation migrations use a separate execution-safety
+contract: a five-second lock-wait limit, a one-minute per-statement limit, and
+a one-minute idle-in-transaction limit. Any individual migration statement
+observed above ten seconds requires investigation. The limits expose abnormal
+behavior; they are not the expected duration and do not activate a general
+performance-regression failure threshold.
+
 ## Platform Layers
 
 ```text
@@ -601,6 +608,7 @@ Start with:
 - [Approval Framework](docs/architecture/foundation/approval-framework.md)
 - [Approval Independence and Separation of Duties](docs/architecture/foundation/approval-independence-and-separation-of-duties-model.md)
 - [Resource Telemetry and Performance-Regression Testing](docs/architecture/foundation/resource-telemetry-and-performance-regression-testing-model.md)
+- [Foundation Migration Timeout and Execution Performance Standard](docs/architecture/foundation/foundation-migration-timeout-and-execution-performance-standard.md)
 - [Authentication Assertion Verification and Consumption Model](docs/architecture/foundation/authentication-assertion-verification-and-consumption-model.md)
 - [Session Establishment, Step-Up, and Lifecycle Model](docs/architecture/foundation/session-establishment-step-up-and-lifecycle-model.md)
 - [Authorization Decision and Lease Issuance Model](docs/architecture/foundation/authorization-decision-and-lease-issuance-model.md)
@@ -622,6 +630,23 @@ sql/schema/
 ├── migrations/foundation/
 └── scripts/
 ```
+
+Every ordinary manifest migration establishes this clean-install execution
+contract immediately after `BEGIN;`:
+
+```sql
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '1min';
+SET LOCAL idle_in_transaction_session_timeout = '1min';
+```
+
+Validate the static contract with:
+
+```bash
+./tools/validation/validate_foundation_migration_timeouts.sh
+```
+
+See [Foundation Migration Timeout and Execution Performance Standard](docs/architecture/foundation/foundation-migration-timeout-and-execution-performance-standard.md).
 
 Create a fresh development database:
 
@@ -740,6 +765,13 @@ The gate validates the accepted Step 3 boundary, exact Phase 4 Step 4 files,
 manifests, independence reason codes and behavior, synchronized status
 documentation, file hygiene, correctness results, and resource observations.
 
+The active gate invokes the cross-phase migration timeout validator before
+PostgreSQL execution. The validator can also be run independently with:
+
+```bash
+./tools/validation/validate_foundation_migration_timeouts.sh
+```
+
 ## Go Experiments
 
 The current Go code is historical experimentation created before the
@@ -772,7 +804,9 @@ A Foundation change should normally include:
 7. Updated documentation
 8. Correctness-result reporting
 9. Resource observation when the change affects executable test paths
-10. Deployment and operational controls when the change crosses the database
+10. Migration timeout and execution-contract validation when migration files
+    change
+11. Deployment and operational controls when the change crosses the database
     boundary
 
 A performance observation is not a performance failure. Performance budgets

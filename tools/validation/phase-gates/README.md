@@ -21,3 +21,17 @@ Phase 4 progression:
   540 PASS, 0 FAIL, and 3 understood WARN.
 
 Run the newest gate for the current repository state.
+
+
+## Cross-Phase Static Standard
+
+The active phase gate remains the authority for the current Phase 4 candidate.
+It invokes the separate cross-phase migration timeout standard before database
+execution. The validator can also be run independently:
+
+```bash
+./tools/validation/validate_foundation_migration_timeouts.sh
+```
+
+Run the independent command for focused review. Future phase gates must continue
+to invoke or reproduce this static contract before database execution.

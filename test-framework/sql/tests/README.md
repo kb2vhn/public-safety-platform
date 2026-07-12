@@ -16,9 +16,20 @@ test-framework/sql/tests/foundation-tests.manifest
 test-framework/sql/tests/foundation-concurrency-tests.manifest
 test-framework/sql/schema/scripts/test_foundation.sh
 test-framework/sql/schema/scripts/test_foundation_with_resources.sh
+tools/validation/validate_foundation_migration_timeouts.sh
 ```
 
 ## Run
+
+Migration timeout contract only:
+
+```bash
+./tools/validation/validate_foundation_migration_timeouts.sh
+```
+
+This is a repository-policy check. The active Step 4 gate invokes it before
+database execution. It contributes no SQL PASS rows and does not change the
+Step 4 target.
 
 Correctness only:
 
@@ -72,6 +83,13 @@ proofs are intentionally reserved for Phase 4 Step 7.
    defense-in-depth review item.
 3. The applied-migration registry is documented append-only but lacks an
    enabled immutable-write trigger.
+
+## Migration Execution Boundary
+
+Every manifest migration must use `SET LOCAL` with a `5s` lock timeout, a
+`1min` statement timeout, and a `1min` idle-in-transaction timeout. Individual
+statements observed above ten seconds require investigation under the
+Foundation migration execution standard.
 
 ## Boundary
 
