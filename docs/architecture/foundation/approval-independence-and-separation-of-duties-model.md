@@ -7,9 +7,9 @@
 >
 > **Phase:** 4 — Approval Independence and Separation of Duties
 >
-> **Step:** 1 — Normative Contract Freeze
+> **Step:** 2 — Structural Extension
 >
-> **Status:** Normative Phase 4 contract; implementation has not started
+> **Status:** Normative Phase 4 contract; Step 2 structural candidate
 >
 > **Accepted prerequisite:** `phase-3-authorization-control-complete-v1`
 >
@@ -761,10 +761,26 @@ Concurrency tests will be added only after the sequential state model passes.
 
 ### Step 2 — Structural Extension
 
-- Migration `083`
-- Exact schema constraints and indexes
-- Structural test `170`
-- No controlled approval completion claims yet
+Step 2 adds:
+
+- Migration `083_postgresql_approval_independence_and_separation_of_duties.sql`
+- Structural test
+  `170_approval_independence_and_separation_of_duties_structure.sql`
+- Typed directly affected identity and approval-chain context
+- Typed Approval Request dependencies
+- Generated effective-actor identity
+- Acting-session, Authority Grant, and prior-action linkage
+- Initial governed duty catalog
+- Policy-prohibited duty combinations
+- Incompatible-authority enforcement modes
+- Persisted stage-evaluation and counted-action linkage
+- Database privilege and index checks
+- Observation-only resource telemetry around the unchanged correctness runner
+
+Step 2 does not yet add controlled Approval Action recording, behavioral
+independence enforcement, stage satisfaction, or Approval Request finalization.
+Resource observations are separate from functional assertions and enforce no
+performance budget.
 
 ### Step 3 — Controlled Approval Actions
 
@@ -843,7 +859,26 @@ Phase 4 Step 1 passes only when:
 20. The complete accepted Phase 3 suite remains at 408 PASS, 0 FAIL, and the
     same 3 understood WARN results.
 
-## 27. Revalidation Triggers
+## 27. Step 2 Acceptance Criteria
+
+Step 2 is complete only when:
+
+- The manifest contains 34 ordered migrations.
+- Migration `083` installs into an empty database.
+- The structural test manifest contains 17 tests.
+- Test `170` contributes exactly 37 functional assertions.
+- The accepted nine concurrency tests still pass unchanged.
+- The complete correctness result is 445 PASS, 0 FAIL, and the same three
+  understood WARN results.
+- The resource-aware wrapper produces text and JSON reports for the same run.
+- Correctness is `PASS`.
+- Resource observation is `RECORDED`.
+- Performance thresholds are `NOT_EVALUATED`.
+- Resource fields are present, well-formed, and observation-only.
+- No controlled Approval Action behavior is claimed by structural presence.
+- The accepted Phase 3 tag and formal acceptance record remain unchanged.
+
+## 28. Revalidation Triggers
 
 Phase 4 must be revalidated after any change to:
 
@@ -866,7 +901,7 @@ Phase 4 must be revalidated after any change to:
 - The accepted Phase 3 tag or acceptance record
 - This normative contract
 
-## 28. Related Documents
+## 29. Related Documents
 
 - [Approval Framework](approval-framework.md)
 - [Authority and Authorization Model](authority-and-authorization-model.md)

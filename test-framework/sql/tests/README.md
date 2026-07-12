@@ -2,10 +2,10 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current checkpoint:** Phase 3 Step 6 concurrency-proof candidate
+> **Current checkpoint:** Phase 4 Step 2 structural candidate
 >
-> **Scope:** Test-only PostgreSQL, `psql`, and Bash infrastructure for the
-> active Platform Foundation SQL.
+> **Scope:** Test-only PostgreSQL, `psql`, Bash, and resource-observation
+> infrastructure for the active Platform Foundation SQL.
 
 ## Authoritative Paths
 
@@ -16,50 +16,69 @@ test-framework/sql/tests/foundation-tests.manifest
 test-framework/sql/tests/foundation-concurrency-tests.manifest
 
 test-framework/sql/schema/scripts/test_foundation.sh
+test-framework/sql/schema/scripts/test_foundation_with_resources.sh
 ```
 
-The Foundation runner installs the live migration manifest into a disposable
-PostgreSQL database, installs the test-only `sql_test` assertion framework,
-runs the sequential manifest, then runs the concurrency manifest against the
-same database.
+## Correctness Runner
 
-## Primary Command
-
-From the repository root:
+Run the normal correctness suite from the repository root:
 
 ```bash
 ./test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
-The current phase gate is:
+It installs the live migration manifest into a disposable PostgreSQL database,
+installs the test-only `sql_test` framework, runs the sequential manifest, runs
+the concurrency manifest, writes the result inventory, and returns a correctness
+exit status.
+
+## Resource-Aware Runner
+
+Run correctness plus resource observation with:
 
 ```bash
-./tools/validation/phase-gates/validate_phase3_step6.sh
+./test-framework/sql/schema/scripts/test_foundation_with_resources.sh
 ```
 
-## Dependency Preflight
+The wrapper invokes the normal runner with `--keep-database`, measures the
+runner process tree, observes the retained disposable database, writes text and
+JSON resource reports, and then drops the successful database unless
+`--keep-database` was supplied.
 
-The runner and phase gates stop before database creation when required commands
-are missing. On minimal Arch Linux, the direct runner depends on packages such
-as `bash`, `postgresql-libs`, `gawk`, `coreutils`, `grep`, and `sed`.
+The outcomes remain separate:
+
+```text
+Correctness result: PASS or FAIL
+Resource observation: RECORDED or NOT_RECORDED
+Performance thresholds: NOT_EVALUATED
+```
+
+Phase 4 Step 2 does not enforce a performance budget.
+
+On minimal Arch Linux, the resource-aware path additionally requires GNU
+`time`, provided by package `time`.
 
 ## Sequential Tests
 
-The sequential manifest contains 16 files. It preserves every accepted Phase 1
-and Phase 2 regression test and adds Phase 3 structural, finalization, lease,
-and fail-closed behavior tests through:
+The sequential manifest contains 17 files.
+
+Phase 4 Step 2 adds:
 
 ```text
-foundation/130_authorization_decision_and_lease_structure.sql
-foundation/140_authorization_policy_selection_and_decision_finalization.sql
-foundation/150_authorization_lease_issuance_and_use.sql
-foundation/160_authorization_lease_fail_closed_behavior.sql
+foundation/170_approval_independence_and_separation_of_duties_structure.sql
 ```
+
+This test contributes 37 functional assertions covering structural context,
+constraints, foreign keys, generated effective-actor identity, duty catalog,
+incompatible-authority modes, stage-evaluation structure, indexes, and direct
+PUBLIC privilege posture.
+
+It does not claim controlled Approval Action recording or behavioral
+independence enforcement.
 
 ## Concurrency Tests
 
-The concurrency manifest preserves the four accepted Authentication Assertion
-and session proofs, then adds five Phase 3 authorization races:
+The concurrency manifest remains at nine accepted tests:
 
 ```text
 concurrency/100_authentication_assertion_single_use.sh
@@ -73,58 +92,65 @@ concurrency/170_authorization_lease_limited_use_race.sh
 concurrency/180_authorization_lease_terminal_transition_race.sh
 ```
 
-Each race uses independent PostgreSQL connections behind an advisory-lock
-release barrier. Both workers record readiness before the controller releases
-them. The tests assert the final durable state, not merely worker exit codes.
-
-The shared test-only fixture is:
+## Step 2 Correctness Target
 
 ```text
-concurrency/support/phase3_authorization_concurrency_fixture.sql
-```
-
-## Step 6 Target
-
-```text
-33 manifest migrations
-33 registered migrations
-16 sequential test files
+34 manifest migrations
+34 registered migrations
+17 sequential test files
 9 concurrency test files
-408 PASS
+445 PASS
 0 FAIL
 3 understood WARN
 ```
 
 The three warnings remain deliberate development signals:
 
-1. migration files are hashed by the runner but migrations register NULL
-   checksums,
+1. Migration files are hashed by the runner, but migrations register NULL
+   checksums.
 2. Foundation-defined types still expose direct PUBLIC USAGE grants that are
-   unreachable without schema USAGE but remain a defense-in-depth review item,
-3. the applied-migration registry is documented append-only but lacks an
+   unreachable without schema USAGE but remain a defense-in-depth review item.
+3. The applied-migration registry is documented append-only but lacks an
    enabled immutable-write trigger against owner UPDATE or DELETE.
 
-## Results
+## Result Files
 
-Results are written beneath:
+Normal correctness outputs:
 
 ```text
 test-framework/sql/test-results/
+├── foundation_<run-id>-summary.txt
+├── foundation_<run-id>.log
+├── latest-summary.txt
+└── latest.log
 ```
 
-The latest compact and full outputs are:
+Resource-aware outputs:
 
 ```text
-test-framework/sql/test-results/latest-summary.txt
-test-framework/sql/test-results/latest.log
+test-framework/sql/test-results/
+├── foundation_<run-id>-resources.txt
+├── foundation_<run-id>-resources.json
+├── latest-resources.txt
+└── latest-resources.json
 ```
 
-Successful disposable databases are dropped. Failed databases are retained by
-default for investigation.
+Resource reports are observations, not automatically Assurance Artifacts.
+
+## Failure Behavior
+
+- Successful databases are dropped after observation unless retention was
+  requested.
+- Failed databases are retained by default.
+- A correctness failure remains a correctness failure.
+- A required missing or malformed resource report is a validation
+  infrastructure failure.
+- No resource value causes a performance failure during Step 2.
 
 ## Boundary
 
-Passing tests prove only the implemented assertions. They do not establish
-production readiness, final deployment-role separation, host-compromise
-containment, protected backups, off-host audit durability, break-glass
-operations, or trusted rebuild and recovery.
+Passing tests prove only the implemented assertions. Resource observations
+describe execution cost for that run. Neither establishes production readiness,
+final deployment-role separation, host-compromise containment, protected
+backups, off-host durability, break-glass operations, or trusted rebuild and
+recovery.

@@ -6,8 +6,8 @@
 > controls are database-enforced and tested; structural presence does not imply
 > complete runtime, deployment, or operational enforcement.
 >
-> **Current status:** Phase 4 Step 1 — approval-independence and
-> separation-of-duties contract freeze.
+> **Current status:** Phase 4 Step 2 — approval-independence structural
+> extension and baseline resource observation.
 
 ## Purpose
 
@@ -156,50 +156,57 @@ must not alter that accepted implementation without Phase 3 revalidation.
 
 ## Current Phase 4 Boundary
 
-Phase 4 is:
+Phase 4 Step 1 froze the normative approval-independence and
+separation-of-duties contract.
+
+Phase 4 Step 2 adds:
 
 ```text
-Approval Independence and Separation of Duties
+sql/schema/migrations/foundation/
+└── 083_postgresql_approval_independence_and_separation_of_duties.sql
+
+test-framework/sql/tests/foundation/
+└── 170_approval_independence_and_separation_of_duties_structure.sql
 ```
 
-Step 1 freezes the normative contract before SQL or test changes.
+The migration extends the existing approval and authority structures with
+typed directly affected identity context, approval-chain relationships,
+effective actors, acting sessions, Authority Grant linkage, action lineage,
+governed duties, incompatible-authority modes, and persisted stage-evaluation
+structure.
 
-Governing contract:
+Step 2 does not yet claim controlled Approval Action recording, behavioral
+independence enforcement, stage satisfaction, or Approval Request finalization.
 
-- [Approval Independence and Separation of Duties Model](approval-independence-and-separation-of-duties-model.md)
-
-The contract extends the existing approval and authority structures with
-requirements for:
-
-- Approval Action Record terminology
-- Effective actor uniqueness
-- Typed directly affected identity context
-- Self-approval prevention
-- Duplicate approval prevention
-- Distinct organization when policy requires it
-- Authority-origin independence
-- Explicit reciprocal approval-cycle checks
-- Exact Approval Action to Authority Grant binding
-- Incompatible-authority enforcement modes
-- Separation-of-duties duties and prohibited combinations
-- Current stage satisfaction
-- Finalization-once Approval Requests
-- Withdrawal, correction, and supersession through new action records
-- Decision Record integration
-- Independent-connection concurrency proofs
-
-Step 1 changes no SQL, manifest, or SQL test file.
-
-Planned Step 2 migration:
+Resource observation is implemented separately:
 
 ```text
-083_postgresql_approval_independence_and_separation_of_duties.sql
+test-framework/sql/schema/scripts/
+└── test_foundation_with_resources.sh
 ```
 
-The term “evidence” is not used as a substitute for a known record type.
-Active Phase 4 documents distinguish Approval Action Records, supporting
-records, Assurance Artifacts, lifecycle events, and module-owned evidence
-records.
+The normal runner remains the correctness authority. The wrapper records
+elapsed time, CPU, memory, I/O counters, PostgreSQL statistics, WAL change, and
+database size without applying a performance threshold.
+
+Step 2 target:
+
+```text
+34 manifest migrations
+34 registered migrations
+17 sequential test files
+9 concurrency test files
+445 PASS
+0 FAIL
+3 understood WARN
+Resource observation: RECORDED
+Performance thresholds: NOT_EVALUATED
+```
+
+See:
+
+- [Approval Independence and Separation of Duties](approval-independence-and-separation-of-duties-model.md)
+- [Resource Telemetry and Performance-Regression Testing](resource-telemetry-and-performance-regression-testing-model.md)
 
 ## Documentation Groups
 
@@ -251,6 +258,7 @@ records.
 
 - [Resilience, Availability, and Recovery](resilience-availability-and-recovery-model.md)
 - [Performance, Efficiency, and Resource Governance](performance-efficiency-and-resource-governance-model.md)
+- [Resource Telemetry and Performance-Regression Testing](resource-telemetry-and-performance-regression-testing-model.md)
 - [Client Experience and Accessibility](../user-interface/client-experience-and-accessibility-model.md)
 - [Accessibility and Inclusive Interaction](../user-interface/accessibility-and-inclusive-interaction-model.md)
 - [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)

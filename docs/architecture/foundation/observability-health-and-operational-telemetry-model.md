@@ -66,3 +66,13 @@ The Foundation SQL test framework must test the requirements that can be demonst
 - [External-System-Independent Observability](../external-system-independent-observability.md)
 - [Resilience, Availability, and Recovery](resilience-availability-and-recovery-model.md)
 - [Performance, Efficiency, and Resource Governance](performance-efficiency-and-resource-governance-model.md)
+## Test Resource Observations
+
+Foundation test resource reports are test-infrastructure observations. They are
+kept separate from operational telemetry records and from SQL correctness
+assertions.
+
+A reviewed report may later be registered through a governed assurance process,
+but the generated report is not automatically an Assurance Artifact.
+
+See [Resource Telemetry and Performance-Regression Testing](resource-telemetry-and-performance-regression-testing-model.md).

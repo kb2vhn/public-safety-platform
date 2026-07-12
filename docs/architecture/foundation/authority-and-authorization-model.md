@@ -233,13 +233,16 @@ Existing principal mapping:
 055_authority_purpose_and_authorization_policy.sql
 ```
 
-Planned Phase 4 extension:
+Phase 4 Step 2 structural extension:
 
 ```text
 083_postgresql_approval_independence_and_separation_of_duties.sql
 ```
 
-Migrations `080` and `081` record and consume authorization results. Phase 4
+Migrations `080` and `081` record and consume authorization results.
+Migration `083` adds typed approval-stage Authority Definition references,
+Approval Action Record-to-Authority Grant linkage, incompatible-authority
+modes, and stage-evaluation structure. Later Phase 4 steps
 must preserve their accepted boundaries.
 
 ## Governing Phase Contract

@@ -814,7 +814,8 @@ The normative Phase 4 contract is:
 
 - [Approval Independence and Separation of Duties Model](approval-independence-and-separation-of-duties-model.md)
 
-Phase 4 Step 1 changes no production SQL, migration manifest, or SQL test file.
+Phase 4 Step 1 changed no production SQL, migration manifest, or SQL test
+file. Phase 4 Step 2 adds migration `083` and structural test `170`.
 
 The planned migration is:
 
@@ -844,6 +845,14 @@ The planned boundary requires:
 - Independent-connection concurrency proofs
 - Preservation of every accepted Phase 1, Phase 2, and Phase 3 invariant
 
-Phase 4 Step 2 may add migration `083` and the structural test
+Phase 4 Step 2 adds migration `083` and the structural test
 `170_approval_independence_and_separation_of_duties_structure.sql` only after
 the Step 1 contract gate passes completely.
+
+## Phase 4 Step 2 Resource Observation
+
+The resource-aware Foundation runner records execution cost separately from
+authorization correctness. It contributes no decision-stage result and no SQL
+PASS row.
+
+See [Resource Telemetry and Performance-Regression Testing](resource-telemetry-and-performance-regression-testing-model.md).

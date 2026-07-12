@@ -1,4 +1,3 @@
-
 # Iron Signal Platform
 
 > An Iron Signal Systems project
@@ -29,10 +28,6 @@ Public safety is the first demanding module family, not the limit of the
 Platform Foundation. The Foundation is domain-neutral and is intended to serve
 public-safety, municipal, school, and other institutional modules without
 embedding one module's business records into the shared security layer.
-
-The Foundation currently covers trust, identity, sessions, authorization,
-approvals, Decision Records, governance, compliance, resilience, performance,
-observability, integration intent, and resource governance.
 
 ## Accepted Foundation Boundaries
 
@@ -82,34 +77,34 @@ Acceptance record:
 
 - [Phase 3 Authorization Decision and Controlled Lease Acceptance](docs/architecture/foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 
-## Active Foundation Phase
+## Current Phase 4 Work
 
-### Phase 4 — Approval Independence and Separation of Duties
+Phase 4 Step 1 froze the approval-independence and separation-of-duties
+contract.
 
-Step 1 freezes the normative contract before production SQL changes.
+Phase 4 Step 2 adds structural database support through migration `083` and
+structural test `170`. It does not yet claim controlled Approval Action
+recording, behavioral independence enforcement, stage satisfaction, or Approval
+Request finalization.
 
-The contract defines:
+Step 2 also adds observation-only resource telemetry around the unchanged
+correctness runner. Correctness results remain separate from elapsed time, CPU,
+memory, I/O, WAL, and database-size observations.
 
-- Approval Action Record terminology
-- Effective actor uniqueness
-- Requester and directly affected identity independence
-- Self-approval prevention
-- Duplicate approval prevention
-- Explicit reciprocal approval-cycle checks
-- Typed Authority Grant binding
-- Incompatible-authority enforcement modes
-- Separation-of-duties duties and prohibited combinations
-- Current stage satisfaction
-- Finalization-once Approval Requests
-- Withdrawal, correction, and supersession through new action records
-- Independent-connection concurrency requirements
+Step 2 target:
 
-Governing contract:
+```text
+34 manifest migrations
+34 registered migrations
+17 sequential test files
+9 concurrency test files
+445 PASS
+0 FAIL
+3 understood WARN
 
-- [Approval Independence and Separation of Duties Model](docs/architecture/foundation/approval-independence-and-separation-of-duties-model.md)
-
-Step 1 changes no SQL, migration manifest, or SQL test file. The accepted Phase
-3 suite remains the regression boundary.
+Resource observation: RECORDED
+Performance thresholds: NOT_EVALUATED
+```
 
 ## Core Principles
 
@@ -120,53 +115,28 @@ Step 1 changes no SQL, migration manifest, or SQL test file. The accepted Phase
 - No ordinary account is a god account.
 - Material decisions and lifecycle changes must be attributable.
 - Historical state must not be silently rewritten.
-- Approval Action Records are distinct from supporting records, assurance
-  artifacts, and module-owned evidence records.
 - External providers must remain replaceable.
 - Performance and resource bounds are design requirements.
-
-## Repository Layout
-
-```text
-.
-├── docs/
-│   ├── architecture/
-│   ├── compliance-profiles/
-│   └── goals/
-├── go/
-│   └── experiments/
-├── sql/
-│   └── schema/
-│       ├── manifests/
-│       ├── migrations/
-│       └── scripts/
-├── test-framework/
-│   └── sql/
-└── tools/
-    └── validation/
-        └── phase-gates/
-```
-
-Phase validators are intentionally kept out of the repository root.
+- Correctness and resource observations are separate test outcomes.
 
 ## Validation
 
-Validate Phase 4 Step 1:
+Run the active Phase 4 Step 2 gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step1.sh
+./tools/validation/phase-gates/validate_phase4_step2.sh
 ```
 
-Validate the formal Phase 3 acceptance checkpoint:
-
-```bash
-./tools/validation/phase-gates/validate_phase3_step7.sh
-```
-
-Run the complete Foundation SQL suite directly:
+Run the normal correctness suite:
 
 ```bash
 ./test-framework/sql/schema/scripts/test_foundation.sh
+```
+
+Run correctness plus resource observation:
+
+```bash
+./test-framework/sql/schema/scripts/test_foundation_with_resources.sh
 ```
 
 ## Documentation
@@ -176,17 +146,17 @@ Start with:
 - [Platform Documentation](docs/README.md)
 - [Architecture Index](docs/architecture/README.md)
 - [Platform Foundation Documentation](docs/architecture/foundation/README.md)
-- [Phase 4 Approval Independence and Separation of Duties](docs/architecture/foundation/approval-independence-and-separation-of-duties-model.md)
-- [Phase 3 Acceptance](docs/architecture/foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
+- [Approval Independence and Separation of Duties](docs/architecture/foundation/approval-independence-and-separation-of-duties-model.md)
+- [Resource Telemetry and Performance-Regression Testing](docs/architecture/foundation/resource-telemetry-and-performance-regression-testing-model.md)
 - [Validation Tools](tools/validation/README.md)
 
 ## Production Readiness
 
 The repository is pre-alpha. Production use still requires deployment-role
-separation, least-privileged grants, host compromise containment, secret and
-key management, integrity anchoring, off-host logging, protected backups,
-restore testing, break-glass controls, incident response, and trusted rebuild
-and compromise recovery.
+separation, least-privileged grants, host compromise containment, secret and key
+management, integrity anchoring, off-host logging, protected backups, restore
+testing, break-glass controls, incident response, and trusted rebuild and
+compromise recovery.
 
 ## License
 

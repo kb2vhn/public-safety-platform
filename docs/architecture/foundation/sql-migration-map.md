@@ -41,6 +41,7 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | `080` | `080_decision_record_repository.sql` | Decision and evaluation records |
 | `081` | `081_postgresql_authorization_decision_and_lease_issuance.sql` | Typed policy applicability, policy-stage mapping, lease-request Decision Record fields, one issuing-decision/one issued-lease cardinality, core decision-to-lease binding, lease chronology and state shape, and authority/use evidence binding |
 | `082` | `082_data_classification_and_governance.sql` | Classification and information-governance structures |
+| `083` | `083_postgresql_approval_independence_and_separation_of_duties.sql` | Approval Request context, effective actors, duties, incompatible-authority modes, and persisted stage-evaluation structure |
 | `084` | `084_lifecycle_and_historical_lineage.sql` | General lifecycle, versioning, and lineage |
 | `086` | `086_governed_documents_and_policy_versions.sql` | Governed documents and immutable policy versions |
 | `087` | `087_common_control_catalog.sql` | Reusable common-control catalog |
@@ -84,6 +85,7 @@ test-framework/
 ├── Makefile
 └── sql/
     ├── schema/scripts/test_foundation.sh
+    ├── schema/scripts/test_foundation_with_resources.sh
     ├── tests/
     │   ├── foundation-tests.manifest
     │   ├── foundation-concurrency-tests.manifest
@@ -419,32 +421,18 @@ revalidated.
 
 ### Step 1 Contract Freeze
 
-Phase 4 Step 1 changes no production SQL, migration manifest, or SQL test file.
-
-The governing contract is:
+Phase 4 Step 1 froze:
 
 ```text
-docs/architecture/foundation/approval-independence-and-separation-of-duties-model.md
+docs/architecture/foundation/
+approval-independence-and-separation-of-duties-model.md
 ```
 
-The accepted Phase 3 SQL and test tree remains authoritative at:
+It changed no SQL or SQL tests.
 
-```text
-phase-3-authorization-control-complete-v1
-```
+### Step 2 Structural Extension
 
-The Step 1 gate verifies that `sql/schema` and `test-framework/sql` remain
-identical to that tag and reruns the complete accepted Foundation suite.
-
-### Planned Step 2 Migration
-
-The planned implementation migration is:
-
-```text
-083_postgresql_approval_independence_and_separation_of_duties.sql
-```
-
-Planned order:
+Step 2 adds migration `083` in the authoritative order:
 
 ```text
 081_postgresql_authorization_decision_and_lease_issuance.sql
@@ -453,39 +441,67 @@ Planned order:
 084_lifecycle_and_historical_lineage.sql
 ```
 
-Migration `083` will extend the existing objects created by migrations `050`
-and `055`. It must not create a second approval framework.
+Migration `083` extends the existing objects created by migrations `050`,
+`055`, `060`, and related accepted boundaries. It does not create a second
+approval framework.
 
-Planned capabilities include:
+Structural additions include:
 
-- Typed directly affected identity context
-- Approval-chain and request-dependency linkage
-- Typed stage Authority Definition requirements
-- Exact Approval Action Record to Authority Grant linkage
-- Acting session and organization linkage
-- Action lineage for withdrawal, correction, and supersession
-- Policy-driven independence rules
+- Typed directly affected identity and approval-chain context
+- Explicit Approval Request dependencies
+- Required Authority Definition and incompatible-authority stage policy
+- Generated effective-actor identity
+- Acting-session, Authority Grant, and prior-action linkage
+- Governed duty definitions
+- Policy-prohibited duty combinations
 - Incompatible-authority enforcement modes
-- Separation-of-duties duties and prohibited combinations
-- Persisted stage-evaluation records
-- Finalization-once Approval Requests
-- Controlled action-recording and finalization routines
+- Persisted approval-stage evaluations
+- Exact evaluation-to-action and Authority Grant linkage
+- Supporting indexes and direct PUBLIC privilege removal
 
-The first planned structural test is:
+The first structural test is:
 
 ```text
 test-framework/sql/tests/foundation/
 170_approval_independence_and_separation_of_duties_structure.sql
 ```
 
-The manifest and test counts remain unchanged during Step 1:
+It contributes 37 functional assertions.
+
+### Resource Observation
+
+Step 2 also adds:
 
 ```text
-33 manifest migrations
-33 registered migrations
-16 sequential test files
+test-framework/sql/schema/scripts/
+test_foundation_with_resources.sh
+```
+
+This wrapper calls the unchanged correctness runner, records resource
+observations, and applies no performance threshold.
+
+Resource reports are written beside the normal summary and log:
+
+```text
+foundation_<run-id>-resources.txt
+foundation_<run-id>-resources.json
+latest-resources.txt
+latest-resources.json
+```
+
+### Step 2 Target
+
+```text
+34 manifest migrations
+34 registered migrations
+17 sequential test files
 9 concurrency test files
-408 PASS
+445 PASS
 0 FAIL
 3 understood WARN
+Resource observation: RECORDED
+Performance thresholds: NOT_EVALUATED
 ```
+
+Controlled Approval Action recording and behavioral independence enforcement
+remain later Phase 4 steps.

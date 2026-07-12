@@ -65,3 +65,15 @@ The Foundation SQL test framework must test the requirements that can be demonst
 - [Performance and Efficiency Goals](../../goals/performance-and-efficiency-goals.md)
 - [Client Experience and Accessibility](client-experience-and-accessibility-model.md)
 - [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)
+## Resource-Aware Foundation Test Runs
+
+Phase 4 Step 2 adds an observation-only wrapper around the normal Foundation
+correctness suite. It records elapsed time, CPU, memory, operating-system I/O
+counters, PostgreSQL database statistics, WAL change, and disposable-database
+size.
+
+These observations do not establish performance budgets. Thresholds remain
+`NOT_EVALUATED` until representative same-environment baselines support a
+governed budget.
+
+See [Resource Telemetry and Performance-Regression Testing](resource-telemetry-and-performance-regression-testing-model.md).

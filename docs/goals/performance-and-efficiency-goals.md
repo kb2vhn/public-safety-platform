@@ -40,3 +40,15 @@ These goals are represented through:
 - [Observability, Health, and Operational Telemetry](../architecture/foundation/observability-health-and-operational-telemetry-model.md)
 
 SQL migrations `093–095` provide the initial structural implementation.
+## Test Baseline Translation
+
+Phase 4 Step 2 begins repeatable resource observation for the complete
+Foundation SQL suite. The initial reports record timing, CPU, memory,
+operating-system I/O counters, PostgreSQL statistics, WAL change, and database
+size.
+
+These first runs establish observations only. They do not create performance
+budgets until enough representative runs on compatible environments support
+defensible thresholds.
+
+See [Resource Telemetry and Performance-Regression Testing](../architecture/foundation/resource-telemetry-and-performance-regression-testing-model.md).
