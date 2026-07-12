@@ -124,3 +124,18 @@ break-glass controls, or off-host integrity anchoring.
   exercises.
 
 No one status implies all other statuses.
+
+
+### Platform Services and Shared Resources
+
+- [Backend Services Architecture](backend-services/README.md)
+- [Communications Architecture](communications/README.md)
+- [GIS and Mapping Architecture](gis-and-mapping/README.md)
+
+### Operational Clients
+
+- [Operational Workstation Architecture](operational-workstation/README.md)
+
+### Shared Engineering Standards
+
+- [Platform Engineering Principles](platform-engineering-principles.md)
