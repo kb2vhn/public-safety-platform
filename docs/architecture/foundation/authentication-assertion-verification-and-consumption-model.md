@@ -526,7 +526,7 @@ normal Foundation test command.
 The accepted structure is:
 
 ```text
-sql/test-framework/sql/tests/
+test-framework/sql/tests/
 ├── foundation-tests.manifest
 ├── foundation-concurrency-tests.manifest
 ├── foundation/

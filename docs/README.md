@@ -103,7 +103,7 @@ sql/schema/
 The self-contained SQL test framework is maintained under:
 
 ```text
-sql/test-framework/
+test-framework/
 ```
 
 Architecture documents define requirements. Migrations implement selected

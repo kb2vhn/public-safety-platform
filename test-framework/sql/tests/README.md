@@ -2,7 +2,7 @@
 
 > **Scope:** Test-only PostgreSQL, `psql`, and Bash infrastructure for the active Platform Foundation SQL.
 >
-> **Location:** This framework intentionally remains self-contained under `sql/test-framework/`. It is not copied into the live migration tree.
+> **Location:** This framework intentionally remains self-contained under `test-framework/`. It is not copied into the live migration tree.
 >
 > **Minimal-host rule:** The Bash runner is the primary interface. GNU `make` is optional and exists only as a convenience wrapper.
 
@@ -42,7 +42,7 @@ sql/schema/
 Self-contained test framework:
 
 ```text
-sql/test-framework/
+test-framework/
 ├── INSTALL.txt
 ├── Makefile
 └── sql/
@@ -59,7 +59,7 @@ sql/test-framework/
     └── test-results/
 ```
 
-No file beneath `sql/test-framework/sql/tests/` belongs in the live Foundation migration manifest.
+No file beneath `test-framework/sql/tests/` belongs in the live Foundation migration manifest.
 
 The test-only `sql_test` schema exists only inside the disposable test database.
 
@@ -68,7 +68,7 @@ The test-only `sql_test` schema exists only inside the disposable test database.
 The runner is located at:
 
 ```text
-sql/test-framework/sql/schema/scripts/test_foundation.sh
+test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
 From that location, it resolves two separate roots:
@@ -78,7 +78,7 @@ Live Foundation SQL:
 sql/schema/
 
 Test-only SQL and results:
-sql/test-framework/sql/
+test-framework/sql/
 ```
 
 The authoritative live migration order is read from:
@@ -90,28 +90,28 @@ sql/schema/manifests/foundation.manifest
 Sequential test execution order is read from:
 
 ```text
-sql/test-framework/sql/tests/foundation-tests.manifest
+test-framework/sql/tests/foundation-tests.manifest
 ```
 
 Concurrency test execution order is read from:
 
 ```text
-sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
+test-framework/sql/tests/foundation-concurrency-tests.manifest
 ```
 
-The framework must remain at `sql/test-framework/` for this relative path resolution to remain valid.
+The framework must remain at `test-framework/` for this relative path resolution to remain valid.
 
 ## Primary Run Command
 
 From the repository root:
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh
+./test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
 This is the primary and lowest-dependency way to run the suite.
 
-From inside `sql/test-framework/`, the equivalent command is:
+From inside `test-framework/`, the equivalent command is:
 
 ```bash
 ./sql/schema/scripts/test_foundation.sh
@@ -120,7 +120,7 @@ From inside `sql/test-framework/`, the equivalent command is:
 Show runner options:
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh --help
+./test-framework/sql/schema/scripts/test_foundation.sh --help
 ```
 
 ## Initial Setup
@@ -129,8 +129,8 @@ Make the runner executable from the repository root:
 
 ```bash
 chmod +x \
-  sql/test-framework/sql/schema/scripts/test_foundation.sh \
-  sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
+  test-framework/sql/schema/scripts/test_foundation.sh \
+  test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 ```
 
 ## Required Software
@@ -286,7 +286,7 @@ The runner:
 ### Normal run
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh
+./test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
 A successful disposable database is dropped.
@@ -296,31 +296,31 @@ A failed disposable database is retained.
 ### Keep a successful database
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh     --keep-database
+./test-framework/sql/schema/scripts/test_foundation.sh     --keep-database
 ```
 
 The environment-variable form is:
 
 ```bash
-KEEP_TEST_DB=1 ./sql/test-framework/sql/schema/scripts/test_foundation.sh
+KEEP_TEST_DB=1 ./test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
 ### Drop a failed database
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh     --drop-on-failure
+./test-framework/sql/schema/scripts/test_foundation.sh     --drop-on-failure
 ```
 
 The environment-variable form is:
 
 ```bash
-DROP_TEST_DB_ON_FAILURE=1 ./sql/test-framework/sql/schema/scripts/test_foundation.sh
+DROP_TEST_DB_ON_FAILURE=1 ./test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
 ### Write results to another directory
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh     --results-dir /path/to/results
+./test-framework/sql/schema/scripts/test_foundation.sh     --results-dir /path/to/results
 ```
 
 ## Optional Makefile Convenience Commands
@@ -335,7 +335,7 @@ Install it on Arch Linux only when desired:
 sudo pacman -S --needed make
 ```
 
-From `sql/test-framework/`:
+From `test-framework/`:
 
 ```bash
 make test-sql
@@ -356,7 +356,7 @@ make test-sql-drop-failed
 From the repository root:
 
 ```bash
-make -C sql/test-framework test-sql
+make -C test-framework test-sql
 ```
 
 The direct Bash runner remains the authoritative execution path.
@@ -543,7 +543,7 @@ These tests will be added as the corresponding controls are implemented.
 Results are written under:
 
 ```text
-sql/test-framework/sql/test-results/
+test-framework/sql/test-results/
 ```
 
 Timestamped files:
@@ -585,7 +585,7 @@ The summary includes:
 The full log is normally the best file to upload for review:
 
 ```text
-sql/test-framework/sql/test-results/latest.log
+test-framework/sql/test-results/latest.log
 ```
 
 ## Result Meanings
@@ -620,7 +620,7 @@ They are not failures.
 Create a numbered SQL file beneath:
 
 ```text
-sql/test-framework/sql/tests/foundation/
+test-framework/sql/tests/foundation/
 ```
 
 Example:
@@ -632,7 +632,7 @@ Example:
 Add the relative path to:
 
 ```text
-sql/test-framework/sql/tests/foundation-tests.manifest
+test-framework/sql/tests/foundation-tests.manifest
 ```
 
 Example:
@@ -652,13 +652,13 @@ To add a concurrency test:
 1. Create an executable Bash file beneath:
 
    ```text
-   sql/test-framework/sql/tests/concurrency/
+   test-framework/sql/tests/concurrency/
    ```
 
 2. Add its relative path to:
 
    ```text
-   sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
+   test-framework/sql/tests/foundation-concurrency-tests.manifest
    ```
 
 3. Perform any test-specific command preflight before creating fixtures or
@@ -710,13 +710,13 @@ The framework supports controlled Bash orchestration with multiple independent
 Concurrency test files are stored beneath:
 
 ```text
-sql/test-framework/sql/tests/concurrency/
+test-framework/sql/tests/concurrency/
 ```
 
 Their execution order is listed in:
 
 ```text
-sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
+test-framework/sql/tests/foundation-concurrency-tests.manifest
 ```
 
 The Authentication Assertion single-use race is the first accepted
@@ -778,15 +778,15 @@ Check Bash syntax without running the suite:
 
 ```bash
 bash -n \
-  sql/test-framework/sql/schema/scripts/test_foundation.sh
+  test-framework/sql/schema/scripts/test_foundation.sh
 bash -n \
-  sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
+  test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 ```
 
 Display available options:
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh     --help
+./test-framework/sql/schema/scripts/test_foundation.sh     --help
 ```
 
 ## Documentation

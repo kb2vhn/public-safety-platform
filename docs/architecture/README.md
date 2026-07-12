@@ -100,7 +100,7 @@ sql/schema/migrations/foundation/
 The self-contained SQL test framework is maintained in:
 
 ```text
-sql/test-framework/
+test-framework/
 ```
 
 Architecture documents define requirements. Migrations implement database

@@ -6,7 +6,7 @@ Purpose
 
 This directory is intentionally self-contained beneath:
 
-    sql/test-framework/
+    test-framework/
 
 Do not copy its files into the repository root or move its SQL files into the
 live migration tree.
@@ -17,7 +17,7 @@ The framework reads the deployable Foundation migrations from:
 
 It keeps test-only SQL, runner files, logs, and summaries beneath:
 
-    sql/test-framework/
+    test-framework/
 
 Directory Relationship
 ----------------------
@@ -29,14 +29,14 @@ Live Foundation SQL:
 
 Test framework:
 
-    sql/test-framework/INSTALL.txt
-    sql/test-framework/Makefile
-    sql/test-framework/sql/schema/scripts/test_foundation.sh
-    sql/test-framework/sql/tests/foundation-tests.manifest
-    sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
-    sql/test-framework/sql/tests/foundation/
-    sql/test-framework/sql/tests/concurrency/
-    sql/test-framework/sql/test-results/
+    test-framework/INSTALL.txt
+    test-framework/Makefile
+    test-framework/sql/schema/scripts/test_foundation.sh
+    test-framework/sql/tests/foundation-tests.manifest
+    test-framework/sql/tests/foundation-concurrency-tests.manifest
+    test-framework/sql/tests/foundation/
+    test-framework/sql/tests/concurrency/
+    test-framework/sql/test-results/
 
 The test-only sql_test schema is created only inside a disposable test
 database. It is not part of the live Foundation migration manifest.
@@ -48,9 +48,9 @@ The Bash runner is the primary and authoritative execution path.
 
 From the repository root:
 
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh
+    ./test-framework/sql/schema/scripts/test_foundation.sh
 
-From inside sql/test-framework:
+From inside test-framework:
 
     ./sql/schema/scripts/test_foundation.sh
 
@@ -63,8 +63,8 @@ Initial Setup
 From the repository root:
 
     chmod +x \
-        sql/test-framework/sql/schema/scripts/test_foundation.sh \
-        sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
+        test-framework/sql/schema/scripts/test_foundation.sh \
+        test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 
 Required Software
 -----------------
@@ -166,7 +166,7 @@ Developers who prefer the Makefile wrapper may install make:
 
     sudo pacman -S --needed make
 
-From sql/test-framework:
+From test-framework:
 
     make test-sql
 
@@ -180,7 +180,7 @@ Drop a failed database:
 
 From the repository root:
 
-    make -C sql/test-framework test-sql
+    make -C test-framework test-sql
 
 These commands call the same Bash runner and do not add test behavior.
 
@@ -247,7 +247,7 @@ Run the Framework
 
 Normal run from the repository root:
 
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh
+    ./test-framework/sql/schema/scripts/test_foundation.sh
 
 A successful disposable database is dropped.
 
@@ -255,31 +255,31 @@ A failed disposable database is retained for investigation.
 
 Show all runner options:
 
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh --help
+    ./test-framework/sql/schema/scripts/test_foundation.sh --help
 
 Keep a successful test database:
 
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh \
+    ./test-framework/sql/schema/scripts/test_foundation.sh \
         --keep-database
 
 Environment-variable equivalent:
 
     KEEP_TEST_DB=1 \
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh
+    ./test-framework/sql/schema/scripts/test_foundation.sh
 
 Drop a failed test database:
 
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh \
+    ./test-framework/sql/schema/scripts/test_foundation.sh \
         --drop-on-failure
 
 Environment-variable equivalent:
 
     DROP_TEST_DB_ON_FAILURE=1 \
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh
+    ./test-framework/sql/schema/scripts/test_foundation.sh
 
 Write results beneath another directory:
 
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh \
+    ./test-framework/sql/schema/scripts/test_foundation.sh \
         --results-dir /path/to/results
 
 What the Runner Does
@@ -320,7 +320,7 @@ Concurrency Test Behavior
 
 Concurrency tests are listed in:
 
-    sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
+    test-framework/sql/tests/foundation-concurrency-tests.manifest
 
 The current Authentication Assertion test uses independent `psql` processes
 and a PostgreSQL advisory-lock barrier. It proves that two eligible consumers
@@ -342,7 +342,7 @@ Output Files
 
 Results are written beneath:
 
-    sql/test-framework/sql/test-results/
+    test-framework/sql/test-results/
 
 Timestamped files:
 
@@ -382,11 +382,11 @@ Review or Upload the Result
 
 For a normal review, open or upload:
 
-    sql/test-framework/sql/test-results/latest.log
+    test-framework/sql/test-results/latest.log
 
 For a compact overview, open or upload:
 
-    sql/test-framework/sql/test-results/latest-summary.txt
+    test-framework/sql/test-results/latest-summary.txt
 
 Database Retention Behavior
 ---------------------------
@@ -425,13 +425,13 @@ Troubleshooting
 
 Check runner syntax without creating a database:
 
-    bash -n sql/test-framework/sql/schema/scripts/test_foundation.sh
+    bash -n test-framework/sql/schema/scripts/test_foundation.sh
     bash -n \
-        sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
+        test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 
 Display runner help:
 
-    ./sql/test-framework/sql/schema/scripts/test_foundation.sh --help
+    ./test-framework/sql/schema/scripts/test_foundation.sh --help
 
 Verify the installed PostgreSQL client:
 
@@ -442,6 +442,6 @@ Test the maintenance-database connection:
     psql --dbname="${PGMAINTENANCE_DB:-postgres}" \
         --command='SELECT version(), current_user;'
 
-The framework must remain at sql/test-framework so its relative path
+The framework must remain at test-framework so its relative path
 resolution matches the repository layout.
 

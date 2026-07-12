@@ -78,7 +78,7 @@ sql/schema/scripts/validate_foundation.sh
 The test framework intentionally remains self-contained:
 
 ```text
-sql/test-framework/
+test-framework/
 ├── INSTALL.txt
 ├── Makefile
 └── sql/
@@ -94,7 +94,7 @@ sql/test-framework/
 It reads the live manifest and migrations from `sql/schema/`, installs
 test-only objects in a disposable database, runs both sequential SQL tests and
 Bash-orchestrated multi-connection concurrency tests, and writes reviewable
-log and summary files beneath `sql/test-framework/sql/test-results/`.
+log and summary files beneath `test-framework/sql/test-results/`.
 
 ### Accepted Phase 1 Mapping
 
@@ -102,9 +102,9 @@ The Authentication Assertion Phase 1 boundary is implemented principally by:
 
 ```text
 sql/schema/migrations/foundation/070_postgresql_authentication_assertion_gate.sql
-sql/test-framework/sql/tests/foundation/090_authentication_assertion_behavior.sql
-sql/test-framework/sql/tests/foundation/100_authentication_assertion_phase1_behavior.sql
-sql/test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
+test-framework/sql/tests/foundation/090_authentication_assertion_behavior.sql
+test-framework/sql/tests/foundation/100_authentication_assertion_phase1_behavior.sql
+test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 ```
 
 Accepted evidence:

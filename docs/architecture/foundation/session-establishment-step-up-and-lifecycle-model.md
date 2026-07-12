@@ -946,7 +946,7 @@ successful state changes.
 The existing normal command remains:
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh
+./test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
 Phase 2 tests must integrate with the existing sequential and concurrency

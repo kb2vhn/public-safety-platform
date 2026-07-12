@@ -488,13 +488,13 @@ The test framework intentionally remains separate from the live migration
 tree:
 
 ```text
-sql/test-framework/
+test-framework/
 ```
 
 Run it with:
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh
+./test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
 The framework will:
@@ -512,14 +512,14 @@ The framework will:
 The newest results are written to:
 
 ```text
-sql/test-framework/sql/test-results/latest.log
-sql/test-framework/sql/test-results/latest-summary.txt
+test-framework/sql/test-results/latest.log
+test-framework/sql/test-results/latest-summary.txt
 ```
 
 See:
 
-- [Test Framework Installation and Operation](sql/test-framework/INSTALL.txt)
-- [Foundation SQL Test Framework](sql/test-framework/sql/tests/README.md)
+- [Test Framework Installation and Operation](test-framework/INSTALL.txt)
+- [Foundation SQL Test Framework](test-framework/sql/tests/README.md)
 
 ## Go Experiments
 

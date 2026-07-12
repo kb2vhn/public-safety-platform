@@ -60,7 +60,7 @@ sql/schema/migrations/foundation/
 Principal sequential tests:
 
 ```text
-sql/test-framework/sql/tests/foundation/
+test-framework/sql/tests/foundation/
 ├── 090_authentication_assertion_behavior.sql
 └── 100_authentication_assertion_phase1_behavior.sql
 ```
@@ -68,16 +68,16 @@ sql/test-framework/sql/tests/foundation/
 Concurrency test:
 
 ```text
-sql/test-framework/sql/tests/concurrency/
+test-framework/sql/tests/concurrency/
 └── 100_authentication_assertion_single_use.sh
 ```
 
 Test orchestration:
 
 ```text
-sql/test-framework/sql/schema/scripts/test_foundation.sh
-sql/test-framework/sql/tests/foundation-tests.manifest
-sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
+test-framework/sql/schema/scripts/test_foundation.sh
+test-framework/sql/tests/foundation-tests.manifest
+test-framework/sql/tests/foundation-concurrency-tests.manifest
 ```
 
 ## 4. Accepted Test Run
@@ -85,7 +85,7 @@ sql/test-framework/sql/tests/foundation-concurrency-tests.manifest
 The normal Foundation test command was:
 
 ```bash
-./sql/test-framework/sql/schema/scripts/test_foundation.sh
+./test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
 Accepted run evidence:

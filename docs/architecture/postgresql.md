@@ -64,7 +64,7 @@ Foundation migrations occupy `000–099`. Later ranges are reserved for shared r
 The SQL test framework remains intentionally separate from deployable migrations:
 
 ```text
-sql/test-framework/
+test-framework/
 ```
 
 It creates a disposable database, applies the live Foundation manifest, runs test-only assertions, and writes reviewable logs.
