@@ -39,6 +39,7 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | `072` | `072_postgresql_session_control.sql` | Authentication Assertion linkage, current-trust revalidation, atomic session establishment and step-up completion, controlled activity, lock, administrative unlock, expiration, revocation, termination, and same-transaction events |
 | `075` | `075_controlled_authorization_api.sql` | Controlled Authorization Lease verification and protected API foundations |
 | `080` | `080_decision_record_repository.sql` | Decision and evaluation records |
+| `081` | `081_postgresql_authorization_decision_and_lease_issuance.sql` | Typed policy applicability, policy-stage mapping, lease-request Decision Record fields, one-decision/one-lease cardinality, core decision-to-lease binding, lease chronology and state shape, and authority/use evidence binding |
 | `082` | `082_data_classification_and_governance.sql` | Classification and information-governance structures |
 | `084` | `084_lifecycle_and_historical_lineage.sql` | General lifecycle, versioning, and lineage |
 | `086` | `086_governed_documents_and_policy_versions.sql` | Governed documents and immutable policy versions |
@@ -185,15 +186,14 @@ fresh Phase 2 revalidation.
 Phase 3 is governed by
 [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md).
 
-Phase 3 preserves the accepted Phase 1 and Phase 2 migrations and adds one
-planned migration:
+Phase 3 preserves the accepted Phase 1 and Phase 2 migrations and adds:
 
 ```text
 sql/schema/migrations/foundation/
 081_postgresql_authorization_decision_and_lease_issuance.sql
 ```
 
-The planned migration appears after `080_decision_record_repository.sql` and
+Step 2 places migration `081` after `080_decision_record_repository.sql` and
 before `082_data_classification_and_governance.sql`.
 
 | Migration | Phase 3 responsibility |
@@ -205,11 +205,28 @@ before `082_data_classification_and_governance.sql`.
 | `072_postgresql_session_control.sql` | Accepted Phase 2 session boundary; unchanged |
 | `075_controlled_authorization_api.sql` | Existing lease hashing, baseline verification, and revocation API |
 | `080_decision_record_repository.sql` | Existing Decision Record, evaluation, and supporting-record structures |
-| `081_postgresql_authorization_decision_and_lease_issuance.sql` | Planned deterministic policy selection, decision closure, typed decision/lease bindings, finalization-once behavior, controlled issuance, exact-context verification, and lease consumption |
+| `081_postgresql_authorization_decision_and_lease_issuance.sql` | Step 2 typed policy applicability, exact policy-stage mapping, lease-request Decision Record fields, one-decision/one-lease cardinality, core decision-to-lease binding, lease chronology/state shape, and authority/use evidence binding; later steps add controlled behavior |
 
-Migration `081` is not part of the current Foundation manifest during Step 1.
-It is added only after Step 2 implements and validates the complete replacement
-migration.
+Migration `081` is part of the Foundation manifest during Step 2.
+
+The Step 2 structural regression test is:
+
+```text
+test-framework/sql/tests/foundation/
+130_authorization_decision_and_lease_structure.sql
+```
+
+The Step 2 clean-install and regression target is:
+
+```text
+33 manifest migrations
+33 registered migrations
+13 sequential test files
+4 concurrency test files
+273 PASS
+0 FAIL
+3 understood WARN
+```
 
 Phase 3 implementation sequence:
 
@@ -221,8 +238,9 @@ Phase 3 implementation sequence:
 6. Step 6 — independent-connection concurrency proofs,
 7. Step 7 — formal acceptance record and annotated release tag.
 
-Step 1 is architecture-only. The accepted SQL migrations, manifests, test
-runner, 12 sequential tests, and 4 concurrency tests remain unchanged.
+Step 1 froze the architecture contract. Step 2 adds migration `081`, one
+structural SQL test, and manifest integration while preserving all accepted
+Phase 1 and Phase 2 migrations, tests, and concurrency proofs.
 
 ### Migration Completion Rule
 

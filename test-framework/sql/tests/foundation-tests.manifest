@@ -15,4 +15,4 @@ foundation/090_authentication_assertion_behavior.sql
 foundation/100_authentication_assertion_phase1_behavior.sql
 foundation/110_session_establishment_and_step_up_behavior.sql
 foundation/120_session_lifecycle_behavior.sql
-
+foundation/130_authorization_decision_and_lease_structure.sql

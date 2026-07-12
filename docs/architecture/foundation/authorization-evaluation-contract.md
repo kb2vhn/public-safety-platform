@@ -8,7 +8,7 @@
 > Controlled Lease Issuance.
 >
 > **Implementation status:** This document defines the wider authorization
-> contract that migrations `050–080` and their behavioral tests must implement.
+> contract that migrations `050–081` and their behavioral tests must implement.
 > The Phase 1 Authentication Assertion and Phase 2 session-control boundaries
 > are implemented, accepted, and tagged. Phase 3 now freezes and implements
 > the decision-finalization and controlled lease-issuance boundary. The wider
@@ -634,5 +634,12 @@ The planned boundary requires:
 - Independent-connection concurrency proofs,
 - Preservation of every accepted Phase 1 and Phase 2 invariant.
 
-Phase 3 Step 1 changes architecture documentation only. It does not modify the
-accepted SQL migrations, manifests, runner, or tests.
+Phase 3 Step 1 froze the contract. Phase 3 Step 2 adds migration `081` and
+the structural regression test
+`130_authorization_decision_and_lease_structure.sql`.
+
+Step 2 establishes typed policy applicability, exact policy-stage mapping,
+lease-request fields, one-decision/one-lease cardinality, core
+decision-to-lease context binding, lease chronology and terminal-state shape,
+and attributable authority and use evidence. Controlled finalization,
+issuance, verification, and consumption remain later Phase 3 steps.

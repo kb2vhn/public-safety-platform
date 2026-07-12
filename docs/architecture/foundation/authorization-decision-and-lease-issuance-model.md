@@ -6,11 +6,11 @@
 >
 > **Phase:** 3 — Authorization Decision and Controlled Lease Issuance
 >
-> **Status:** Normative Phase 3 contract; Step 1 architecture freeze
+> **Status:** Normative Phase 3 contract; Step 2 structural implementation candidate
 >
 > **Accepted prerequisite:** `phase-2-session-control-complete-v1`
 >
-> **Planned implementation migration:**
+> **Step 2 implementation migration:**
 > `081_postgresql_authorization_decision_and_lease_issuance.sql`
 
 ## 1. Purpose
@@ -880,7 +880,7 @@ for:
 
 ### 19.4 Regression
 
-Every Phase 3 run must retain:
+Every Phase 3 run must retain the accepted Phase 2 baseline:
 
 ```text
 32 accepted Phase 2 manifest migrations
@@ -891,7 +891,18 @@ Every Phase 3 run must retain:
 3 understood WARN results
 ```
 
-The exact totals will increase as Phase 3 tests are added.
+The Phase 3 Step 2 target adds one migration and one 60-assertion structural
+test:
+
+```text
+33 manifest migrations
+33 registered migrations
+13 sequential test files
+4 concurrency test files
+273 PASS assertions
+0 FAIL assertions
+3 understood WARN results
+```
 
 ## 20. Implementation Sequence
 
@@ -905,11 +916,37 @@ The exact totals will increase as Phase 3 tests are added.
 
 ### Step 2 — Decision and Lease Structure
 
-- Add migration `081` to the manifest.
-- Add typed decision/lease binding columns.
-- Add state, chronology, and uniqueness constraints.
-- Add indexes required for deterministic selection and locking.
-- Preserve migrations `060`, `070`, and `072`.
+Implementation candidate:
+
+```text
+sql/schema/migrations/foundation/
+081_postgresql_authorization_decision_and_lease_issuance.sql
+
+test-framework/sql/tests/foundation/
+130_authorization_decision_and_lease_structure.sql
+```
+
+Step 2 adds:
+
+- Migration `081` after `080` and before `082`,
+- Typed policy applicability for organization, Governed Scope, Protected
+  Resource Target, classification, audience, and explicit selection priority,
+- Exact policy-stage rule identity for later `NOT_REQUIRED` closure,
+- Typed requested lease lifetime, use mode, usage limit, audience, and
+  expected-policy input on Decision Records,
+- Relational evaluation-to-policy-stage mapping,
+- One Decision Record to at most one Authorization Lease,
+- Core lease context binding to the issuing Decision Record,
+- Lease `not_before`, audience, expiration timestamp, chronology, terminal
+  state, and revocation-reason constraints,
+- Decision and evaluation linkage for lease Authority Grant evidence,
+- Decision Record linkage for every lease use event,
+- Structural regression coverage while preserving every accepted Phase 1 and
+  Phase 2 test.
+
+Step 2 does not implement policy selection, Decision Record finalization,
+Authorization Lease issuance, or lease consumption behavior. Those controlled
+functions remain Phase 3 Steps 3 and 4.
 
 ### Step 3 — Controlled Decision Finalization
 
@@ -971,7 +1008,7 @@ Phase 3 is accepted only when:
 
 Phase 3 must be revalidated after any change to:
 
-- Migrations `055`, `060`, `065`, `070`, `072`, `075`, `080`, or planned `081`
+- Migrations `055`, `060`, `065`, `070`, `072`, `075`, `080`, or `081`
 - Authority, policy, approval, session, decision, or lease structures
 - Policy-selection precedence
 - Decision-stage definitions

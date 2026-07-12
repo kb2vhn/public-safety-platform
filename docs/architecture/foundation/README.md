@@ -119,7 +119,7 @@ See:
 
 ## Current Phase 3 Boundary
 
-Phase 3 begins with:
+Phase 3 Step 1 is complete. Step 2 adds the structural implementation for:
 
 - [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md)
 
@@ -139,6 +139,22 @@ Phase 3 will implement and test:
 
 Phase 3 must not change or bypass the accepted Phase 1 Authentication
 Assertion or Phase 2 session boundaries.
+
+Phase 3 Step 2 implementation candidate:
+
+```text
+sql/schema/migrations/foundation/
+081_postgresql_authorization_decision_and_lease_issuance.sql
+
+test-framework/sql/tests/foundation/
+130_authorization_decision_and_lease_structure.sql
+```
+
+Step 2 raises the clean-install target to 33 migrations and the regression
+target to 13 sequential tests, 4 concurrency tests, 273 passes, zero failures,
+and the same three understood warnings. Controlled policy selection, Decision
+Record finalization, Authorization Lease issuance, and lease consumption
+remain later Phase 3 steps.
 
 ## Documentation Groups
 
