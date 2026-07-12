@@ -799,6 +799,28 @@ BEGIN
                 MESSAGE = 'APPROVER_AUTHORITY_NOT_CURRENT';
     END IF;
 
+    v_requires_prior := p_action_type IN (
+        'WITHDRAW_APPROVAL',
+        'CORRECT',
+        'SUPERSEDE'
+    );
+
+    IF v_requires_prior AND p_prior_approval_action_id IS NULL THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'APPROVAL_ACTION_PRIOR_REQUIRED';
+    END IF;
+
+    IF NOT v_requires_prior
+       AND p_prior_approval_action_id IS NOT NULL
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'APPROVAL_ACTION_PRIOR_NOT_ALLOWED';
+    END IF;
+
     -- ------------------------------------------------------------------
     -- Phase 4 Step 4 independence enforcement
     -- ------------------------------------------------------------------
@@ -1034,28 +1056,6 @@ BEGIN
                     ERRCODE = 'invalid_authorization_specification',
                     MESSAGE = 'CIRCULAR_APPROVAL_PROHIBITED';
         END IF;
-    END IF;
-
-    v_requires_prior := p_action_type IN (
-        'WITHDRAW_APPROVAL',
-        'CORRECT',
-        'SUPERSEDE'
-    );
-
-    IF v_requires_prior AND p_prior_approval_action_id IS NULL THEN
-        RAISE EXCEPTION
-            USING
-                ERRCODE = 'invalid_parameter_value',
-                MESSAGE = 'APPROVAL_ACTION_PRIOR_REQUIRED';
-    END IF;
-
-    IF NOT v_requires_prior
-       AND p_prior_approval_action_id IS NOT NULL
-    THEN
-        RAISE EXCEPTION
-            USING
-                ERRCODE = 'invalid_parameter_value',
-                MESSAGE = 'APPROVAL_ACTION_PRIOR_NOT_ALLOWED';
     END IF;
 
     IF v_requires_prior THEN
