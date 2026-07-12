@@ -339,7 +339,7 @@ import hashlib
 import sys
 
 checks = {
-    'README.md': 'bae7da6d38d65973b90428dc1e0e3ce333ee55178bda01cf5f77e69df7555b5c',
+    'README.md': '9ef5662a08bc21b07a28dc76cb6ce9257a4ded7380f016c3caa2c5ff43ec26c8',
     'docs/README.md': '2bcc33e2ab00ab5875e2d898c8a243c460fef15e3fc253cb33bce247bbb637ae',
     'docs/architecture/README.md': '154e44eb507506448bc8043d7f08204784d0c4fda6496ad2cb5027f8212dce81',
     'docs/architecture/foundation/README.md': '93383a8eedd87be9437d48ed0a16e0ae902f2b2b779adcb2ae13de4b55bae38f',
@@ -553,6 +553,9 @@ import sys
 checks = [
     (Path('README.md'), 'Phase 4 Step 3'),
     (Path('README.md'), '500 PASS'),
+    (Path('README.md'), 'Build software that is secure, understandable, observable, and dependable enough that I would trust my own local community to rely on it during an emergency.'),
+    (Path('README.md'), 'Built on purpose. Backed by discipline. Engineered to endure.'),
+    (Path('README.md'), 'README Preservation Rule'),
     (Path('docs/README.md'), 'Active Phase 4 Step 3'),
     (Path('docs/architecture/README.md'), 'controlled Approval Action write boundary'),
     (Path('docs/architecture/foundation/README.md'), 'Current Phase 4 Boundary'),
@@ -568,13 +571,48 @@ checks = [
     (Path('tools/validation/phase-gates/README.md'), 'validate_phase4_step3.sh'),
 ]
 
+required_readme_sections = [
+    '## Project Mission',
+    '## Platform Scope and Long-Term Direction',
+    '## Initial Operational Direction',
+    '## Current Development Stage',
+    '## Staged Development Approach',
+    '## Core Principles',
+    '## Platform Layers',
+    '## Platform Foundation Scope',
+    '## Current Implementation Boundaries',
+    '## Migration Ranges',
+    '## Repository Layout',
+    '## Documentation',
+    '## SQL Foundation',
+    '## SQL Test Framework',
+    '## Definition of Progress',
+    '## Production Readiness',
+    '## Final Goal',
+]
+
 failures=[]
 for path, marker in checks:
-    text=path.read_text(encoding='utf-8')
-    if marker in text:
+    document=path.read_text(encoding='utf-8')
+    if marker in document:
         print(f'DOCUMENTATION CHECK PASS: {path}')
     else:
         failures.append(f'{path} missing marker: {marker}')
+
+readme_text = Path('README.md').read_text(encoding='utf-8')
+for marker in required_readme_sections:
+    if marker in readme_text:
+        print(f'README PRESERVATION PASS: {marker}')
+    else:
+        failures.append(f'README.md missing preserved section: {marker}')
+
+readme_word_count = len(readme_text.split())
+if readme_word_count >= 2400:
+    print(f'README PRESERVATION PASS: substantive word count = {readme_word_count}')
+else:
+    failures.append(
+        f'README.md is too short: words={readme_word_count} minimum=2400'
+    )
 
 active_paths=[
     Path('README.md'), Path('docs/README.md'), Path('docs/architecture/README.md'),
@@ -596,7 +634,7 @@ if failures:
     raise SystemExit(1)
 PY_DOCUMENTATION
 then
-    PASS_COUNT=$((PASS_COUNT + 15))
+    PASS_COUNT=$((PASS_COUNT + 36))
 else
     FAIL_COUNT=$((FAIL_COUNT + 1))
 fi
