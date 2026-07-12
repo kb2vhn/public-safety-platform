@@ -144,15 +144,28 @@ Step 3 added controlled activity and lifecycle APIs and passed the normal
 clean-install and accepted regression path with 147 passes, zero failures, and
 three understood warnings.
 
-Step 4 adds the complete sequential lifecycle behavior test:
+Step 4 added and validated the complete sequential lifecycle behavior test:
 
 ```text
 test-framework/sql/tests/foundation/120_session_lifecycle_behavior.sql
 ```
 
-The authoritative sequential manifest now contains 12 test files. Step 5
-remains responsible for the three required multi-connection concurrency
-proofs.
+The authoritative sequential manifest contains 12 test files. The accepted
+Step 4 run completed with 188 passes, zero failures, and three understood
+warnings.
+
+Step 5 adds three multi-connection session concurrency proofs while retaining
+the accepted Phase 1 assertion-consumption race:
+
+```text
+test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
+test-framework/sql/tests/concurrency/110_session_establishment_single_use.sh
+test-framework/sql/tests/concurrency/120_session_step_up_single_use.sh
+test-framework/sql/tests/concurrency/130_session_terminal_transition_race.sh
+```
+
+The authoritative concurrency manifest now contains four tests. Step 6 remains
+responsible for the formal Phase 2 acceptance record and tag.
 
 ### Migration Completion Rule
 

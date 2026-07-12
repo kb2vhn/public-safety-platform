@@ -4,7 +4,7 @@
 >
 > **Phase:** 2 — Session Establishment, Step-Up, and Lifecycle Enforcement
 >
-> **Status:** Normative Phase 2 contract; Step 2 accepted; Step 3 validated; Step 4 expanded sequential behavior tests are an implementation candidate
+> **Status:** Normative Phase 2 contract; Steps 2 through 4 validated; Step 5 multi-connection concurrency proofs are an implementation candidate
 >
 > **Depends on:**
 > [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
@@ -1051,28 +1051,55 @@ Implemented in migration `072`:
 
 ### Step 4 — Sequential tests
 
-Implementation candidate in
-`test-framework/sql/tests/foundation/120_session_lifecycle_behavior.sql`.
-A complete clean run with the updated sequential manifest is required before
-Step 5 begins.
+Validated on 2026-07-12 through the normal Foundation clean-install and
+regression path:
 
-The Step 4 test package covers:
+```text
+32 manifest migrations
+32 registered migrations
+12 sequential test files
+1 concurrency test file
+188 PASS
+0 FAIL
+3 understood WARN
+```
 
-- Positive behavior,
-- Negative behavior,
-- Chronology,
-- Terminality,
-- Event consistency,
-- Current local trust revalidation,
-- Privileges,
-- Search paths,
-- Phase 1 and Step 2 regression.
+The accepted Step 4 test is:
+
+```text
+test-framework/sql/tests/foundation/120_session_lifecycle_behavior.sql
+```
+
+It proves positive behavior, negative behavior, chronology, terminality, event
+consistency, current local trust revalidation, privilege removal, trusted
+search paths, and all accepted Phase 1 and Step 2 regressions.
 
 ### Step 5 — Concurrency tests
 
-- Establishment single-use race,
-- Step-up single-use race,
-- Incompatible terminal-transition race.
+Implementation candidates:
+
+```text
+test-framework/sql/tests/concurrency/110_session_establishment_single_use.sh
+test-framework/sql/tests/concurrency/120_session_step_up_single_use.sh
+test-framework/sql/tests/concurrency/130_session_terminal_transition_race.sh
+```
+
+The complete concurrency manifest must retain the accepted Phase 1
+Authentication Assertion single-use proof first and then run all three Phase 2
+proofs.
+
+The Step 5 gate requires:
+
+- Two independent session-establishment workers released together, with
+  exactly one session, one consumed assertion, and one `CREATED` event.
+- Two independent step-up workers released together, with exactly one consumed
+  step-up assertion, one current session evidence binding, and one
+  `STEP_UP_COMPLETED` event.
+- Independent revocation and termination workers released together, with
+  exactly one successful terminal transition, one matching terminal timestamp,
+  one matching event, and no mixed terminal state.
+- All prior migrations, sequential tests, and the accepted Phase 1 concurrency
+  proof to remain green.
 
 ### Step 6 — Acceptance
 
