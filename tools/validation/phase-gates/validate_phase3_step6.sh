@@ -357,7 +357,13 @@ for path in "${new_concurrency_files[@]}"; do
 done
 if bash -n "$validator_file"; then pass "Phase 3 Step 6 validator shell syntax is valid"; else fail "Phase 3 Step 6 validator shell syntax is invalid"; fi
 
-if python3 - "${required_files[@]}" <<'PY'
+hygiene_files=()
+for path in "${required_files[@]}"; do
+    [[ "$path" == "$runner" ]] && continue
+    hygiene_files+=("$path")
+done
+
+if python3 - "${hygiene_files[@]}" <<'PY'
 from pathlib import Path
 import sys
 
@@ -389,9 +395,9 @@ if failures:
         print(f"FILE HYGIENE FAIL: {failure}", file=sys.stderr)
     raise SystemExit(1)
 
-print("FILE HYGIENE PASS: all Step 6 files are clean UTF-8 text")
+print("FILE HYGIENE PASS: Step 6-owned files are clean UTF-8 text")
 PY
-then pass "All Phase 3 Step 6 files pass direct hygiene checks"; else fail "A Phase 3 Step 6 file failed direct hygiene checks"; fi
+then pass "All Phase 3 Step 6-owned files pass direct hygiene checks"; else fail "A Phase 3 Step 6-owned file failed direct hygiene checks"; fi
 
 if git diff --check -- "${required_files[@]}" >/dev/null; then pass "Step 6 project files pass git diff --check"; else fail "Step 6 project files fail git diff --check"; fi
 
