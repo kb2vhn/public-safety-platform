@@ -181,7 +181,7 @@ session tables; controlled assertion or session functions; either test
 manifest; the sequential tests; the concurrency tests; or the runner requires
 fresh Phase 2 revalidation.
 
-### Active Phase 3 Mapping
+### Accepted Phase 3 Mapping
 
 Phase 3 is governed by
 [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md).
@@ -349,7 +349,7 @@ tools/validation/phase-gates/validate_phase3_step5.sh
 ```
 
 
-### Phase 3 Step 6 Result Target
+### Accepted Phase 3 Step 6 Result
 
 Step 6 leaves the 33-file Foundation migration manifest unchanged and adds five
 independent-connection tests to the concurrency manifest:
@@ -377,3 +377,39 @@ The phase gate is:
 ```text
 tools/validation/phase-gates/validate_phase3_step6.sh
 ```
+
+### Phase 3 Formal Acceptance
+
+Phase 3 is formally accepted at:
+
+```text
+phase-3-authorization-control-complete-v1
+```
+
+The tag dereferences to:
+
+```text
+853d26e37f1471aeeaeea4e7690e1a0605a22870
+```
+
+Accepted evidence:
+
+```text
+33 manifest migrations
+33 registered migrations
+16 sequential test files
+9 concurrency test files
+408 PASS
+0 FAIL
+3 understood WARN
+```
+
+Acceptance record:
+
+```text
+docs/architecture/foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md
+```
+
+A later documentation commit may descend from the accepted tag, but the
+SQL and test tree must remain identical to the tag unless Phase 3 is
+revalidated.

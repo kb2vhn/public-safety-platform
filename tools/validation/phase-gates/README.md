@@ -16,7 +16,10 @@ validate_phase3_step3.sh
 validate_phase3_step4.sh
 validate_phase3_step5.sh
 validate_phase3_step6.sh
+validate_phase3_step7.sh
 ```
 
 Historical gates validate their own checkpoint trees and are not expected to
-accept later-phase files. Run the newest gate for the current implementation.
+accept later-phase files. Step 6 validates the accepted implementation. Step 7
+validates the formal Phase 3 acceptance record and proves that its SQL and
+test tree remains identical to the annotated acceptance tag.

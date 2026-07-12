@@ -6,9 +6,11 @@
 >
 > **Phase:** 3 — Authorization Decision and Controlled Lease Issuance
 >
-> **Status:** Normative Phase 3 contract; Step 6 concurrency-proof candidate
+> **Status:** Normative Phase 3 contract; accepted
 >
 > **Accepted prerequisite:** `phase-2-session-control-complete-v1`
+>
+> **Accepted release tag:** `phase-3-authorization-control-complete-v1`
 >
 > **Active implementation migration:**
 > `081_postgresql_authorization_decision_and_lease_issuance.sql`
@@ -1080,20 +1082,22 @@ The proofs require:
   mixed terminal state,
 - all accepted Phase 1 and Phase 2 concurrency proofs to remain passing.
 
-The complete Step 6 target is 33 migrations, 16 sequential tests,
+The accepted Step 6 result is 33 migrations, 16 sequential tests,
 9 concurrency tests, 408 PASS, 0 FAIL, and 3 understood WARN results.
 
 ### Step 7 — Acceptance
 
-- Clean manifest installation
-- Complete sequential and concurrency suite
-- Zero failed assertions
-- Formal Phase 3 acceptance record
-- Annotated Phase 3 release tag
+Step 7 is complete.
+
+- Acceptance record: [phase-3-authorization-decision-and-controlled-lease-acceptance.md](phase-3-authorization-decision-and-controlled-lease-acceptance.md)
+- Annotated release tag: `phase-3-authorization-control-complete-v1`
+- Accepted tag target: `853d26e37f1471aeeaeea4e7690e1a0605a22870`
+- Accepted result: 33 migrations, 16 sequential tests, 9 concurrency
+  tests, 408 PASS, 0 FAIL, and 3 understood WARN results
 
 ## 21. Acceptance Gate
 
-Phase 3 is accepted only when:
+Phase 3 was accepted after all of the following conditions passed:
 
 - The current Foundation manifest installs cleanly.
 - Migration and registry counts agree.
@@ -1130,7 +1134,7 @@ Phase 3 must be revalidated after any change to:
 - The Foundation test runner
 - Phase 1, Phase 2, or Phase 3 regression tests
 - This normative contract
-- The eventual Phase 3 acceptance record or tag
+- The Phase 3 acceptance record or tag
 
 A passing historical result does not replace a fresh run after a relevant
 change.
@@ -1145,4 +1149,5 @@ change.
 - [Decision Record Repository](decision-record-repository.md)
 - [Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md)
 - [Phase 2 Session Establishment, Step-Up, and Lifecycle Acceptance](phase-2-session-establishment-step-up-and-lifecycle-acceptance.md)
+- [Phase 3 Authorization Decision and Controlled Lease Acceptance](phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 - [SQL Migration Map](sql-migration-map.md)

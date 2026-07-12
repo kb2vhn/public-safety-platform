@@ -6,8 +6,8 @@
 > controls are database-enforced and tested; structural presence does not imply
 > complete runtime, deployment, or operational enforcement.
 >
-> **Current implementation phase:** Phase 3 — Authorization Decision and
-> Controlled Lease Issuance.
+> **Current status:** Phase 3 accepted; next Foundation contract not yet
+> frozen.
 
 ## Purpose
 
@@ -117,109 +117,15 @@ See:
 - [Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md)
 - [Phase 2 Session Establishment, Step-Up, and Lifecycle Acceptance](phase-2-session-establishment-step-up-and-lifecycle-acceptance.md)
 
-## Current Phase 3 Boundary
+## Accepted Phase 3 Boundary
 
-The governing contract is:
-
-- [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md)
-
-Phase 3 preserves every accepted Phase 1 Authentication Assertion and Phase 2
-session-control invariant.
-
-### Completed Phase 3 checkpoints
-
-Step 1 froze the normative authorization decision and lease-issuance contract.
-
-Step 2 added migration `081`, typed policy and Decision Record bindings,
-lease chronology and state constraints, and the structural test
-`130_authorization_decision_and_lease_structure.sql`.
+Phase 3 is accepted at:
 
 ```text
-33 manifest migrations
-33 registered migrations
-13 sequential test files
-4 concurrency test files
-273 PASS
-0 FAIL
-3 understood WARN
+phase-3-authorization-control-complete-v1
 ```
 
-Step 3 added deterministic Authorization Policy Version resolution, controlled
-policy binding, required-stage closure, supporting-evidence enforcement,
-finalization-once Decision Records, and caller-result rejection through
-`140_authorization_policy_selection_and_decision_finalization.sql`.
-
-```text
-33 manifest migrations
-33 registered migrations
-14 sequential test files
-4 concurrency test files
-297 PASS
-0 FAIL
-3 understood WARN
-```
-
-### Completed Phase 3 Step 4
-
-Step 4 added the controlled lease path in migration `081`:
-
-```text
-access_control.issue_authorization_lease_from_decision(uuid, text)
-access_control.authorization_lease_context_is_usable(...)
-access_control.consume_authorization_lease(...)
-access_control.expire_authorization_lease(uuid)
-access_control.revoke_lease(uuid, text)
-```
-
-```text
-33 manifest migrations
-33 registered migrations
-15 sequential test files
-4 concurrency test files
-329 PASS
-0 FAIL
-3 understood WARN
-```
-
-### Completed Phase 3 Step 5
-
-Step 5 added `160_authorization_lease_fail_closed_behavior.sql` and strengthened
-required-authority continuity during lease verification. The expanded tests
-prove that stale session, identity, device, Trust Provider, Platform Service,
-policy, required evidence, and linked authority state all fail closed. They
-also prove that request, correlation, final decision state, and target
-attribution mismatches cannot consume a lease or append a use event.
-
-```text
-33 manifest migrations
-33 registered migrations
-16 sequential test files
-4 concurrency test files
-353 PASS
-0 FAIL
-3 understood WARN
-```
-
-### Current Phase 3 Step 6 candidate
-
-Step 6 adds five executable independent-connection proofs:
-
-```text
-test-framework/sql/tests/concurrency/
-140_authorization_decision_finalization_race.sh
-150_authorization_lease_issuance_race.sh
-160_authorization_lease_single_use_race.sh
-170_authorization_lease_limited_use_race.sh
-180_authorization_lease_terminal_transition_race.sh
-```
-
-The Step 6 phase gate is:
-
-```text
-tools/validation/phase-gates/validate_phase3_step6.sh
-```
-
-The Step 6 target is:
+Accepted evidence:
 
 ```text
 33 manifest migrations
@@ -231,8 +137,37 @@ The Step 6 target is:
 3 understood WARN
 ```
 
-Formal Phase 3 acceptance and tagging remain a separate acceptance step after
-this candidate passes completely.
+Phase 3 established deterministic Authorization Policy Version selection,
+controlled policy binding, required-stage closure, supporting-evidence
+enforcement, finalization-once Decision Records, controlled Authorization
+Lease issuance, exact-context verification and use, fail-closed current
+state revalidation, and independent-connection concurrency proofs.
+
+See:
+
+- [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md)
+- [Phase 3 Authorization Decision and Controlled Lease Acceptance](phase-3-authorization-decision-and-controlled-lease-acceptance.md)
+- [Authorization Evaluation Contract](authorization-evaluation-contract.md)
+- [Phase 3 Authorization Decision and Controlled Lease Acceptance](phase-3-authorization-decision-and-controlled-lease-acceptance.md)
+
+The formal acceptance record was committed after the annotated tag. The tag
+identifies the exact accepted SQL and test tree; later documentation commits
+must not alter that accepted implementation without Phase 3 revalidation.
+
+## Next Foundation Contract
+
+The next phase must freeze its own normative scope before production SQL
+changes. Leading remaining authorization and integrity work includes:
+
+- Complete approval independence
+- Self-approval prevention
+- Incompatible-authority evaluation
+- Separation-of-duties enforcement
+- Decision Record cryptographic integrity
+- Append-only mutation protection
+- Migration-checksum population and enforcement
+- Final production ownership and login-role topology
+- Least-privileged runtime grants
 
 ## Documentation Groups
 

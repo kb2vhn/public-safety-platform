@@ -4,14 +4,15 @@
 >
 > **Program:** Central Authorization Completion Program.
 >
-> **Current implementation phase:** Phase 3 — Authorization Decision and
-> Controlled Lease Issuance.
+> **Accepted implementation boundary:** Phase 3 — Authorization Decision
+> and Controlled Lease Issuance.
 >
 > **Implementation status:** This document defines the wider authorization
 > contract that migrations `050–081` and their behavioral tests must implement.
 > The Phase 1 Authentication Assertion and Phase 2 session-control boundaries
-> are implemented, accepted, and tagged. Phase 3 now freezes and implements
-> the decision-finalization and controlled lease-issuance boundary. The wider
+> are implemented, accepted, and tagged. Phase 3 decision finalization and
+> controlled lease issuance are also implemented, accepted, and tagged. The
+> wider
 > authorization contract remains incomplete. Structural presence does not
 > imply complete enforcement.
 
@@ -726,6 +727,7 @@ expiration-versus-revocation terminal transition. Each successful use retains
 a separately attributable protected-operation Decision Record and one
 same-transaction use event.
 
-The Step 6 target is 33 migrations, 16 sequential tests, 9 concurrency tests,
-408 PASS, 0 FAIL, and 3 understood WARN results. Formal Phase 3 acceptance
-remains a separate acceptance record and annotated tag after the gate passes.
+The accepted Step 6 result is 33 migrations, 16 sequential tests,
+9 concurrency tests, 408 PASS, 0 FAIL, and 3 understood WARN results.
+Formal acceptance is recorded in [phase-3-authorization-decision-and-controlled-lease-acceptance.md](phase-3-authorization-decision-and-controlled-lease-acceptance.md)
+and tagged as `phase-3-authorization-control-complete-v1`.

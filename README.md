@@ -18,22 +18,24 @@ https://github.com/Iron-Signal-Systems/public-safety-platform
 
 Every important decision should have an explanation.
 
-Build software that is secure, understandable, observable, and dependable
-enough that local communities and institutions can rely on it when operations
-matter most.
+Build software that is secure, understandable, observable, and
+dependable enough that local communities and institutions can rely on
+it when operations matter most.
 
 ## Scope
 
-Public safety is the first demanding module family, not the limit of the
-Platform Foundation. The Foundation is domain-neutral and is intended to serve
-public-safety, municipal, school, and other institutional modules without
-embedding one module's business records into the shared security layer.
+Public safety is the first demanding module family, not the limit of
+the Platform Foundation. The Foundation is domain-neutral and is
+intended to serve public-safety, municipal, school, and other
+institutional modules without embedding one module's business records
+into the shared security layer.
 
-The Foundation currently covers trust, identity, sessions, authorization,
-approvals, Decision Records, governance, compliance, resilience, performance,
-observability, integration intent, and resource governance.
+The Foundation currently covers trust, identity, sessions,
+authorization, approvals, Decision Records, governance, compliance,
+resilience, performance, observability, integration intent, and
+resource governance.
 
-## Current Accepted Boundaries
+## Accepted Foundation Boundaries
 
 ### Phase 1 — Authentication Assertions
 
@@ -65,28 +67,37 @@ Tag: `phase-2-session-control-complete-v1`
 
 ### Phase 3 — Authorization Decision and Controlled Lease Issuance
 
-Step 5 is validated at:
-
 ```text
 33 manifest migrations
 33 registered migrations
 16 sequential test files
-4 concurrency test files
-353 PASS
+9 concurrency test files
+408 PASS
 0 FAIL
 3 understood WARN
 ```
 
-Step 6 adds five independent-connection authorization races for Decision Record
-finalization, single-winner lease issuance, single-use consumption, the final
-slot of a limited-use lease, and expiration-versus-revocation terminal state.
-Its target is 16 sequential tests, 9 concurrency tests, and 408 PASS while
-preserving the same 33 migrations.
+Tag: `phase-3-authorization-control-complete-v1`
+
+Acceptance record:
+
+- [Phase 3 Authorization Decision and Controlled Lease Acceptance](docs/architecture/foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
+
+## Current Direction
+
+Phase 3 is accepted. The next Foundation phase must freeze a normative
+contract before changing production SQL.
+
+Leading remaining work includes approval independence, self-approval
+prevention, incompatible-authority and separation-of-duties
+enforcement, stronger append-only and Decision Record integrity,
+migration-checksum enforcement, and production deployment boundaries.
 
 ## Core Principles
 
 - Authentication is not authorization.
-- Trust is additive; no single credential or role grants unrestricted access.
+- Trust is additive; no single credential or role grants unrestricted
+  access.
 - Required decision stages fail closed.
 - PostgreSQL is an independent security boundary.
 - No ordinary account is a god account.
@@ -121,7 +132,13 @@ Phase validators are intentionally kept out of the repository root.
 
 ## Validation
 
-Run the current phase gate from the repository root:
+Validate the formal Phase 3 acceptance record:
+
+```bash
+./tools/validation/phase-gates/validate_phase3_step7.sh
+```
+
+Run the accepted Phase 3 implementation gate:
 
 ```bash
 ./tools/validation/phase-gates/validate_phase3_step6.sh
@@ -133,10 +150,6 @@ Run the complete Foundation SQL suite directly:
 ./test-framework/sql/schema/scripts/test_foundation.sh
 ```
 
-The framework creates a disposable PostgreSQL database, applies the
-authoritative manifest, runs sequential and concurrency tests, writes logs and
-summaries, and removes a successful test database.
-
 ## Documentation
 
 Start with:
@@ -144,16 +157,16 @@ Start with:
 - [Platform Documentation](docs/README.md)
 - [Architecture Index](docs/architecture/README.md)
 - [Platform Foundation Documentation](docs/architecture/foundation/README.md)
-- [Authorization Decision and Lease Issuance Model](docs/architecture/foundation/authorization-decision-and-lease-issuance-model.md)
+- [Phase 3 Acceptance](docs/architecture/foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 - [Validation Tools](tools/validation/README.md)
 
 ## Production Readiness
 
-The repository is pre-alpha. Production use still requires deployment-role
-separation, least-privileged grants, host compromise containment, secret and
-key management, integrity anchoring, off-host logging, protected backups,
-restore testing, break-glass controls, incident response, and trusted rebuild
-and compromise recovery.
+The repository is pre-alpha. Production use still requires
+deployment-role separation, least-privileged grants, host compromise
+containment, secret and key management, integrity anchoring, off-host
+logging, protected backups, restore testing, break-glass controls,
+incident response, and trusted rebuild and compromise recovery.
 
 ## License
 
