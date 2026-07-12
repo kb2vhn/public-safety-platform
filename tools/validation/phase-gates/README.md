@@ -1,0 +1,20 @@
+# Phase Gates
+
+> **Owner:** Iron Signal Systems
+
+This directory contains reproducible acceptance gates for completed and active
+Foundation phases.
+
+```text
+validate_phase2_step3.sh
+validate_phase2_step4.sh
+validate_phase2_step5.sh
+validate_phase2_step6.sh
+validate_phase3_step1.sh
+validate_phase3_step2.sh
+validate_phase3_step3.sh
+validate_phase3_step4.sh
+```
+
+Historical gates validate their own checkpoint trees and are not expected to
+accept later-phase files. Run the newest gate for the current implementation.

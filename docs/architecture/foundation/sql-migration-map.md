@@ -39,7 +39,7 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | `072` | `072_postgresql_session_control.sql` | Authentication Assertion linkage, current-trust revalidation, atomic session establishment and step-up completion, controlled activity, lock, administrative unlock, expiration, revocation, termination, and same-transaction events |
 | `075` | `075_controlled_authorization_api.sql` | Controlled Authorization Lease verification and protected API foundations |
 | `080` | `080_decision_record_repository.sql` | Decision and evaluation records |
-| `081` | `081_postgresql_authorization_decision_and_lease_issuance.sql` | Typed policy applicability, policy-stage mapping, lease-request Decision Record fields, one-decision/one-lease cardinality, core decision-to-lease binding, lease chronology and state shape, and authority/use evidence binding |
+| `081` | `081_postgresql_authorization_decision_and_lease_issuance.sql` | Typed policy applicability, policy-stage mapping, lease-request Decision Record fields, one issuing-decision/one issued-lease cardinality, core decision-to-lease binding, lease chronology and state shape, and authority/use evidence binding |
 | `082` | `082_data_classification_and_governance.sql` | Classification and information-governance structures |
 | `084` | `084_lifecycle_and_historical_lineage.sql` | General lifecycle, versioning, and lineage |
 | `086` | `086_governed_documents_and_policy_versions.sql` | Governed documents and immutable policy versions |
@@ -294,3 +294,31 @@ The Foundation SQL test framework must test the requirements that can be demonst
 Step 3 behavior is tested by
 `140_authorization_policy_selection_and_decision_finalization.sql`.
 Authorization Lease issuance remains Step 4.
+
+### Phase 3 Step 4 Result Target
+
+Migration `081` now includes controlled lease issuance and use behavior in
+addition to the accepted Step 2 structure and Step 3 finalization routines.
+
+```text
+33 manifest migrations
+33 registered migrations
+15 sequential test files
+4 concurrency test files
+329 PASS
+0 FAIL
+3 understood WARN
+```
+
+The Step 4 behavioral test is:
+
+```text
+test-framework/sql/tests/foundation/
+150_authorization_lease_issuance_and_use.sql
+```
+
+The phase gate is:
+
+```text
+tools/validation/phase-gates/validate_phase3_step4.sh
+```

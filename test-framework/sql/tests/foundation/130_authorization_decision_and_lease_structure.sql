@@ -714,7 +714,7 @@ SELECT sql_test.assert_true(
 );
 
 SELECT sql_test.assert_true(
-    'One Authorization Lease may be referenced by at most one Decision Record',
+    'Each lease has at most one issuing or renewing Decision Record',
     EXISTS (
         SELECT 1
         FROM pg_index AS index_record
@@ -726,6 +726,14 @@ SELECT sql_test.assert_true(
             'decision_records_authorization_lease_uq'
           AND index_record.indisunique
           AND index_record.indisvalid
+          AND pg_get_expr(
+              index_record.indpred,
+              index_record.indrelid
+          ) LIKE '%LEASE_ISSUANCE%'
+          AND pg_get_expr(
+              index_record.indpred,
+              index_record.indrelid
+          ) LIKE '%LEASE_RENEWAL%'
     )
 );
 

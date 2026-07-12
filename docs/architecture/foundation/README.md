@@ -119,42 +119,89 @@ See:
 
 ## Current Phase 3 Boundary
 
-Phase 3 Step 1 is complete. Step 2 adds the structural implementation for:
+The governing contract is:
 
 - [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md)
 
-Phase 3 will implement and test:
+Phase 3 preserves every accepted Phase 1 Authentication Assertion and Phase 2
+session-control invariant.
 
-- Deterministic Authorization Policy Version selection,
-- Exact request, session, operation, target, scope, and classification binding,
-- Complete Authority Grant and incompatible-authority evaluation,
-- Approval and separation-of-duties enforcement,
-- Persistent `PASS`, `FAIL`, `NOT_REQUIRED`, and `NOT_EVALUATED` stage results,
-- Finalization-once Decision Records,
-- Controlled Authorization Lease issuance only from an eligible `ALLOW`,
-- One Decision Record to at most one lease,
-- Policy-bounded lease lifetime, audience, use mode, and usage limits,
-- Exact-context lease verification and consumption,
-- Multi-connection finalization, issuance, consumption, and revocation proofs.
+### Completed Phase 3 checkpoints
 
-Phase 3 must not change or bypass the accepted Phase 1 Authentication
-Assertion or Phase 2 session boundaries.
+Step 1 froze the normative authorization decision and lease-issuance contract.
 
-Phase 3 Step 2 implementation candidate:
+Step 2 added migration `081`, typed policy and Decision Record bindings,
+lease chronology and state constraints, and the structural test
+`130_authorization_decision_and_lease_structure.sql`.
 
 ```text
-sql/schema/migrations/foundation/
-081_postgresql_authorization_decision_and_lease_issuance.sql
-
-test-framework/sql/tests/foundation/
-130_authorization_decision_and_lease_structure.sql
+33 manifest migrations
+33 registered migrations
+13 sequential test files
+4 concurrency test files
+273 PASS
+0 FAIL
+3 understood WARN
 ```
 
-Step 2 raises the clean-install target to 33 migrations and the regression
-target to 13 sequential tests, 4 concurrency tests, 273 passes, zero failures,
-and the same three understood warnings. Controlled policy selection, Decision
-Record finalization, Authorization Lease issuance, and lease consumption
-remain later Phase 3 steps.
+Step 3 added deterministic Authorization Policy Version resolution, controlled
+policy binding, required-stage closure, supporting-evidence enforcement,
+finalization-once Decision Records, and caller-result rejection through
+`140_authorization_policy_selection_and_decision_finalization.sql`.
+
+```text
+33 manifest migrations
+33 registered migrations
+14 sequential test files
+4 concurrency test files
+297 PASS
+0 FAIL
+3 understood WARN
+```
+
+### Current Step 4 candidate
+
+Step 4 adds the controlled lease path in migration `081`:
+
+```text
+access_control.issue_authorization_lease_from_decision(uuid, text)
+access_control.authorization_lease_context_is_usable(...)
+access_control.consume_authorization_lease(...)
+access_control.expire_authorization_lease(uuid)
+access_control.revoke_lease(uuid, text)
+```
+
+The Step 4 test and phase gate are:
+
+```text
+test-framework/sql/tests/foundation/
+150_authorization_lease_issuance_and_use.sql
+
+tools/validation/phase-gates/
+validate_phase3_step4.sh
+```
+
+Step 4 enforces one issuing decision per lease, permits reusable leases to be
+referenced by multiple separately attributable protected-operation decisions,
+revalidates the selected policy, required evidence, linked authority, active
+session, and locally owned trust, verifies exact context and audience, and
+atomically records successful use.
+
+The Step 4 target is:
+
+```text
+33 manifest migrations
+33 registered migrations
+15 sequential test files
+4 concurrency test files
+329 PASS
+0 FAIL
+3 understood WARN
+```
+
+Later Phase 3 gates still must add wider negative-path coverage,
+independent-connection finalization/issuance/consumption/revocation races, and
+formal Phase 3 acceptance evidence.
 
 ## Documentation Groups
 
@@ -205,7 +252,8 @@ remain later Phase 3 steps.
 
 - [Resilience, Availability, and Recovery](resilience-availability-and-recovery-model.md)
 - [Performance, Efficiency, and Resource Governance](performance-efficiency-and-resource-governance-model.md)
-- [Client Experience and Accessibility](client-experience-and-accessibility-model.md)
+- [Client Experience and Accessibility](../user-interface/client-experience-and-accessibility-model.md)
+- [Accessibility and Inclusive Interaction](../user-interface/accessibility-and-inclusive-interaction-model.md)
 - [Observability, Health, and Operational Telemetry](observability-health-and-operational-telemetry-model.md)
 
 ## Current Implementation Boundaries
@@ -215,10 +263,10 @@ controlled APIs, security inventories, and validation views.
 
 The following remain incomplete until separately implemented and tested:
 
-- Phase 3 deterministic Authorization Policy selection and stage resolution,
+- Multi-connection Phase 3 lease issuance, consumption, and revocation proofs,
 - Complete approval independence and self-approval enforcement,
-- Controlled Authorization Lease issuance, use limits, renewal, and revocation,
-- Complete Decision Record consistency, finalization, and integrity controls,
+- Complete Authority Grant, approval-independence, and separation-of-duties evaluation,
+- Complete Decision Record cryptographic integrity and later review/supersession controls,
 - Final production ownership and login-role topology,
 - Least-privileged runtime grants and controlled write paths,
 - Full append-only mutation protection,

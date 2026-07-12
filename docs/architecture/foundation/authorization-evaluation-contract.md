@@ -639,7 +639,7 @@ the structural regression test
 `130_authorization_decision_and_lease_structure.sql`.
 
 Step 2 establishes typed policy applicability, exact policy-stage mapping,
-lease-request fields, one-decision/one-lease cardinality, core
+lease-request fields, one issuing-decision/one issued-lease cardinality, core
 decision-to-lease context binding, lease chronology and terminal-state shape,
 and attributable authority and use evidence. Controlled finalization,
 issuance, verification, and consumption remain later Phase 3 steps.
@@ -664,3 +664,31 @@ Missing, ambiguous, and expected-policy mismatch are persisted as terminal
 denials. Every policy stage must have one evaluation, required `FAIL` and
 `NOT_EVALUATED` deny, `NOT_REQUIRED` must match the selected policy rule, and
 configured supporting evidence must exist before `ALLOW`.
+
+## Phase 3 Step 4 Controlled Lease Boundary
+
+Step 4 implements the database-controlled lease path defined by this contract.
+A lease may be issued only from one finalized `ALLOW` Decision Record and is
+bound to the exact identity, organization, session, device, service, purpose,
+operation, target, scope, classification, policy, audience, and authoritative
+time represented by that decision.
+
+The controlled functions are:
+
+```text
+access_control.issue_authorization_lease_from_decision(uuid, text)
+access_control.authorization_lease_context_is_usable(...)
+access_control.consume_authorization_lease(...)
+access_control.expire_authorization_lease(uuid)
+access_control.revoke_lease(uuid, text)
+```
+
+Plaintext lease secrets are never stored. Issuance and use revalidate the
+selected policy, required supporting evidence, linked authority, current
+session, and locally owned trust state. One lease has one issuing or renewing
+Decision Record, while a reusable lease may support multiple separately
+attributable protected-operation Decision Records. Consumption requires the
+exact lease, protected-operation decision, request identifier, correlation
+identifier, context, audience, and remaining use allowance. Single-use and
+limited-use consumption is atomic and writes an attributable use event in the
+same transaction. Concurrency proof remains a later Phase 3 gate.

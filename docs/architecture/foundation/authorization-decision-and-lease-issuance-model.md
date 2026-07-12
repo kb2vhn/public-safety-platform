@@ -6,11 +6,11 @@
 >
 > **Phase:** 3 — Authorization Decision and Controlled Lease Issuance
 >
-> **Status:** Normative Phase 3 contract; Step 3 controlled decision-finalization implementation candidate
+> **Status:** Normative Phase 3 contract; Step 4 controlled lease-issuance and use implementation candidate
 >
 > **Accepted prerequisite:** `phase-2-session-control-complete-v1`
 >
-> **Step 3 implementation migration:**
+> **Step 4 implementation migration:**
 > `081_postgresql_authorization_decision_and_lease_issuance.sql`
 
 ## 1. Purpose
@@ -947,7 +947,7 @@ Step 2 adds:
 - Typed requested lease lifetime, use mode, usage limit, audience, and
   expected-policy input on Decision Records,
 - Relational evaluation-to-policy-stage mapping,
-- One Decision Record to at most one Authorization Lease,
+- One issuing or renewing Decision Record to at most one Authorization Lease,
 - Core lease context binding to the issuing Decision Record,
 - Lease `not_before`, audience, expiration timestamp, chronology, terminal
   state, and revocation-reason constraints,
@@ -984,10 +984,35 @@ Those behaviors remain Phase 3 Step 4.
 
 ### Step 4 — Controlled Lease Issuance and Verification
 
-- Issue only from an eligible finalized `ALLOW`.
-- Enforce one decision to at most one lease.
-- Bound lease lifetime and use mode.
-- Verify complete exact context.
+Implementation candidate:
+
+```text
+sql/schema/migrations/foundation/
+081_postgresql_authorization_decision_and_lease_issuance.sql
+
+test-framework/sql/tests/foundation/
+150_authorization_lease_issuance_and_use.sql
+```
+
+Step 4 implements:
+
+- Issuance only from a finalized eligible `ALLOW`,
+- One issuing or renewing Decision Record per lease,
+- Multiple separately attributable protected-operation Decision Records for a
+  reusable lease without weakening issuing-decision uniqueness,
+- Current selected-policy, required supporting-evidence, linked-authority,
+  active-session, and locally owned trust revalidation,
+- Policy-, request-, session-, evidence-, and authority-bounded lifetime,
+- Exact identity, organization, session, device, service, purpose, operation,
+  target, scope, classification, policy, audience, request, correlation, and
+  protected-operation Decision Record binding,
+- Secret hashing without plaintext persistence,
+- Atomic reusable, single-use, and limited-use consumption,
+- Same-transaction attributable use events,
+- Materialized expiration and terminal reason-coded revocation,
+- No production `SECURITY DEFINER` routine and no `PUBLIC` execution.
+
+Step 4 does not yet add multi-connection lease issuance, consumption, or revocation races; those remain Step 6.
 
 ### Step 5 — Sequential Tests
 

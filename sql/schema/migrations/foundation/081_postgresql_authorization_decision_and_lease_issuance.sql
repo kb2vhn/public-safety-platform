@@ -2,7 +2,7 @@
 -- Migration: 081_postgresql_authorization_decision_and_lease_issuance.sql
 -- Title: PostgreSQL authorization decision and lease issuance structure
 -- Layer: Platform Foundation
--- Status: PHASE 3 STEP 3 IMPLEMENTATION CANDIDATE
+-- Status: PHASE 3 STEP 4 IMPLEMENTATION CANDIDATE
 -- Target: PostgreSQL 18
 -- Compatibility policy: prefer mature features supported before PostgreSQL 18.
 -- ============================================================================
@@ -12,9 +12,10 @@
 -- authorization policy selection, Decision Record finalization, and
 -- Authorization Lease issuance are implemented.
 --
--- Step 3 adds deterministic policy resolution, controlled policy binding,
+-- Step 3 added deterministic policy resolution, controlled policy binding,
 -- required-stage closure, and finalization-once Decision Record behavior.
--- Authorization Lease issuance remains Phase 3 Step 4.
+-- Step 4 adds controlled lease issuance, exact-context usability, atomic use,
+-- materialized expiration, and revocation behavior.
 --
 -- Accepted-boundary rule:
 -- Migrations 055, 060, 065, 070, 072, 075, and 080 remain unchanged.
@@ -495,6 +496,11 @@ COMMENT ON COLUMN access_control.authorization_leases.expired_at IS
 
 CREATE UNIQUE INDEX decision_records_authorization_lease_uq
     ON decision.decision_records(authorization_lease_id)
+    WHERE authorization_lease_id IS NOT NULL
+      AND decision_class IN ('LEASE_ISSUANCE', 'LEASE_RENEWAL');
+
+CREATE INDEX decision_records_authorization_lease_reference_idx
+    ON decision.decision_records(authorization_lease_id, decision_class)
     WHERE authorization_lease_id IS NOT NULL;
 
 CREATE INDEX authorization_leases_phase3_context_idx
@@ -1070,12 +1076,937 @@ COMMENT ON FUNCTION decision.finalize_decision(uuid, text, text) IS
 REVOKE ALL ON FUNCTION decision.finalize_decision(uuid, text, text)
     FROM PUBLIC;
 
+
+-- ---------------------------------------------------------------------------
+-- Phase 3 Step 4 controlled Authorization Lease issuance and use
+-- ---------------------------------------------------------------------------
+
+CREATE FUNCTION access_control.issue_authorization_lease_from_decision(
+    p_decision_id uuid,
+    p_plaintext_secret text
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control, decision
+AS $function$
+DECLARE
+    v_now timestamptz := pg_catalog.statement_timestamp();
+    v_decision decision.decision_records%ROWTYPE;
+    v_session access_control.sessions%ROWTYPE;
+    v_policy access_control.authorization_policy_versions%ROWTYPE;
+    v_environment_key text;
+    v_lease_id uuid := pg_catalog.gen_random_uuid();
+    v_expires_at timestamptz;
+    v_supporting_evidence_expires_at timestamptz;
+    v_authority_expires_at timestamptz;
+BEGIN
+    IF p_decision_id IS NULL THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_parameter_value',
+            MESSAGE = 'Decision identifier must not be null';
+    END IF;
+
+    IF p_plaintext_secret IS NULL
+       OR pg_catalog.octet_length(p_plaintext_secret) < 32
+    THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_parameter_value',
+            MESSAGE = 'Authorization Lease secret must contain at least 32 bytes';
+    END IF;
+
+    SELECT decision_record.*
+    INTO v_decision
+    FROM decision.decision_records AS decision_record
+    WHERE decision_record.decision_id = p_decision_id
+    FOR UPDATE;
+
+    IF NOT FOUND
+       OR v_decision.record_status <> 'FINALIZED'
+       OR v_decision.final_result <> 'ALLOW'
+       OR v_decision.decision_class NOT IN ('LEASE_ISSUANCE', 'LEASE_RENEWAL')
+       OR v_decision.authorization_policy_version_id IS NULL
+       OR v_decision.authorization_lease_id IS NOT NULL
+    THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease issuance is unavailable';
+    END IF;
+
+    SELECT session_record.*
+    INTO v_session
+    FROM access_control.sessions AS session_record
+    WHERE session_record.session_id = v_decision.session_id
+    FOR UPDATE;
+
+    SELECT policy_version.*
+    INTO v_policy
+    FROM access_control.authorization_policy_versions AS policy_version
+    WHERE policy_version.authorization_policy_version_id =
+          v_decision.authorization_policy_version_id
+    FOR SHARE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease issuance is unavailable';
+    END IF;
+
+    SELECT provider_record.environment_key
+    INTO v_environment_key
+    FROM trust.trust_providers AS provider_record
+    WHERE provider_record.trust_provider_id = v_session.trust_provider_id;
+
+    IF v_session.status <> 'ACTIVE'
+       OR v_now < v_session.authenticated_at
+       OR v_now >= v_session.expires_at
+       OR (
+           v_session.inactivity_timeout IS NOT NULL
+           AND v_now >= COALESCE(
+               v_session.last_activity_at,
+               v_session.authenticated_at
+           ) + v_session.inactivity_timeout
+       )
+       OR v_session.identity_id <> v_decision.requester_identity_id
+       OR v_session.organization_id IS DISTINCT FROM
+          v_decision.requester_organization_id
+       OR v_session.device_id IS DISTINCT FROM v_decision.device_id
+       OR v_session.service_id IS DISTINCT FROM v_decision.service_id
+       OR NOT access_control.session_context_is_locally_usable(
+           v_session.identity_id,
+           v_session.device_id,
+           v_session.trust_provider_id,
+           v_session.service_id,
+           v_session.organization_id,
+           v_environment_key,
+           v_now
+       )
+    THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease issuance is unavailable';
+    END IF;
+
+    IF v_policy.status <> 'ACTIVE'
+       OR v_policy.valid_from > v_now
+       OR (v_policy.valid_until IS NOT NULL AND v_now >= v_policy.valid_until)
+       OR v_policy.lease_audience IS NULL
+       OR v_decision.requested_lease_lifetime > v_policy.lease_lifetime
+       OR v_decision.requested_use_mode <> v_policy.lease_use_mode
+       OR v_decision.requested_usage_limit IS DISTINCT FROM
+          v_policy.lease_usage_limit
+       OR v_policy.lease_audience <> v_decision.lease_audience
+    THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease issuance is unavailable';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM decision.evaluation_records AS evaluation
+        JOIN decision.supporting_records AS supporting
+          ON supporting.evaluation_id = evaluation.evaluation_id
+        WHERE evaluation.decision_id = v_decision.decision_id
+          AND supporting.required_for_result
+          AND (
+              (
+                  supporting.effective_from IS NOT NULL
+                  AND supporting.effective_from > v_now
+              )
+              OR (
+                  supporting.effective_until IS NOT NULL
+                  AND v_now >= supporting.effective_until
+              )
+          )
+    ) THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease issuance is unavailable';
+    END IF;
+
+    SELECT pg_catalog.min(supporting.effective_until)
+    INTO v_supporting_evidence_expires_at
+    FROM decision.evaluation_records AS evaluation
+    JOIN decision.supporting_records AS supporting
+      ON supporting.evaluation_id = evaluation.evaluation_id
+    WHERE evaluation.decision_id = v_decision.decision_id
+      AND supporting.required_for_result
+      AND supporting.effective_until IS NOT NULL;
+
+    IF v_expires_at <= v_now THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease issuance is unavailable';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM access_control.authorization_policy_stage_requirements AS stage
+        WHERE stage.authorization_policy_version_id =
+              v_decision.authorization_policy_version_id
+          AND stage.stage_key = 'AUTHORITY'
+          AND stage.required
+          AND NOT EXISTS (
+              SELECT 1
+              FROM decision.evaluation_records AS evaluation
+              JOIN decision.supporting_records AS supporting
+                ON supporting.evaluation_id = evaluation.evaluation_id
+              JOIN access_control.authority_grants AS authority_grant
+                ON authority_grant.authority_grant_id::text =
+                   supporting.record_id
+              WHERE evaluation.decision_id = v_decision.decision_id
+                AND evaluation.evaluation_key = 'AUTHORITY'
+                AND evaluation.result = 'PASS'
+                AND supporting.record_type = 'AUTHORITY_GRANT'
+                AND supporting.required_for_result
+                AND authority_grant.identity_id =
+                    v_decision.requester_identity_id
+                AND authority_grant.status = 'ACTIVE'
+                AND authority_grant.valid_from <= v_now
+                AND (
+                    authority_grant.valid_until IS NULL
+                    OR v_now < authority_grant.valid_until
+                )
+                AND (
+                    authority_grant.service_id IS NULL
+                    OR authority_grant.service_id = v_decision.service_id
+                )
+                AND (
+                    authority_grant.purpose_definition_id IS NULL
+                    OR authority_grant.purpose_definition_id =
+                       v_decision.purpose_definition_id
+                )
+                AND (
+                    authority_grant.operation_definition_id IS NULL
+                    OR authority_grant.operation_definition_id =
+                       v_decision.operation_definition_id
+                )
+                AND (
+                    authority_grant.organization_id IS NULL
+                    OR authority_grant.organization_id =
+                       v_decision.requester_organization_id
+                )
+                AND authority_grant.scope_reference IS NULL
+                AND (
+                    authority_grant.applies_to_all_governed_scopes
+                    OR authority_grant.governed_scope_id IS NOT DISTINCT FROM
+                       v_decision.governed_scope_id
+                )
+                AND (
+                    authority_grant.applies_to_all_targets
+                    OR (
+                        authority_grant.protected_target_type IS NOT DISTINCT FROM
+                            v_decision.protected_target_type
+                        AND authority_grant.protected_target_reference IS NOT DISTINCT FROM
+                            v_decision.protected_target_reference
+                    )
+                )
+          )
+    ) THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease issuance is unavailable';
+    END IF;
+
+    SELECT pg_catalog.min(authority_grant.valid_until)
+    INTO v_authority_expires_at
+    FROM decision.evaluation_records AS evaluation
+    JOIN decision.supporting_records AS supporting
+      ON supporting.evaluation_id = evaluation.evaluation_id
+    JOIN access_control.authority_grants AS authority_grant
+      ON authority_grant.authority_grant_id::text = supporting.record_id
+    WHERE evaluation.decision_id = v_decision.decision_id
+      AND evaluation.evaluation_key = 'AUTHORITY'
+      AND evaluation.result = 'PASS'
+      AND supporting.record_type = 'AUTHORITY_GRANT'
+      AND supporting.required_for_result
+      AND authority_grant.identity_id = v_decision.requester_identity_id
+      AND authority_grant.status = 'ACTIVE'
+      AND authority_grant.valid_from <= v_now
+      AND (authority_grant.valid_until IS NULL OR v_now < authority_grant.valid_until)
+      AND (authority_grant.service_id IS NULL OR authority_grant.service_id = v_decision.service_id)
+      AND (
+          authority_grant.purpose_definition_id IS NULL
+          OR authority_grant.purpose_definition_id = v_decision.purpose_definition_id
+      )
+      AND (
+          authority_grant.operation_definition_id IS NULL
+          OR authority_grant.operation_definition_id = v_decision.operation_definition_id
+      )
+      AND (
+          authority_grant.organization_id IS NULL
+          OR authority_grant.organization_id = v_decision.requester_organization_id
+      )
+      AND authority_grant.scope_reference IS NULL
+      AND (
+          authority_grant.applies_to_all_governed_scopes
+          OR authority_grant.governed_scope_id IS NOT DISTINCT FROM
+             v_decision.governed_scope_id
+      )
+      AND (
+          authority_grant.applies_to_all_targets
+          OR (
+              authority_grant.protected_target_type IS NOT DISTINCT FROM
+                  v_decision.protected_target_type
+              AND authority_grant.protected_target_reference IS NOT DISTINCT FROM
+                  v_decision.protected_target_reference
+          )
+      )
+      AND authority_grant.valid_until IS NOT NULL;
+
+    v_expires_at := LEAST(
+        v_now + v_decision.requested_lease_lifetime,
+        v_now + v_policy.lease_lifetime,
+        v_session.expires_at,
+        COALESCE(v_policy.valid_until, v_session.expires_at),
+        COALESCE(v_supporting_evidence_expires_at, v_session.expires_at),
+        COALESCE(v_authority_expires_at, v_session.expires_at)
+    );
+
+    IF v_expires_at <= v_now THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease issuance is unavailable';
+    END IF;
+
+    INSERT INTO access_control.authorization_leases (
+        authorization_lease_id,
+        request_id,
+        lease_secret_hash,
+        session_id,
+        identity_id,
+        requester_organization_id,
+        device_id,
+        service_id,
+        purpose_definition_id,
+        operation_definition_id,
+        protected_target_type,
+        protected_target_reference,
+        governed_scope_id,
+        classification_key,
+        authorization_policy_version_id,
+        approval_request_id,
+        issuing_decision_id,
+        use_mode,
+        usage_limit,
+        successful_use_count,
+        issued_at,
+        not_before,
+        expires_at,
+        lease_audience,
+        status,
+        correlation_id
+    ) VALUES (
+        v_lease_id,
+        v_decision.request_id,
+        access_control.hash_lease_secret(p_plaintext_secret),
+        v_decision.session_id,
+        v_decision.requester_identity_id,
+        v_decision.requester_organization_id,
+        v_decision.device_id,
+        v_decision.service_id,
+        v_decision.purpose_definition_id,
+        v_decision.operation_definition_id,
+        v_decision.protected_target_type,
+        v_decision.protected_target_reference,
+        v_decision.governed_scope_id,
+        v_decision.classification_key,
+        v_decision.authorization_policy_version_id,
+        v_decision.approval_request_id,
+        v_decision.decision_id,
+        v_decision.requested_use_mode,
+        v_decision.requested_usage_limit,
+        0,
+        v_now,
+        v_now,
+        v_expires_at,
+        v_decision.lease_audience,
+        'ACTIVE',
+        v_decision.correlation_id
+    );
+
+    INSERT INTO access_control.lease_authority_grants (
+        authorization_lease_id,
+        authority_grant_id,
+        decision_id,
+        evaluation_id
+    )
+    SELECT DISTINCT ON (authority_grant.authority_grant_id)
+        v_lease_id,
+        authority_grant.authority_grant_id,
+        v_decision.decision_id,
+        evaluation.evaluation_id
+    FROM decision.evaluation_records AS evaluation
+    JOIN decision.supporting_records AS supporting
+      ON supporting.evaluation_id = evaluation.evaluation_id
+    JOIN access_control.authority_grants AS authority_grant
+      ON authority_grant.authority_grant_id::text = supporting.record_id
+    WHERE evaluation.decision_id = v_decision.decision_id
+      AND evaluation.evaluation_key = 'AUTHORITY'
+      AND evaluation.result = 'PASS'
+      AND supporting.record_type = 'AUTHORITY_GRANT'
+      AND supporting.required_for_result
+      AND authority_grant.identity_id = v_decision.requester_identity_id
+      AND authority_grant.status = 'ACTIVE'
+      AND authority_grant.valid_from <= v_now
+      AND (authority_grant.valid_until IS NULL OR v_now < authority_grant.valid_until)
+      AND (authority_grant.service_id IS NULL OR authority_grant.service_id = v_decision.service_id)
+      AND (
+          authority_grant.purpose_definition_id IS NULL
+          OR authority_grant.purpose_definition_id = v_decision.purpose_definition_id
+      )
+      AND (
+          authority_grant.operation_definition_id IS NULL
+          OR authority_grant.operation_definition_id = v_decision.operation_definition_id
+      )
+      AND (
+          authority_grant.organization_id IS NULL
+          OR authority_grant.organization_id = v_decision.requester_organization_id
+      )
+      AND authority_grant.scope_reference IS NULL
+      AND (
+          authority_grant.applies_to_all_governed_scopes
+          OR authority_grant.governed_scope_id IS NOT DISTINCT FROM
+             v_decision.governed_scope_id
+      )
+      AND (
+          authority_grant.applies_to_all_targets
+          OR (
+              authority_grant.protected_target_type IS NOT DISTINCT FROM
+                  v_decision.protected_target_type
+              AND authority_grant.protected_target_reference IS NOT DISTINCT FROM
+                  v_decision.protected_target_reference
+          )
+      )
+    ORDER BY
+        authority_grant.authority_grant_id,
+        evaluation.evaluation_order,
+        evaluation.evaluation_id;
+
+    UPDATE decision.decision_records
+    SET authorization_lease_id = v_lease_id
+    WHERE decision_id = v_decision.decision_id
+      AND authorization_lease_id IS NULL;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease issuance is unavailable';
+    END IF;
+
+    RETURN v_lease_id;
+END;
+$function$;
+
+COMMENT ON FUNCTION
+    access_control.issue_authorization_lease_from_decision(uuid, text) IS
+    'Issue exactly one short-lived Authorization Lease from one finalized ALLOW lease decision. PostgreSQL locks and revalidates the Decision Record, selected policy, required supporting evidence, linked authority, active session, current local trust, and bounded lifetime. The plaintext secret is never stored.';
+
+REVOKE ALL ON FUNCTION
+    access_control.issue_authorization_lease_from_decision(uuid, text)
+    FROM PUBLIC;
+
+CREATE FUNCTION access_control.authorization_lease_context_is_usable(
+    p_authorization_lease_id uuid,
+    p_plaintext_secret text,
+    p_identity_id uuid,
+    p_requester_organization_id uuid,
+    p_session_id uuid,
+    p_device_id uuid,
+    p_service_id uuid,
+    p_purpose_definition_id uuid,
+    p_operation_definition_id uuid,
+    p_protected_target_type text,
+    p_protected_target_reference text,
+    p_governed_scope_id uuid,
+    p_classification_key text,
+    p_authorization_policy_version_id uuid,
+    p_lease_audience text
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SET search_path = pg_catalog, access_control, decision
+AS $function$
+    SELECT EXISTS (
+        SELECT 1
+        FROM access_control.authorization_leases AS lease
+        JOIN decision.decision_records AS issuing_decision
+          ON issuing_decision.decision_id = lease.issuing_decision_id
+         AND issuing_decision.authorization_lease_id =
+             lease.authorization_lease_id
+        JOIN access_control.sessions AS session_record
+          ON session_record.session_id = lease.session_id
+        JOIN trust.trust_providers AS provider_record
+          ON provider_record.trust_provider_id =
+             session_record.trust_provider_id
+        JOIN access_control.authorization_policy_versions AS policy_version
+          ON policy_version.authorization_policy_version_id =
+             lease.authorization_policy_version_id
+        WHERE lease.authorization_lease_id = p_authorization_lease_id
+          AND lease.status = 'ACTIVE'
+          AND lease.consumed_at IS NULL
+          AND lease.revoked_at IS NULL
+          AND lease.expired_at IS NULL
+          AND lease.not_before <= pg_catalog.statement_timestamp()
+          AND pg_catalog.statement_timestamp() < lease.expires_at
+          AND lease.lease_secret_hash =
+              access_control.hash_lease_secret(p_plaintext_secret)
+          AND lease.identity_id = p_identity_id
+          AND lease.requester_organization_id IS NOT DISTINCT FROM
+              p_requester_organization_id
+          AND lease.session_id = p_session_id
+          AND lease.device_id IS NOT DISTINCT FROM p_device_id
+          AND lease.service_id IS NOT DISTINCT FROM p_service_id
+          AND lease.purpose_definition_id IS NOT DISTINCT FROM
+              p_purpose_definition_id
+          AND lease.operation_definition_id = p_operation_definition_id
+          AND lease.protected_target_type IS NOT DISTINCT FROM
+              p_protected_target_type
+          AND lease.protected_target_reference IS NOT DISTINCT FROM
+              p_protected_target_reference
+          AND lease.governed_scope_id IS NOT DISTINCT FROM
+              p_governed_scope_id
+          AND lease.classification_key IS NOT DISTINCT FROM
+              p_classification_key
+          AND lease.authorization_policy_version_id =
+              p_authorization_policy_version_id
+          AND lease.lease_audience = p_lease_audience
+          AND issuing_decision.decision_class IN (
+              'LEASE_ISSUANCE',
+              'LEASE_RENEWAL'
+          )
+          AND issuing_decision.record_status = 'FINALIZED'
+          AND issuing_decision.final_result = 'ALLOW'
+          AND issuing_decision.requester_identity_id = lease.identity_id
+          AND issuing_decision.requester_organization_id IS NOT DISTINCT FROM
+              lease.requester_organization_id
+          AND issuing_decision.session_id = lease.session_id
+          AND issuing_decision.device_id IS NOT DISTINCT FROM lease.device_id
+          AND issuing_decision.service_id = lease.service_id
+          AND issuing_decision.purpose_definition_id IS NOT DISTINCT FROM
+              lease.purpose_definition_id
+          AND issuing_decision.operation_definition_id =
+              lease.operation_definition_id
+          AND issuing_decision.protected_target_type IS NOT DISTINCT FROM
+              lease.protected_target_type
+          AND issuing_decision.protected_target_reference IS NOT DISTINCT FROM
+              lease.protected_target_reference
+          AND issuing_decision.governed_scope_id IS NOT DISTINCT FROM
+              lease.governed_scope_id
+          AND issuing_decision.classification_key IS NOT DISTINCT FROM
+              lease.classification_key
+          AND issuing_decision.authorization_policy_version_id =
+              lease.authorization_policy_version_id
+          AND issuing_decision.requested_use_mode = lease.use_mode
+          AND issuing_decision.requested_usage_limit IS NOT DISTINCT FROM
+              lease.usage_limit
+          AND issuing_decision.lease_audience = lease.lease_audience
+          AND policy_version.decision_class = issuing_decision.decision_class
+          AND policy_version.status = 'ACTIVE'
+          AND policy_version.valid_from <= pg_catalog.statement_timestamp()
+          AND (
+              policy_version.valid_until IS NULL
+              OR pg_catalog.statement_timestamp() < policy_version.valid_until
+          )
+          AND policy_version.lease_use_mode = lease.use_mode
+          AND policy_version.lease_usage_limit IS NOT DISTINCT FROM
+              lease.usage_limit
+          AND policy_version.lease_audience = lease.lease_audience
+          AND (
+              policy_version.service_id IS NULL
+              OR policy_version.service_id = lease.service_id
+          )
+          AND (
+              policy_version.purpose_definition_id IS NULL
+              OR policy_version.purpose_definition_id =
+                 lease.purpose_definition_id
+          )
+          AND (
+              policy_version.operation_definition_id IS NULL
+              OR policy_version.operation_definition_id =
+                 lease.operation_definition_id
+          )
+          AND (
+              policy_version.requester_organization_id IS NULL
+              OR policy_version.requester_organization_id IS NOT DISTINCT FROM
+                 lease.requester_organization_id
+          )
+          AND (
+              policy_version.applies_to_all_governed_scopes
+              OR policy_version.governed_scope_id IS NOT DISTINCT FROM
+                 lease.governed_scope_id
+          )
+          AND (
+              policy_version.applies_to_all_targets
+              OR (
+                  policy_version.protected_target_type IS NOT DISTINCT FROM
+                      lease.protected_target_type
+                  AND policy_version.protected_target_reference IS NOT DISTINCT FROM
+                      lease.protected_target_reference
+              )
+          )
+          AND (
+              policy_version.classification_key IS NULL
+              OR policy_version.classification_key IS NOT DISTINCT FROM
+                 lease.classification_key
+          )
+          AND NOT EXISTS (
+              SELECT 1
+              FROM decision.evaluation_records AS evaluation
+              JOIN decision.supporting_records AS supporting
+                ON supporting.evaluation_id = evaluation.evaluation_id
+              WHERE evaluation.decision_id = issuing_decision.decision_id
+                AND supporting.required_for_result
+                AND (
+                    (
+                        supporting.effective_from IS NOT NULL
+                        AND supporting.effective_from >
+                            pg_catalog.statement_timestamp()
+                    )
+                    OR (
+                        supporting.effective_until IS NOT NULL
+                        AND pg_catalog.statement_timestamp() >=
+                            supporting.effective_until
+                    )
+                )
+          )
+          AND NOT EXISTS (
+              SELECT 1
+              FROM access_control.lease_authority_grants AS lease_authority
+              JOIN access_control.authority_grants AS authority_grant
+                ON authority_grant.authority_grant_id =
+                   lease_authority.authority_grant_id
+              WHERE lease_authority.authorization_lease_id =
+                    lease.authorization_lease_id
+                AND (
+                    authority_grant.status <> 'ACTIVE'
+                    OR authority_grant.valid_from >
+                       pg_catalog.statement_timestamp()
+                    OR (
+                        authority_grant.valid_until IS NOT NULL
+                        AND pg_catalog.statement_timestamp() >=
+                            authority_grant.valid_until
+                    )
+                    OR (
+                        authority_grant.service_id IS NOT NULL
+                        AND authority_grant.service_id <> lease.service_id
+                    )
+                    OR (
+                        authority_grant.purpose_definition_id IS NOT NULL
+                        AND authority_grant.purpose_definition_id IS DISTINCT FROM
+                            lease.purpose_definition_id
+                    )
+                    OR (
+                        authority_grant.operation_definition_id IS NOT NULL
+                        AND authority_grant.operation_definition_id <>
+                            lease.operation_definition_id
+                    )
+                    OR (
+                        authority_grant.organization_id IS NOT NULL
+                        AND authority_grant.organization_id IS DISTINCT FROM
+                            lease.requester_organization_id
+                    )
+                    OR authority_grant.scope_reference IS NOT NULL
+                    OR NOT (
+                        authority_grant.applies_to_all_governed_scopes
+                        OR authority_grant.governed_scope_id IS NOT DISTINCT FROM
+                           lease.governed_scope_id
+                    )
+                    OR NOT (
+                        authority_grant.applies_to_all_targets
+                        OR (
+                            authority_grant.protected_target_type IS NOT DISTINCT FROM
+                                lease.protected_target_type
+                            AND authority_grant.protected_target_reference IS NOT DISTINCT FROM
+                                lease.protected_target_reference
+                        )
+                    )
+                )
+          )
+          AND session_record.status = 'ACTIVE'
+          AND session_record.authenticated_at <=
+              pg_catalog.statement_timestamp()
+          AND pg_catalog.statement_timestamp() < session_record.expires_at
+          AND (
+              session_record.inactivity_timeout IS NULL
+              OR pg_catalog.statement_timestamp() < COALESCE(
+                  session_record.last_activity_at,
+                  session_record.authenticated_at
+              ) + session_record.inactivity_timeout
+          )
+          AND session_record.identity_id = lease.identity_id
+          AND session_record.organization_id IS NOT DISTINCT FROM
+              lease.requester_organization_id
+          AND session_record.device_id IS NOT DISTINCT FROM lease.device_id
+          AND session_record.service_id IS NOT DISTINCT FROM lease.service_id
+          AND access_control.session_context_is_locally_usable(
+              session_record.identity_id,
+              session_record.device_id,
+              session_record.trust_provider_id,
+              session_record.service_id,
+              session_record.organization_id,
+              provider_record.environment_key,
+              pg_catalog.statement_timestamp()
+          )
+          AND (
+              lease.use_mode = 'REUSABLE'
+              OR (
+                  lease.use_mode = 'SINGLE_USE'
+                  AND lease.successful_use_count = 0
+              )
+              OR (
+                  lease.use_mode = 'LIMITED_USE'
+                  AND lease.successful_use_count < lease.usage_limit
+              )
+          )
+    );
+$function$;
+
+COMMENT ON FUNCTION access_control.authorization_lease_context_is_usable(
+    uuid, text, uuid, uuid, uuid, uuid, uuid, uuid, uuid,
+    text, text, uuid, text, uuid, text
+) IS
+    'Return true only when the lease secret, lifecycle, authoritative time, use state, audience, complete authorization context, issuing ALLOW decision, active session, and current locally owned trust state all remain usable.';
+
+REVOKE ALL ON FUNCTION access_control.authorization_lease_context_is_usable(
+    uuid, text, uuid, uuid, uuid, uuid, uuid, uuid, uuid,
+    text, text, uuid, text, uuid, text
+) FROM PUBLIC;
+
+CREATE FUNCTION access_control.consume_authorization_lease(
+    p_authorization_lease_id uuid,
+    p_plaintext_secret text,
+    p_request_id uuid,
+    p_identity_id uuid,
+    p_requester_organization_id uuid,
+    p_session_id uuid,
+    p_device_id uuid,
+    p_service_id uuid,
+    p_purpose_definition_id uuid,
+    p_operation_definition_id uuid,
+    p_protected_target_type text,
+    p_protected_target_reference text,
+    p_governed_scope_id uuid,
+    p_classification_key text,
+    p_authorization_policy_version_id uuid,
+    p_lease_audience text,
+    p_decision_reference uuid,
+    p_correlation_id uuid
+)
+RETURNS integer
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control, decision
+AS $function$
+DECLARE
+    v_now timestamptz := pg_catalog.statement_timestamp();
+    v_use_number integer;
+BEGIN
+    IF p_request_id IS NULL
+       OR p_decision_reference IS NULL
+       OR p_correlation_id IS NULL
+    THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_parameter_value',
+            MESSAGE = 'Lease-use attribution is incomplete';
+    END IF;
+
+    UPDATE access_control.authorization_leases AS lease
+    SET
+        successful_use_count = lease.successful_use_count + 1,
+        status = CASE
+            WHEN lease.use_mode = 'SINGLE_USE' THEN 'CONSUMED'
+            WHEN lease.use_mode = 'LIMITED_USE'
+                 AND lease.successful_use_count + 1 = lease.usage_limit
+            THEN 'CONSUMED'
+            ELSE 'ACTIVE'
+        END,
+        consumed_at = CASE
+            WHEN lease.use_mode = 'SINGLE_USE' THEN v_now
+            WHEN lease.use_mode = 'LIMITED_USE'
+                 AND lease.successful_use_count + 1 = lease.usage_limit
+            THEN v_now
+            ELSE NULL
+        END
+    WHERE lease.authorization_lease_id = p_authorization_lease_id
+      AND lease.status = 'ACTIVE'
+      AND lease.consumed_at IS NULL
+      AND lease.revoked_at IS NULL
+      AND lease.expired_at IS NULL
+      AND lease.not_before <= v_now
+      AND v_now < lease.expires_at
+      AND (
+          lease.use_mode = 'REUSABLE'
+          OR (
+              lease.use_mode = 'SINGLE_USE'
+              AND lease.successful_use_count = 0
+          )
+          OR (
+              lease.use_mode = 'LIMITED_USE'
+              AND lease.successful_use_count < lease.usage_limit
+          )
+      )
+      AND access_control.authorization_lease_context_is_usable(
+          lease.authorization_lease_id,
+          p_plaintext_secret,
+          p_identity_id,
+          p_requester_organization_id,
+          p_session_id,
+          p_device_id,
+          p_service_id,
+          p_purpose_definition_id,
+          p_operation_definition_id,
+          p_protected_target_type,
+          p_protected_target_reference,
+          p_governed_scope_id,
+          p_classification_key,
+          p_authorization_policy_version_id,
+          p_lease_audience
+      )
+      AND EXISTS (
+          SELECT 1
+          FROM decision.decision_records AS use_decision
+          WHERE use_decision.decision_id = p_decision_reference
+            AND use_decision.request_id = p_request_id
+            AND use_decision.correlation_id = p_correlation_id
+            AND use_decision.decision_class = 'PROTECTED_OPERATION'
+            AND use_decision.record_status = 'FINALIZED'
+            AND use_decision.final_result = 'ALLOW'
+            AND use_decision.authorization_lease_id =
+                lease.authorization_lease_id
+            AND use_decision.requester_identity_id = lease.identity_id
+            AND use_decision.requester_organization_id IS NOT DISTINCT FROM
+                lease.requester_organization_id
+            AND use_decision.session_id = lease.session_id
+            AND use_decision.device_id IS NOT DISTINCT FROM lease.device_id
+            AND use_decision.service_id IS NOT DISTINCT FROM lease.service_id
+            AND use_decision.purpose_definition_id IS NOT DISTINCT FROM
+                lease.purpose_definition_id
+            AND use_decision.operation_definition_id =
+                lease.operation_definition_id
+            AND use_decision.protected_target_type IS NOT DISTINCT FROM
+                lease.protected_target_type
+            AND use_decision.protected_target_reference IS NOT DISTINCT FROM
+                lease.protected_target_reference
+            AND use_decision.governed_scope_id IS NOT DISTINCT FROM
+                lease.governed_scope_id
+            AND use_decision.classification_key IS NOT DISTINCT FROM
+                lease.classification_key
+      )
+    RETURNING lease.successful_use_count INTO v_use_number;
+
+    IF v_use_number IS NULL THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_authorization_specification',
+            MESSAGE = 'Authorization Lease is unavailable';
+    END IF;
+
+    INSERT INTO access_control.authorization_lease_use_events (
+        authorization_lease_id,
+        request_id,
+        use_number,
+        used_at,
+        decision_reference,
+        correlation_id
+    ) VALUES (
+        p_authorization_lease_id,
+        p_request_id,
+        v_use_number,
+        v_now,
+        p_decision_reference,
+        p_correlation_id
+    );
+
+    RETURN v_use_number;
+END;
+$function$;
+
+COMMENT ON FUNCTION access_control.consume_authorization_lease(
+    uuid, text, uuid, uuid, uuid, uuid, uuid, uuid, uuid, uuid,
+    text, text, uuid, text, uuid, text, uuid, uuid
+) IS
+    'Atomically consume one exact-context Authorization Lease use, revalidate current session and local trust state, require a finalized matching protected-operation Decision Record, enforce use limits, and append one attributable use event in the same transaction.';
+
+REVOKE ALL ON FUNCTION access_control.consume_authorization_lease(
+    uuid, text, uuid, uuid, uuid, uuid, uuid, uuid, uuid, uuid,
+    text, text, uuid, text, uuid, text, uuid, uuid
+) FROM PUBLIC;
+
+CREATE FUNCTION access_control.expire_authorization_lease(
+    p_authorization_lease_id uuid
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control
+AS $function$
+DECLARE
+    v_now timestamptz := pg_catalog.statement_timestamp();
+BEGIN
+    UPDATE access_control.authorization_leases
+    SET
+        status = 'EXPIRED',
+        expired_at = v_now
+    WHERE authorization_lease_id = p_authorization_lease_id
+      AND status = 'ACTIVE'
+      AND v_now >= expires_at;
+
+    RETURN FOUND;
+END;
+$function$;
+
+COMMENT ON FUNCTION access_control.expire_authorization_lease(uuid) IS
+    'Materialize the EXPIRED terminal state for one ACTIVE Authorization Lease only after its authoritative expiration deadline has been reached.';
+
+REVOKE ALL ON FUNCTION access_control.expire_authorization_lease(uuid)
+    FROM PUBLIC;
+
+CREATE OR REPLACE FUNCTION access_control.revoke_lease(
+    p_authorization_lease_id uuid,
+    p_reason text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control
+AS $function$
+DECLARE
+    v_now timestamptz := pg_catalog.statement_timestamp();
+    v_reason text;
+BEGIN
+    v_reason := pg_catalog.btrim(p_reason);
+
+    IF p_reason IS NULL
+       OR v_reason = ''
+       OR v_reason !~ '^[A-Z][A-Z0-9_]*$'
+    THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'invalid_parameter_value',
+            MESSAGE = 'Authorization Lease revocation reason must be a stable reason code';
+    END IF;
+
+    UPDATE access_control.authorization_leases
+    SET
+        status = 'REVOKED',
+        revoked_at = v_now,
+        revocation_reason = v_reason
+    WHERE authorization_lease_id = p_authorization_lease_id
+      AND status = 'ACTIVE';
+
+    RETURN FOUND;
+END;
+$function$;
+
+COMMENT ON FUNCTION access_control.revoke_lease(uuid, text) IS
+    'Atomically transition one ACTIVE Authorization Lease to terminal REVOKED using one PostgreSQL statement time and an attributable stable reason code. Consumed, expired, and already revoked leases remain terminal.';
+
+REVOKE ALL ON FUNCTION access_control.revoke_lease(uuid, text)
+    FROM PUBLIC;
+
 SELECT foundation_meta.register_migration(
     p_migration_id => '081_postgresql_authorization_decision_and_lease_issuance',
     p_migration_name => 'PostgreSQL authorization decision and lease issuance structure',
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes => 'Added typed policy applicability, exact policy-stage mapping, lease-request Decision Record fields, one-decision/one-lease cardinality, core decision-to-lease context binding, lease chronology and state shape, attributable authority and use evidence, deterministic policy resolution, controlled policy binding, and finalization-once Decision Record closure.'
+    p_notes => 'Added typed policy applicability, exact policy-stage mapping, lease-request Decision Record fields, one issuing-decision/one issued-lease cardinality, core decision-to-lease context binding, lease chronology and state shape, attributable authority and use evidence, deterministic policy resolution, controlled policy binding, finalization-once Decision Record closure, controlled lease issuance, exact-context usability, atomic use, expiration, and revocation.'
 );
 
 COMMIT;
