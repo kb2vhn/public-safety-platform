@@ -139,3 +139,9 @@ No one status implies all other statuses.
 ### Shared Engineering Standards
 
 - [Platform Engineering Principles](platform-engineering-principles.md)
+
+### User-Interface Architecture
+
+- [User-Interface Architecture](user-interface/README.md)
+- [Client Experience Model](user-interface/client-experience-model.md)
+- [Accessibility and Inclusive Interaction Model](user-interface/accessibility-and-inclusive-interaction-model.md)
