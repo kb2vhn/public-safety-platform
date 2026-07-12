@@ -221,7 +221,7 @@ checks = {
     'test-framework/sql/tests/concurrency/150_authorization_lease_issuance_race.sh': 'ec380f4586844c1c15cab5c0a7f54ce66053f6762e6e37377b24427abc2888cf',
     'test-framework/sql/tests/concurrency/160_authorization_lease_single_use_race.sh': 'f484d24c82315dae81d91e1234378b1dcffde6d61e4e63461a66d690c345c8fe',
     'test-framework/sql/tests/concurrency/170_authorization_lease_limited_use_race.sh': '97a565040cc98fce7ace1b42a468f383263439581680606e36bfd8ffc65f05dd',
-    'test-framework/sql/tests/concurrency/180_authorization_lease_terminal_transition_race.sh': '975735c4cd242318d775a801348dd5ce91b5536eca8c4d0b995a2d59338d1a6c',
+    'test-framework/sql/tests/concurrency/180_authorization_lease_terminal_transition_race.sh': 'ef63fb36747d366bd471c3dcb70a2f3eeeff4279a0ada41cf35d5b624e958a59',
     'tools/README.md': '3cc5ad24c4d7e11f726dbd99cff29ce3267900c83ef2cc77cb7bd90e2f5b9f11',
     'tools/validation/README.md': '5a6c964a288f948a1a3ea414b5f1ec822f73ae8b43ff75a28ef04de941ab781c',
     'tools/validation/phase-gates/README.md': '1c010b4df19be05f933d750f75b88b550c33a6a0ccf108068b3cb7b31cd067d2',

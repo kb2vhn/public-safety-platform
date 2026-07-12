@@ -222,9 +222,17 @@ SELECT pg_advisory_unlock_shared(
     :'lock_key'::integer
 );
 
-SELECT CASE :'operation'
-    WHEN 'expire' THEN access_control.expire_authorization_lease(:'lease_id'::uuid)
-    ELSE access_control.revoke_lease(:'lease_id'::uuid, 'CONCURRENT_SECURITY_REVOKE')
+SELECT CASE
+    WHEN CASE :'operation'
+        WHEN 'expire'
+        THEN access_control.expire_authorization_lease(:'lease_id'::uuid)
+        ELSE access_control.revoke_lease(
+            :'lease_id'::uuid,
+            'CONCURRENT_SECURITY_REVOKE'
+        )
+    END
+    THEN 'TRANSITIONED'
+    ELSE 'TERMINAL'
 END;
 SQL
 }
@@ -269,9 +277,9 @@ classify_worker() {
 
     if [[ "$worker_status" -ne 0 ]]; then
         unexpected_count=$((unexpected_count + 1))
-    elif grep -qx 't' "$output_file"; then
+    elif grep -qx 'TRANSITIONED' "$output_file"; then
         true_count=$((true_count + 1))
-    elif grep -qx 'f' "$output_file"; then
+    elif grep -qx 'TERMINAL' "$output_file"; then
         false_count=$((false_count + 1))
     else
         unexpected_count=$((unexpected_count + 1))
