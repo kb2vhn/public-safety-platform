@@ -1,0 +1,23 @@
+# Non-production desired-state example.
+schema_version: 1
+baseline_id: operational-workstation-example
+release_id: replace-with-approved-release
+hardware_profile: replace-with-approved-profile
+required_state:
+  secure_boot: required
+  tpm: required
+  full_disk_encryption: required
+  package_manifest: workstation-packages-example
+  network_profile: workstation-network-example
+  workspace_profile: dispatch-workspace-example
+  remote_management_profile: restricted-sshd
+  unrestricted_internet_access: prohibited
+  direct_public_repository_access: prohibited
+verification:
+  interval: replace-with-approved-interval
+  stale_after: replace-with-approved-duration
+  material_drift_action: restrict-and-investigate
+  integrity_failure_action: isolate-and-rebuild
+owner: replace-with-owner
+approval_state: proposed
+last_reviewed: YYYY-MM-DD

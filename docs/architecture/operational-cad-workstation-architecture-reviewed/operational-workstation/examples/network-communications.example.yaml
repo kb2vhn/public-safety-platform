@@ -1,0 +1,39 @@
+# Non-production example. Addresses, identities, and ports require deployment approval.
+schema_version: 1
+profile_id: workstation-network-example
+default_policy: deny
+rules:
+  - id: workstation-ssh-management-inbound
+    direction: inbound
+    source_component: sshd.service
+    source_zone: management
+    destination_service: workstation-sshd
+    governed_source_set: approved-management-bastions
+    protocol: tcp
+    port: 22
+    authentication: ssh-certificate-or-approved-public-key
+    encryption: ssh
+    purpose: Controlled remote administration and declarative configuration.
+    data_classification: administrative
+    expected_frequency: on-demand
+    failure_behavior: Management unavailable; operator functions remain available.
+    logging: full-session-and-authentication-evidence
+    owner: replace-with-owner
+    approval_state: proposed
+
+  - id: workstation-live-subscription-outbound
+    direction: outbound
+    source_component: operational-client
+    destination_service: subscription-gateway
+    governed_destination_set: internal-platform-services
+    protocol: tcp
+    port: 443
+    authentication: mutual-tls-and-operator-session
+    encryption: tls
+    purpose: Snapshot and ordered live operational updates.
+    data_classification: module-defined
+    expected_frequency: persistent-bounded-session
+    failure_behavior: Enter offline or resynchronizing state; do not display stale data as live.
+    logging: connection-health-and-policy-events
+    owner: replace-with-owner
+    approval_state: proposed
