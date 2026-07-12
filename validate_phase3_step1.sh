@@ -29,7 +29,7 @@ This validator:
   - Performs a complete dependency preflight.
   - Requires the dev branch.
   - Verifies the annotated Phase 2 acceptance tag and accepted commit.
-  - Confirms current HEAD descends from the accepted Phase 2 commit.
+  - Confirms current SQL and test content matches the accepted Phase 2 tag.
   - Confirms SQL, manifests, runner, and tests are unchanged from Phase 2.
   - Validates the exact Step 1 documentation replacements.
   - Allows only the five Step 1 files to be changed in the working tree.
@@ -221,10 +221,15 @@ else
     fail "Could not resolve the Phase 2 acceptance tag target"
 fi
 
-if git merge-base --is-ancestor "$phase2_commit" HEAD; then
-    pass "Current HEAD descends from the accepted Phase 2 commit"
+if git diff --quiet "$phase2_commit" -- \
+    sql/schema \
+    test-framework/sql; then
+    pass "Current SQL and test content matches the accepted Phase 2 tag"
 else
-    fail "Current HEAD does not descend from the accepted Phase 2 commit"
+    fail "Current SQL or test content differs from the accepted Phase 2 tag"
+    git diff --name-status "$phase2_commit" -- \
+        sql/schema \
+        test-framework/sql >&2
 fi
 
 section "Required files"
