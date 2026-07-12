@@ -36,9 +36,11 @@ monitoring vendor, identity provider, or compliance framework.
 
 ## Implementation Status
 
-Phase 1 and Phase 2 are accepted. Phase 3 Step 3 validated deterministic policy
-selection and controlled Decision Record finalization. Step 4 implements
-controlled lease issuance and use. Validation gates are maintained under:
+Phase 1 and Phase 2 are accepted. Phase 3 Step 5 validates deterministic
+policy selection, controlled Decision Record finalization, lease issuance and
+use, and expanded fail-closed behavior. Step 6 adds the independent-connection
+race proofs required before formal Phase 3 acceptance. Validation gates are
+maintained under:
 
 ```text
 tools/validation/phase-gates/

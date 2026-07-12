@@ -711,3 +711,21 @@ result, and target mismatches. A denied attempt must not increment
 
 The Step 5 regression target is 33 migrations, 16 sequential tests, 4 accepted
 concurrency tests, 353 PASS, 0 FAIL, and 3 understood WARN results.
+
+
+## Phase 3 Step 6 Independent-Connection Concurrency Proof
+
+Step 6 does not add a new production routine. It proves the accepted controlled
+functions under competing PostgreSQL connections. Advisory-lock release
+barriers ensure both workers commit readiness before they attempt the same
+Decision Record or Authorization Lease boundary.
+
+The proof set covers finalization-once, single-winner issuance, single-use
+consumption, the final slot of a limited-use lease, and mutually exclusive
+expiration-versus-revocation terminal transition. Each successful use retains
+a separately attributable protected-operation Decision Record and one
+same-transaction use event.
+
+The Step 6 target is 33 migrations, 16 sequential tests, 9 concurrency tests,
+408 PASS, 0 FAIL, and 3 understood WARN results. Formal Phase 3 acceptance
+remains a separate acceptance record and annotated tag after the gate passes.

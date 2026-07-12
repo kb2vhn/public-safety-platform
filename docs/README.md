@@ -25,11 +25,11 @@ Phase 2 session control is accepted at
 `phase-2-session-control-complete-v1` with 213 PASS, 0 FAIL, and 3 understood
 warnings.
 
-Phase 3 Step 4 is validated with 33 migrations, 15 sequential tests,
-4 concurrency tests, 329 PASS, 0 FAIL, and 3 understood warnings.
+Phase 3 Step 5 is validated with 33 migrations, 16 sequential tests,
+4 concurrency tests, 353 PASS, 0 FAIL, and 3 understood warnings.
 
-Phase 3 Step 5 expands fail-closed issuance, verification, and consumption
-behavior for stale trust, policy, evidence, authority, and operation context.
+Phase 3 Step 6 adds five independent-connection authorization race proofs and
+targets 9 concurrency files and 408 PASS while preserving 33 migrations.
 
 ## Change Discipline
 

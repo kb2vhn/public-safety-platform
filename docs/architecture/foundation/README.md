@@ -181,26 +181,14 @@ access_control.revoke_lease(uuid, text)
 3 understood WARN
 ```
 
-### Current Step 5 candidate
+### Completed Phase 3 Step 5
 
-Step 5 adds `160_authorization_lease_fail_closed_behavior.sql` and strengthens
+Step 5 added `160_authorization_lease_fail_closed_behavior.sql` and strengthened
 required-authority continuity during lease verification. The expanded tests
 prove that stale session, identity, device, Trust Provider, Platform Service,
 policy, required evidence, and linked authority state all fail closed. They
 also prove that request, correlation, final decision state, and target
 attribution mismatches cannot consume a lease or append a use event.
-
-The Step 5 test and phase gate are:
-
-```text
-test-framework/sql/tests/foundation/
-160_authorization_lease_fail_closed_behavior.sql
-
-tools/validation/phase-gates/
-validate_phase3_step5.sh
-```
-
-The Step 5 target is:
 
 ```text
 33 manifest migrations
@@ -212,8 +200,39 @@ The Step 5 target is:
 3 understood WARN
 ```
 
-Step 6 still must add independent-connection finalization, issuance,
-consumption, expiration, and revocation races before formal Phase 3 acceptance.
+### Current Phase 3 Step 6 candidate
+
+Step 6 adds five executable independent-connection proofs:
+
+```text
+test-framework/sql/tests/concurrency/
+140_authorization_decision_finalization_race.sh
+150_authorization_lease_issuance_race.sh
+160_authorization_lease_single_use_race.sh
+170_authorization_lease_limited_use_race.sh
+180_authorization_lease_terminal_transition_race.sh
+```
+
+The Step 6 phase gate is:
+
+```text
+tools/validation/phase-gates/validate_phase3_step6.sh
+```
+
+The Step 6 target is:
+
+```text
+33 manifest migrations
+33 registered migrations
+16 sequential test files
+9 concurrency test files
+408 PASS
+0 FAIL
+3 understood WARN
+```
+
+Formal Phase 3 acceptance and tagging remain a separate acceptance step after
+this candidate passes completely.
 
 ## Documentation Groups
 

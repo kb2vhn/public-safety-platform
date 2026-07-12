@@ -6,7 +6,7 @@
 >
 > **Phase:** 3 — Authorization Decision and Controlled Lease Issuance
 >
-> **Status:** Normative Phase 3 contract; Step 5 fail-closed behavioral expansion candidate
+> **Status:** Normative Phase 3 contract; Step 6 concurrency-proof candidate
 >
 > **Accepted prerequisite:** `phase-2-session-control-complete-v1`
 >
@@ -1056,10 +1056,32 @@ appending use events. Step 5 adds 24 assertions for a total target of:
 3 understood WARN results
 ```
 
-### Step 6 — Concurrency Tests
+### Step 6 — Independent-Connection Concurrency Proofs
 
-- Add finalization, issuance, use-limit, and revocation races.
-- Run all accepted Phase 1 and Phase 2 concurrency proofs.
+Step 6 adds five Bash-driven, independent-connection PostgreSQL races:
+
+```text
+test-framework/sql/tests/concurrency/
+140_authorization_decision_finalization_race.sh
+150_authorization_lease_issuance_race.sh
+160_authorization_lease_single_use_race.sh
+170_authorization_lease_limited_use_race.sh
+180_authorization_lease_terminal_transition_race.sh
+```
+
+The proofs require:
+
+- exactly one successful finalization of one draft Decision Record,
+- exactly one lease issued from one eligible Decision Record,
+- exactly one successful use of one single-use lease,
+- exactly one winner for the final remaining limited-use slot,
+- exactly one terminal expiration-or-revocation transition,
+- no duplicate counters, use numbers, use events, terminal timestamps, or
+  mixed terminal state,
+- all accepted Phase 1 and Phase 2 concurrency proofs to remain passing.
+
+The complete Step 6 target is 33 migrations, 16 sequential tests,
+9 concurrency tests, 408 PASS, 0 FAIL, and 3 understood WARN results.
 
 ### Step 7 — Acceptance
 

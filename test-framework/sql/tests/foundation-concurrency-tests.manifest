@@ -1,9 +1,14 @@
 # Platform Foundation concurrency tests
 #
-# Order is authoritative. The accepted Phase 1 assertion-consumption proof
-# remains first, followed by the three Phase 2 session concurrency proofs.
+# Order is authoritative. Accepted Phase 1 and Phase 2 proofs remain first,
+# followed by the five Phase 3 authorization concurrency proofs.
 
 concurrency/100_authentication_assertion_single_use.sh
 concurrency/110_session_establishment_single_use.sh
 concurrency/120_session_step_up_single_use.sh
 concurrency/130_session_terminal_transition_race.sh
+concurrency/140_authorization_decision_finalization_race.sh
+concurrency/150_authorization_lease_issuance_race.sh
+concurrency/160_authorization_lease_single_use_race.sh
+concurrency/170_authorization_lease_limited_use_race.sh
+concurrency/180_authorization_lease_terminal_transition_race.sh

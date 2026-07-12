@@ -347,3 +347,33 @@ The phase gate is:
 ```text
 tools/validation/phase-gates/validate_phase3_step5.sh
 ```
+
+
+### Phase 3 Step 6 Result Target
+
+Step 6 leaves the 33-file Foundation migration manifest unchanged and adds five
+independent-connection tests to the concurrency manifest:
+
+```text
+concurrency/140_authorization_decision_finalization_race.sh
+concurrency/150_authorization_lease_issuance_race.sh
+concurrency/160_authorization_lease_single_use_race.sh
+concurrency/170_authorization_lease_limited_use_race.sh
+concurrency/180_authorization_lease_terminal_transition_race.sh
+```
+
+```text
+33 manifest migrations
+33 registered migrations
+16 sequential test files
+9 concurrency test files
+408 PASS
+0 FAIL
+3 understood WARN
+```
+
+The phase gate is:
+
+```text
+tools/validation/phase-gates/validate_phase3_step6.sh
+```
