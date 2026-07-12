@@ -1,0 +1,24 @@
+# Non-production evidence-shape example. This is not a final trust decision.
+schema_version: 1
+statement_id: replace-with-unique-id
+device_id: replace-with-device-id
+collector_id: replace-with-collector-id
+verifier_id: replace-with-verifier-id
+observed_at: YYYY-MM-DDThh:mm:ssZ
+issued_at: YYYY-MM-DDThh:mm:ssZ
+expires_at: YYYY-MM-DDThh:mm:ssZ
+baseline_version: replace-with-baseline-version
+anti_replay_context: replace-with-nonce-or-sequence
+evidence:
+  secure_boot_enabled: true
+  tpm_identity_verified: true
+  full_disk_encryption_enabled: true
+  package_manifest_matches: true
+  firewall_profile_matches: true
+  edr_sensor_current: true
+  logging_current: true
+  time_synchronized: true
+protection:
+  transport: mutual-tls
+  signature_reference: replace-with-signature-reference
+# The Foundation Decision Engine evaluates these facts for a specific operation.

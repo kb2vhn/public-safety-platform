@@ -1,0 +1,25 @@
+# Non-production public-safety example. Not a universal platform layout.
+schema_version: 1
+profile_id: dispatch-workspace-example
+window_manager: i3
+workspaces:
+  - number: 1
+    name: call-intake
+    purpose: Receive and manage new calls for service.
+  - number: 2
+    name: active-incidents
+    purpose: Maintain active incident context.
+  - number: 3
+    name: map-and-resources
+    purpose: Present authorized map and live resource state.
+bindings:
+  - chord: Super+1
+    action: focus-workspace-1
+    authorization_effect: none
+    visible_alternative: workspace-selector
+  - chord: Super+3
+    action: focus-workspace-3
+    authorization_effect: none
+    visible_alternative: workspace-selector
+owner: replace-with-owner
+approval_state: proposed

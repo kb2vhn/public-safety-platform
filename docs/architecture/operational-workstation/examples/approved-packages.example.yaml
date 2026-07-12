@@ -1,0 +1,26 @@
+# Non-production example. Do not deploy unchanged.
+schema_version: 1
+manifest_id: workstation-packages-example
+release_id: replace-with-approved-release
+packages:
+  - name: openssh
+    version: replace-with-pinned-version
+    source_repository: replace-with-internal-repository-snapshot
+    checksum: replace-with-package-integrity-reference
+    inclusion: explicit
+    classification: runtime-management
+    purpose: Secure remote-management transport from approved management systems.
+    required_by:
+      - remote-management-model
+      - declarative-configuration-transport
+    optional_features_enabled: []
+    introduced_services:
+      - sshd.service
+    network_requirements:
+      - workstation-ssh-management-inbound
+    privileges:
+      - privileged-system-service
+    owner: replace-with-owner
+    approval_state: proposed
+    last_reviewed: YYYY-MM-DD
+    removal_impact: Remote management and configuration transport unavailable.

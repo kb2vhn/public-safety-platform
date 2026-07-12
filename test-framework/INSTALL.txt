@@ -1,0 +1,447 @@
+Public Safety Platform Foundation SQL Test Framework
+=====================================================
+
+Purpose
+-------
+
+This directory is intentionally self-contained beneath:
+
+    test-framework/
+
+Do not copy its files into the repository root or move its SQL files into the
+live migration tree.
+
+The framework reads the deployable Foundation migrations from:
+
+    sql/schema/
+
+It keeps test-only SQL, runner files, logs, and summaries beneath:
+
+    test-framework/
+
+Directory Relationship
+----------------------
+
+Live Foundation SQL:
+
+    sql/schema/manifests/foundation.manifest
+    sql/schema/migrations/foundation/
+
+Test framework:
+
+    test-framework/INSTALL.txt
+    test-framework/Makefile
+    test-framework/sql/schema/scripts/test_foundation.sh
+    test-framework/sql/tests/foundation-tests.manifest
+    test-framework/sql/tests/foundation-concurrency-tests.manifest
+    test-framework/sql/tests/foundation/
+    test-framework/sql/tests/concurrency/
+    test-framework/sql/test-results/
+
+The test-only sql_test schema is created only inside a disposable test
+database. It is not part of the live Foundation migration manifest.
+
+Primary Execution Path
+----------------------
+
+The Bash runner is the primary and authoritative execution path.
+
+From the repository root:
+
+    ./test-framework/sql/schema/scripts/test_foundation.sh
+
+From inside test-framework:
+
+    ./sql/schema/scripts/test_foundation.sh
+
+GNU make is optional. The Makefile is only a convenience wrapper around the
+same Bash runner.
+
+Initial Setup
+-------------
+
+From the repository root:
+
+    chmod +x \
+        test-framework/sql/schema/scripts/test_foundation.sh \
+        test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
+
+Required Software
+-----------------
+
+The direct Bash runner requires:
+
+    PostgreSQL 18 or newer
+    Bash 4 or newer
+    PostgreSQL client tools
+    GNU awk
+    GNU core utilities
+    GNU grep
+    GNU sed
+
+The runner directly checks for all of these commands before creating a
+results directory, log file, temporary file, or disposable database:
+
+    awk
+    basename
+    createdb
+    date
+    dirname
+    dropdb
+    grep
+    ln
+    mkdir
+    mktemp
+    psql
+    rm
+    sed
+    sha256sum
+    sleep
+    tee
+
+When one or more commands are absent, the runner reports every missing
+command together, identifies the Arch Linux package that provides it, prints
+one package-install command, and exits before beginning the test run.
+
+Minimal Arch Linux Installation
+-------------------------------
+
+The required direct-runner packages are:
+
+    bash
+    postgresql-libs
+    gawk
+    coreutils
+    grep
+    sed
+
+Install them with:
+
+    sudo pacman -S --needed \
+        bash \
+        postgresql-libs \
+        gawk \
+        coreutils \
+        grep \
+        sed
+
+When operating as root without sudo:
+
+    pacman -S --needed \
+        bash \
+        postgresql-libs \
+        gawk \
+        coreutils \
+        grep \
+        sed
+
+Package responsibilities:
+
+    bash
+        Runs the test framework and provides associative arrays, traps,
+        process substitution, and strict shell behavior.
+
+    postgresql-libs
+        Provides psql, createdb, and dropdb.
+
+    gawk
+        Provides awk.
+
+    coreutils
+        Provides basename, date, dirname, ln, mkdir, mktemp, rm,
+        sha256sum, sleep, and tee.
+
+    grep
+        Provides grep.
+
+    sed
+        Provides sed.
+
+GNU make is not required.
+
+Optional Makefile Convenience
+-----------------------------
+
+Developers who prefer the Makefile wrapper may install make:
+
+    sudo pacman -S --needed make
+
+From test-framework:
+
+    make test-sql
+
+Keep a successful database:
+
+    make test-sql-keep
+
+Drop a failed database:
+
+    make test-sql-drop-failed
+
+From the repository root:
+
+    make -C test-framework test-sql
+
+These commands call the same Bash runner and do not add test behavior.
+
+PostgreSQL Requirements
+-----------------------
+
+Before creating a log or disposable database, the runner verifies:
+
+    The maintenance database is reachable.
+    The connected PostgreSQL server is version 18 or newer.
+    The connected role has CREATEDB or SUPERUSER.
+    The selected disposable database name is safe.
+    The selected disposable database does not already exist.
+
+The PostgreSQL role used to run the framework must be allowed to:
+
+    Connect to the maintenance database.
+    Create a disposable database.
+    Drop the disposable database it creates.
+    Create the schemas, extensions, tables, indexes, constraints,
+    functions, and views required by the Foundation migrations.
+
+The PostgreSQL server may run locally or on another reachable host.
+Installing postgresql-libs installs the required client commands; it does
+not require the PostgreSQL server to run on the same system.
+
+PostgreSQL Connection Settings
+------------------------------
+
+The runner uses normal libpq environment variables:
+
+    PGHOST
+    PGPORT
+    PGUSER
+    PGPASSWORD
+    PGSSLMODE
+
+Example:
+
+    export PGHOST=127.0.0.1
+    export PGPORT=5432
+    export PGUSER=jwood
+
+The maintenance database defaults to:
+
+    postgres
+
+Override it with:
+
+    export PGMAINTENANCE_DB=postgres
+
+An optional test database name may be supplied with:
+
+    export TEST_DATABASE_NAME=psp_foundation_test_manual
+
+For safety, a supplied database name must:
+
+    Begin with psp_foundation_test_
+    Contain only letters, numbers, and underscores
+    Fit within PostgreSQL's 63-byte identifier limit
+
+Run the Framework
+-----------------
+
+Normal run from the repository root:
+
+    ./test-framework/sql/schema/scripts/test_foundation.sh
+
+A successful disposable database is dropped.
+
+A failed disposable database is retained for investigation.
+
+Show all runner options:
+
+    ./test-framework/sql/schema/scripts/test_foundation.sh --help
+
+Keep a successful test database:
+
+    ./test-framework/sql/schema/scripts/test_foundation.sh \
+        --keep-database
+
+Environment-variable equivalent:
+
+    KEEP_TEST_DB=1 \
+    ./test-framework/sql/schema/scripts/test_foundation.sh
+
+Drop a failed test database:
+
+    ./test-framework/sql/schema/scripts/test_foundation.sh \
+        --drop-on-failure
+
+Environment-variable equivalent:
+
+    DROP_TEST_DB_ON_FAILURE=1 \
+    ./test-framework/sql/schema/scripts/test_foundation.sh
+
+Write results beneath another directory:
+
+    ./test-framework/sql/schema/scripts/test_foundation.sh \
+        --results-dir /path/to/results
+
+What the Runner Does
+--------------------
+
+The runner:
+
+    1. Parses and validates its options using Bash built-ins.
+    2. Checks Bash compatibility.
+    3. Checks every required command and reports all missing dependencies.
+    4. Resolves the repository and test-framework paths.
+    5. Verifies the live manifest, sequential-test manifest,
+       concurrency-test manifest, test paths, and assertion framework.
+    6. Verifies PostgreSQL connectivity, version, and role privilege.
+    7. Verifies the disposable database name and confirms it does not exist.
+    8. Creates the results directory and timestamped log.
+    9. Creates a uniquely named disposable database from template0.
+   10. Reads the live Foundation manifest.
+   11. Validates migration paths and rejects duplicate entries.
+   12. Calculates the SHA-256 digest of every migration file.
+   13. Applies every live Foundation migration in manifest order.
+   14. Installs the test-only sql_test assertion framework.
+   15. Loads expected migration names, paths, positions, and digests.
+   16. Reads and validates the Foundation sequential-test manifest.
+   17. Runs every listed Foundation sequential SQL test.
+   18. Reads and validates the Foundation concurrency-test manifest.
+   19. Runs every listed concurrency test against the same disposable database.
+   20. Records sequential and concurrency outcomes in sql_test.results.
+   21. Writes a complete result inventory.
+   22. Writes a compact text summary, including sequential and concurrency
+       test-file counts.
+   23. Evaluates the final pass or fail result.
+   24. Drops a successful database unless retention was requested.
+   25. Retains a failed database by default.
+
+Concurrency Test Behavior
+-------------------------
+
+Concurrency tests are listed in:
+
+    test-framework/sql/tests/foundation-concurrency-tests.manifest
+
+The current Authentication Assertion test uses independent `psql` processes
+and a PostgreSQL advisory-lock barrier. It proves that two eligible consumers
+cannot both consume the same verified assertion.
+
+The normal runner fails unless:
+
+    ready workers:       2
+    successful workers:  1
+    denied workers:      1
+    unexpected outcomes: 0
+    final status:        CONSUMED
+    consumed timestamps: 1
+
+No package beyond the direct-runner dependency set is required.
+
+Output Files
+------------
+
+Results are written beneath:
+
+    test-framework/sql/test-results/
+
+Timestamped files:
+
+    foundation_YYYYMMDD_HHMMSS_PID.log
+    foundation_YYYYMMDD_HHMMSS_PID-summary.txt
+
+Convenience links for the newest run:
+
+    latest.log
+    latest-summary.txt
+
+The full log contains:
+
+    Dependency and path resolution
+    PostgreSQL version and connected role
+    Migration execution
+    PostgreSQL errors and notices
+    Assertion results
+    Warnings
+    Catalog inventories
+    Final pass or fail evaluation
+    Retained database information when applicable
+
+The summary contains:
+
+    Overall result
+    Runner exit status
+    Database name
+    Result totals
+    Failed assertions
+    Warnings
+    Manifest and migration-registry totals
+    Sequential and concurrency test-file counts
+
+Review or Upload the Result
+---------------------------
+
+For a normal review, open or upload:
+
+    test-framework/sql/test-results/latest.log
+
+For a compact overview, open or upload:
+
+    test-framework/sql/test-results/latest-summary.txt
+
+Database Retention Behavior
+---------------------------
+
+Successful run:
+
+    The disposable database is dropped by default.
+
+Failed run:
+
+    The disposable database is retained by default so it can be inspected
+    with psql or pgAdmin.
+
+The exact database name is printed in the log.
+
+Inspect a retained database:
+
+    psql --dbname=DATABASE_NAME
+
+Remove it manually:
+
+    dropdb --maintenance-db=postgres DATABASE_NAME
+
+Expected Notices
+----------------
+
+Migration 099 may report notices similar to:
+
+    NOTICE: view "..." does not exist, skipping
+
+These notices are expected on a clean database when DROP VIEW IF EXISTS is
+used. They are not test failures.
+
+Troubleshooting
+---------------
+
+Check runner syntax without creating a database:
+
+    bash -n test-framework/sql/schema/scripts/test_foundation.sh
+    bash -n \
+        test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
+
+Display runner help:
+
+    ./test-framework/sql/schema/scripts/test_foundation.sh --help
+
+Verify the installed PostgreSQL client:
+
+    psql --version
+
+Test the maintenance-database connection:
+
+    psql --dbname="${PGMAINTENANCE_DB:-postgres}" \
+        --command='SELECT version(), current_user;'
+
+The framework must remain at test-framework so its relative path
+resolution matches the repository layout.
+

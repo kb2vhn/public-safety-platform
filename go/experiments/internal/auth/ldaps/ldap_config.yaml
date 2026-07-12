@@ -1,0 +1,7 @@
+server: 
+  fqdn: dc.somedomain.local
+  port: 636
+  baseDN: dc=somedomain,dc=local
+  caCert: localDomainCA.pem
+  saUPN: sa_PSP@somedomain.local
+  bindPassword: "NuJhdEtBaEE5ir5gZBflD/LzEDfyoPZ3N8uPX5TXzd7D60IcYvDI1lJc/XQ2T2yYYd3oIJs="
