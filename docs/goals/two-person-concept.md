@@ -1,71 +1,105 @@
+
 # Two-Person Concept
 
 ## Goal
 
-No single compromised identity, account, device, administrator, or service should be able to obtain unrestricted platform authority or silently approve its own material escalation.
+No single compromised identity, account, device, administrator, or service
+should be able to obtain unrestricted platform authority or silently approve
+its own material escalation.
 
-The two-person concept is a separation-of-duties goal. It does not mean every routine action requires two people.
+The two-person concept is a separation-of-duties goal. It does not mean every
+routine action requires two people.
 
-## Application
+## Policy-Driven Application
 
-Dual authorization is appropriate when an action could materially affect:
+Independent approval is appropriate when an action could materially affect:
 
-- Privileged access,
-- Cross-organization access,
-- Sensitive data disclosure,
-- Security policy,
-- Emergency authority,
-- Evidence or record integrity,
-- Risk acceptance,
-- Compliance exceptions,
-- Destructive administration,
-- Recovery or break-glass procedures.
+- Privileged access
+- Cross-organization access
+- Sensitive data disclosure
+- Security policy
+- Emergency authority
+- Module-owned evidence or record integrity
+- Risk acceptance
+- Compliance exceptions
+- Destructive administration
+- Recovery or break-glass procedures
 
-The governing policy determines which actions require independent approval.
+The governing policy determines the required stages, number of actors,
+authority, independence dimensions, and duration.
 
-## Independence Requirements
+## More Than Two Clicks
 
-A valid two-person control requires more than two recorded clicks.
+A valid two-person control requires more than two recorded actions.
 
-The requester and approver must be independently eligible for their roles. The platform must evaluate:
+The platform evaluates:
 
-- Distinct identities,
-- Distinct effective authority where required,
-- Current employment and organizational eligibility,
-- Current session and device trust,
-- Conflicts of interest,
-- Delegation limits,
-- Approval scope,
-- Approval expiration,
-- Self-approval and circular-approval prevention.
+- Distinct effective identities
+- Requester independence
+- Directly affected identity independence
+- Current identity and organizational eligibility
+- Current session and device trust when required
+- Exact Authority Grants
+- Delegation lineage
+- Distinct organization when required
+- Duplicate effective actor
+- Explicit reciprocal approval cycles
+- Incompatible authority
+- Separation of duties
+- Approval scope
+- Approval expiration
+- Withdrawal, correction, and supersession
+
+Different accounts, sessions, devices, roles, organizations, or delegated
+grants do not make one identity count as two people.
 
 ## Record Requirements
 
-A material approval must retain:
+A material approval chain retains exact record types:
 
-- The request,
-- The governing policy version,
-- Required approval conditions,
-- Each approval or denial,
-- Actor and organization context,
-- Relevant trust and session context,
-- Timestamps and expiration,
-- The final decision,
-- Any subsequent revocation, supersession, or exception.
+- Approval Request
+- Governing Approval Policy Version
+- Required Approval Policy Stages
+- Approval Action Records
+- Approval stage-evaluation records
+- Acting identity, organization, session, and Authority Grant context
+- Requester and directly affected identity context
+- Correlation and approval-chain identifiers
+- Timestamps and expiration
+- Final Approval Request status
+- Linked Decision Record
+- Later withdrawal, correction, supersession, revocation, or exception records
+
+Approval Action Records are append-only through the controlled write boundary.
+Append-only semantics apply to Approval Action Records. Evidence may instead
+refer to a legal, assurance, records-management, or module concept.
 
 ## Failure Behavior
 
-Missing, expired, revoked, conflicting, or not-evaluated required approval must fail closed.
+Missing, expired, revoked, conflicting, duplicate, non-independent, or
+not-evaluated required conditions fail closed.
 
-Emergency authority must be explicit, narrowly scoped, time-limited, recorded, and reviewed. It must not become a permanent bypass.
+An Approval Request cannot finalize as approved when a required stage is
+unsatisfied.
+
+## Emergency Authority
+
+Emergency authority must be explicit, narrowly scoped, time-limited,
+attributable, and reviewed.
+
+It must not become a permanent bypass.
+
+Emergency policy may change the required approval path, but it does not erase
+request, actor, authority, decision, or lifecycle records.
 
 ## Normative Models
 
-This goal is implemented architecturally through:
-
+- [Approval Independence and Separation of Duties Model](../architecture/foundation/approval-independence-and-separation-of-duties-model.md)
 - [Approval Framework](../architecture/foundation/approval-framework.md)
 - [Authority and Authorization](../architecture/foundation/authority-and-authorization-model.md)
-- [Authentication and Authorization Evaluation](../architecture/foundation/authentication-and-authorization-evaluation-model.md)
+- [Authorization Evaluation Contract](../architecture/foundation/authorization-evaluation-contract.md)
 - [Decision Record Repository](../architecture/foundation/decision-record-repository.md)
 
-SQL migrations `050`, `055`, `070`, `075`, and `080` provide the initial structural implementation.
+Migrations `050` and `055` provide the initial structural implementation.
+Phase 4 plans migration `083` for the controlled independence and
+separation-of-duties boundary.

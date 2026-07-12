@@ -133,7 +133,7 @@ Client clocks are never authoritative.
 
 ### 4.7 Explanation Is Part of the Result
 
-An `ALLOW` without its required stage records and supporting evidence is
+An `ALLOW` without its required stage records and supporting records is
 invalid.
 
 A normal policy denial must remain persistable and explainable. It must not be
@@ -405,7 +405,7 @@ When approval is required:
   it.
 - The requester, approver, issuer, and executor separation rules must be
   enforced where configured.
-- Revoked, superseded, withdrawn, or denied approval evidence cannot satisfy
+- Revoked, superseded, withdrawn, or denied withdrawn or superseded Approval Action Records cannot satisfy
   the request.
 
 Approval mismatch denies issuance. It does not silently create a new Approval
@@ -616,9 +616,9 @@ transaction:
 7. Evaluate purpose, operation, target, scope, and classification.
 8. Evaluate the complete effective Authority Grant set.
 9. Evaluate incompatibilities and separation of duties.
-10. Evaluate required approval evidence.
+10. Evaluate required Approval Action Records and approval-stage supporting records.
 11. Evaluate risk and security restrictions owned by PostgreSQL.
-12. Record every required evaluation result and supporting evidence.
+12. Record every required evaluation result and supporting-record reference.
 13. Finalize the Decision Record once.
 14. When the result is `ALLOW`, calculate the maximum permitted lease bounds.
 15. Insert exactly one context-bound lease linked to the Decision Record.
@@ -811,7 +811,7 @@ privileges on:
 - Evaluation records
 - Supporting-record links
 - Authorization Leases
-- Lease-to-authority evidence
+- Lease-to-Authority Grant records
 - Decision finalization state
 - Lease usage state
 
@@ -1039,7 +1039,7 @@ test-framework/sql/tests/foundation/
 
 Step 5 proves that issuance and use fail closed when current session, identity,
 device, Trust Provider, Platform Service, selected policy, required supporting
-evidence, or required authority is no longer valid. Required authority must
+records, or required authority is no longer valid. Required authority must
 remain linked to the issuing Decision Record through a current PASS evaluation
 and required supporting record. A missing link or authority retargeted to a
 different identity invalidates the lease.

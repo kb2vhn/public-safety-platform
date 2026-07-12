@@ -413,3 +413,79 @@ docs/architecture/foundation/phase-3-authorization-decision-and-controlled-lease
 A later documentation commit may descend from the accepted tag, but the
 SQL and test tree must remain identical to the tag unless Phase 3 is
 revalidated.
+
+
+## Phase 4 Approval Independence and Separation of Duties
+
+### Step 1 Contract Freeze
+
+Phase 4 Step 1 changes no production SQL, migration manifest, or SQL test file.
+
+The governing contract is:
+
+```text
+docs/architecture/foundation/approval-independence-and-separation-of-duties-model.md
+```
+
+The accepted Phase 3 SQL and test tree remains authoritative at:
+
+```text
+phase-3-authorization-control-complete-v1
+```
+
+The Step 1 gate verifies that `sql/schema` and `test-framework/sql` remain
+identical to that tag and reruns the complete accepted Foundation suite.
+
+### Planned Step 2 Migration
+
+The planned implementation migration is:
+
+```text
+083_postgresql_approval_independence_and_separation_of_duties.sql
+```
+
+Planned order:
+
+```text
+081_postgresql_authorization_decision_and_lease_issuance.sql
+082_data_classification_and_governance.sql
+083_postgresql_approval_independence_and_separation_of_duties.sql
+084_lifecycle_and_historical_lineage.sql
+```
+
+Migration `083` will extend the existing objects created by migrations `050`
+and `055`. It must not create a second approval framework.
+
+Planned capabilities include:
+
+- Typed directly affected identity context
+- Approval-chain and request-dependency linkage
+- Typed stage Authority Definition requirements
+- Exact Approval Action Record to Authority Grant linkage
+- Acting session and organization linkage
+- Action lineage for withdrawal, correction, and supersession
+- Policy-driven independence rules
+- Incompatible-authority enforcement modes
+- Separation-of-duties duties and prohibited combinations
+- Persisted stage-evaluation records
+- Finalization-once Approval Requests
+- Controlled action-recording and finalization routines
+
+The first planned structural test is:
+
+```text
+test-framework/sql/tests/foundation/
+170_approval_independence_and_separation_of_duties_structure.sql
+```
+
+The manifest and test counts remain unchanged during Step 1:
+
+```text
+33 manifest migrations
+33 registered migrations
+16 sequential test files
+9 concurrency test files
+408 PASS
+0 FAIL
+3 understood WARN
+```

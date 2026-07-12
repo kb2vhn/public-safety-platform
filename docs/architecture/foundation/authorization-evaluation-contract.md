@@ -7,14 +7,15 @@
 > **Accepted implementation boundary:** Phase 3 — Authorization Decision
 > and Controlled Lease Issuance.
 >
+> **Active architecture phase:** Phase 4 — Approval Independence and
+> Separation of Duties.
+>
 > **Implementation status:** This document defines the wider authorization
-> contract that migrations `050–081` and their behavioral tests must implement.
-> The Phase 1 Authentication Assertion and Phase 2 session-control boundaries
-> are implemented, accepted, and tagged. Phase 3 decision finalization and
-> controlled lease issuance are also implemented, accepted, and tagged. The
-> wider
-> authorization contract remains incomplete. Structural presence does not
-> imply complete enforcement.
+> contract implemented incrementally by migrations `050–081` and their
+> behavioral tests. Phases 1, 2, and 3 are accepted and tagged. Phase 4
+> Step 1 freezes approval-independence and separation-of-duties requirements
+> before migration `083` or new SQL tests are added. Structural presence does
+> not imply complete enforcement.
 
 ## Primary Rule
 
@@ -44,12 +45,17 @@ time context.
     database error.
 12. An unexpected integrity, serialization, or infrastructure failure is a
     system error and is not silently converted into a policy denial.
-13. Material authorization history is append-oriented.
-14. Authorization-critical fields use explicit typed columns and parameters.
-15. Supplemental JSON must not replace required typed context.
-16. No runtime identity receives direct unrestricted access to protected
+13. Record types explicitly designated by their governing contracts retain
+    append-oriented history. Approval Action Records are append-only through
+    the controlled write boundary.
+14. The unqualified term “evidence” is avoided when a specific record type,
+    supporting record, assurance artifact, or module-owned evidence record is
+    known.
+15. Authorization-critical fields use explicit typed columns and parameters.
+16. Supplemental JSON must not replace required typed context.
+17. No runtime identity receives direct unrestricted access to protected
     tables.
-17. No single credential, device, session, role, approval, network location,
+18. No single credential, device, session, role, approval, network location,
     or lease secret grants unrestricted platform authority.
 
 ## Decision Classes
@@ -116,6 +122,7 @@ correlation_id
 decision_class
 requester_identity_id
 requester_organization_id
+directly_affected_identity_id
 session_id
 device_id
 authentication_assertion_id
@@ -399,28 +406,62 @@ A required stage returning `FAIL` or `NOT_EVALUATED` denies the request.
 
 ## Approval Contract
 
+The governing Phase 4 contract is:
+
+- [Approval Independence and Separation of Duties Model](approval-independence-and-separation-of-duties-model.md)
+
 An Approval Request binds:
 
 - Requester identity
 - Requester organization
 - Requester session
+- Directly affected identity when applicable
 - Platform Service
 - Governed Purpose
 - Governed Operation
 - Protected Resource Target
 - Governed Scope
 - Data Classification
-- Approval policy version
-- Expiration
+- Approval Policy Version
 - Correlation identifier
+- Approval-chain identifier
+- Expiration
+- Finalization state
 
-Self-approval is prohibited unless the exact active policy version explicitly
-allows it.
+An Approval Action Record binds:
+
+- Exact Approval Request
+- Exact Approval Policy Stage
+- Acting identity
+- Acting organization
+- Acting session when required
+- Exact Authority Grant
+- Action type
+- Authoritative action time
+- Correlation and approval-chain context
+- Prior action when withdrawing, correcting, or superseding
+- Stable reason code
+
+Approval Action Records are append-only through the controlled write boundary.
+Withdrawal, correction, and supersession create new records.
+
+Eligibility and independence are separate evaluations.
+
+Self-approval is prohibited by default. Approval by the directly affected
+identity is separately prohibited when the policy requires that independence.
 
 Multiple actions by the same effective actor do not satisfy multiple
-independent-approval requirements.
+independent-approval requirements. Different sessions, accounts, devices,
+organizations, roles, or grants do not make one identity distinct.
 
-Approval history is append-oriented.
+A stage is satisfied only when its required current actions are eligible,
+applicable, independent, context-matched, and free from blocking denial,
+incompatible-authority, circular-approval, and separation-of-duties results.
+
+A raw count of `APPROVE` rows is insufficient.
+
+An Approval Request finalizes once. A caller cannot select a final status that
+disagrees with database evaluation.
 
 ## Authority Contract
 
@@ -434,11 +475,32 @@ An Authority Grant is applicable only when its explicit context matches:
 - Protected Resource Target
 - Governed Scope
 - Effective time
+- Delegation lineage
+- Governing policy
 
-Role or grant accumulation must not bypass separation of duties.
+Holding an Authority Grant and exercising it are distinct facts.
+
+A counted Approval Action Record references the exact current Authority Grant
+used by the actor. A free-form authority description does not prove current
+authority.
 
 Delegated authority must be explicit, attributable, time-bounded, revocable,
-and no broader than the delegator’s current authority.
+no broader than the delegator's current authority, and linked to its parent
+grant.
+
+Incompatible Authority Sets may prohibit:
+
+```text
+JOINT_EXERCISE
+CONCURRENT_HOLDING
+CHAIN_PARTICIPATION
+```
+
+Separation of duties evaluates duties actually exercised in the exact request,
+approval, authorization, and execution chain.
+
+Role, group, organization, or grant accumulation must not bypass authority,
+independence, incompatible-authority, or separation-of-duties requirements.
 
 ## Authorization Lease Contract
 
@@ -598,12 +660,25 @@ systems.
 
 ## Concurrency Contract
 
+Accepted invariants:
+
 - Exactly one transaction may consume a verified Authentication Assertion.
-  This invariant is implemented and has an accepted two-connection proof.
 - Exactly one concurrent operation may consume a `SINGLE_USE` lease.
 - A `LIMITED_USE` lease cannot exceed its usage limit.
-- Duplicate effective approval by one actor does not count twice.
 - A Decision Record finalizes once.
+
+Phase 4 required invariants:
+
+- Duplicate simultaneous actions by one effective actor cannot count twice.
+- Two workers cannot create duplicate current effective approval for one actor
+  and stage.
+- An Approval Request finalizes once.
+- Finalization racing the last required approval cannot produce an approved
+  request with an unsatisfied stage.
+- Withdrawal racing finalization produces one valid serializable outcome.
+- Authority revocation racing finalization cannot leave an approved request
+  relying on a non-current grant.
+- Explicit reciprocal approvals cannot both satisfy a prohibited cycle.
 - Serialization and deadlock failures are system retry conditions, not policy
   denials.
 
@@ -642,7 +717,7 @@ the structural regression test
 Step 2 establishes typed policy applicability, exact policy-stage mapping,
 lease-request fields, one issuing-decision/one issued-lease cardinality, core
 decision-to-lease context binding, lease chronology and terminal-state shape,
-and attributable authority and use evidence. Controlled finalization,
+and attributable authority and use records. Controlled finalization,
 issuance, verification, and consumption remain later Phase 3 steps.
 
 ## Phase 3 Step 3 Controlled Decision Finalization
@@ -657,14 +732,14 @@ decision.finalize_decision(uuid, text, text)
 ```
 
 The authoritative finalizer accepts only a Decision Record identifier and
-computes the result from persisted policy and evaluation evidence. The
+computes the result from persisted policy and evaluation records. The
 three-argument compatibility wrapper rejects caller-supplied values that do
 not exactly match the computed result.
 
 Missing, ambiguous, and expected-policy mismatch are persisted as terminal
 denials. Every policy stage must have one evaluation, required `FAIL` and
 `NOT_EVALUATED` deny, `NOT_REQUIRED` must match the selected policy rule, and
-configured supporting evidence must exist before `ALLOW`.
+configured supporting records must exist before `ALLOW`.
 
 ## Phase 3 Step 4 Controlled Lease Boundary
 
@@ -685,7 +760,7 @@ access_control.revoke_lease(uuid, text)
 ```
 
 Plaintext lease secrets are never stored. Issuance and use revalidate the
-selected policy, required supporting evidence, linked authority, current
+selected policy, required supporting records, linked authority, current
 session, and locally owned trust state. One lease has one issuing or renewing
 Decision Record, while a reusable lease may support multiple separately
 attributable protected-operation Decision Records. Consumption requires the
@@ -698,7 +773,7 @@ same transaction. Concurrency proof remains a later Phase 3 gate.
 Step 5 expands the controlled lease boundary with sequential negative-path
 proof. Lease issuance and use must fail closed when the current session,
 identity, device, Trust Provider, Platform Service, selected policy, required
-supporting evidence, or linked authority is no longer valid.
+supporting records, or linked authority is no longer valid.
 
 When an `AUTHORITY` stage is required, usability requires at least one current
 authority linkage that remains bound to the issuing Decision Record, its PASS
@@ -731,3 +806,44 @@ The accepted Step 6 result is 33 migrations, 16 sequential tests,
 9 concurrency tests, 408 PASS, 0 FAIL, and 3 understood WARN results.
 Formal acceptance is recorded in [phase-3-authorization-decision-and-controlled-lease-acceptance.md](phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 and tagged as `phase-3-authorization-control-complete-v1`.
+
+
+## Phase 4 Approval Independence and Separation-of-Duties Boundary
+
+The normative Phase 4 contract is:
+
+- [Approval Independence and Separation of Duties Model](approval-independence-and-separation-of-duties-model.md)
+
+Phase 4 Step 1 changes no production SQL, migration manifest, or SQL test file.
+
+The planned migration is:
+
+```text
+083_postgresql_approval_independence_and_separation_of_duties.sql
+```
+
+It will extend migrations `050` and `055` after the accepted Phase 3 boundary.
+
+The planned boundary requires:
+
+- Controlled Approval Action recording
+- Exact acting identity, organization, session, and Authority Grant binding
+- Effective actor uniqueness
+- Typed requester and directly affected identity context
+- Self-approval prevention
+- Duplicate approval prevention
+- Policy-driven organization and authority-origin independence
+- Explicit reciprocal approval-cycle checks
+- Incompatible-authority enforcement modes
+- Duties and prohibited duty combinations
+- Current stage satisfaction
+- Finalization-once Approval Requests
+- Append-only Approval Action Records through the controlled write boundary
+- Withdrawal, correction, and supersession through new records
+- Exact Decision Record integration
+- Independent-connection concurrency proofs
+- Preservation of every accepted Phase 1, Phase 2, and Phase 3 invariant
+
+Phase 4 Step 2 may add migration `083` and the structural test
+`170_approval_independence_and_separation_of_duties_structure.sql` only after
+the Step 1 contract gate passes completely.

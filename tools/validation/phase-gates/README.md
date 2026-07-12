@@ -1,3 +1,4 @@
+
 # Phase Gates
 
 > **Owner:** Iron Signal Systems
@@ -17,9 +18,16 @@ validate_phase3_step4.sh
 validate_phase3_step5.sh
 validate_phase3_step6.sh
 validate_phase3_step7.sh
+validate_phase4_step1.sh
 ```
 
 Historical gates validate their own checkpoint trees and are not expected to
-accept later-phase files. Step 6 validates the accepted implementation. Step 7
-validates the formal Phase 3 acceptance record and proves that its SQL and
-test tree remains identical to the annotated acceptance tag.
+accept later-phase documentation.
+
+- Step 6 validates the accepted Phase 3 implementation.
+- Step 7 validates the formal Phase 3 acceptance record.
+- Phase 4 Step 1 validates the new approval-independence and
+  separation-of-duties contract while proving that the accepted Phase 3 SQL and
+  test tree has not changed.
+
+Run the newest gate for the current repository state.

@@ -6,8 +6,8 @@
 > controls are database-enforced and tested; structural presence does not imply
 > complete runtime, deployment, or operational enforcement.
 >
-> **Current status:** Phase 3 accepted; next Foundation contract not yet
-> frozen.
+> **Current status:** Phase 4 Step 1 — approval-independence and
+> separation-of-duties contract freeze.
 
 ## Purpose
 
@@ -33,9 +33,9 @@ accounts, or other module-owned business records.
    grant access.
 3. Authentication establishes identity context; authorization establishes
    bounded authority.
-4. Future Go services will gather evidence and coordinate workflows;
-   PostgreSQL will independently verify selected protected operations and
-   controlled state transitions.
+4. Future Go services will collect typed supporting records, coordinate
+   workflows, and call controlled APIs; PostgreSQL will independently
+   verify selected protected operations and controlled state transitions.
 5. No ordinary identity, application account, administrator, or accumulated
    role set may provide unrestricted platform authority.
 6. Required decision stages fail closed on `FAIL` or `NOT_EVALUATED`.
@@ -138,7 +138,7 @@ Accepted evidence:
 ```
 
 Phase 3 established deterministic Authorization Policy Version selection,
-controlled policy binding, required-stage closure, supporting-evidence
+controlled policy binding, required-stage closure, supporting-record
 enforcement, finalization-once Decision Records, controlled Authorization
 Lease issuance, exact-context verification and use, fail-closed current
 state revalidation, and independent-connection concurrency proofs.
@@ -146,7 +146,6 @@ state revalidation, and independent-connection concurrency proofs.
 See:
 
 - [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md)
-- [Phase 3 Authorization Decision and Controlled Lease Acceptance](phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 - [Authorization Evaluation Contract](authorization-evaluation-contract.md)
 - [Phase 3 Authorization Decision and Controlled Lease Acceptance](phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 
@@ -154,20 +153,53 @@ The formal acceptance record was committed after the annotated tag. The tag
 identifies the exact accepted SQL and test tree; later documentation commits
 must not alter that accepted implementation without Phase 3 revalidation.
 
-## Next Foundation Contract
 
-The next phase must freeze its own normative scope before production SQL
-changes. Leading remaining authorization and integrity work includes:
+## Current Phase 4 Boundary
 
-- Complete approval independence
+Phase 4 is:
+
+```text
+Approval Independence and Separation of Duties
+```
+
+Step 1 freezes the normative contract before SQL or test changes.
+
+Governing contract:
+
+- [Approval Independence and Separation of Duties Model](approval-independence-and-separation-of-duties-model.md)
+
+The contract extends the existing approval and authority structures with
+requirements for:
+
+- Approval Action Record terminology
+- Effective actor uniqueness
+- Typed directly affected identity context
 - Self-approval prevention
-- Incompatible-authority evaluation
-- Separation-of-duties enforcement
-- Decision Record cryptographic integrity
-- Append-only mutation protection
-- Migration-checksum population and enforcement
-- Final production ownership and login-role topology
-- Least-privileged runtime grants
+- Duplicate approval prevention
+- Distinct organization when policy requires it
+- Authority-origin independence
+- Explicit reciprocal approval-cycle checks
+- Exact Approval Action to Authority Grant binding
+- Incompatible-authority enforcement modes
+- Separation-of-duties duties and prohibited combinations
+- Current stage satisfaction
+- Finalization-once Approval Requests
+- Withdrawal, correction, and supersession through new action records
+- Decision Record integration
+- Independent-connection concurrency proofs
+
+Step 1 changes no SQL, manifest, or SQL test file.
+
+Planned Step 2 migration:
+
+```text
+083_postgresql_approval_independence_and_separation_of_duties.sql
+```
+
+The term “evidence” is not used as a substitute for a known record type.
+Active Phase 4 documents distinguish Approval Action Records, supporting
+records, Assurance Artifacts, lifecycle events, and module-owned evidence
+records.
 
 ## Documentation Groups
 
@@ -191,6 +223,7 @@ changes. Leading remaining authorization and integrity work includes:
 
 ### Approval and Authorization
 
+- [Approval Independence and Separation of Duties](approval-independence-and-separation-of-duties-model.md)
 - [Authorization Evaluation Contract](authorization-evaluation-contract.md)
 - [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md)
 - [Approval Framework](approval-framework.md)
@@ -229,9 +262,8 @@ controlled APIs, security inventories, and validation views.
 
 The following remain incomplete until separately implemented and tested:
 
-- Multi-connection Phase 3 lease issuance, consumption, and revocation proofs,
-- Complete approval independence and self-approval enforcement,
-- Complete Authority Grant, approval-independence, and separation-of-duties evaluation,
+- Phase 4 approval-independence and self-approval implementation,
+- Complete Authority Grant, incompatible-authority, and separation-of-duties enforcement,
 - Complete Decision Record cryptographic integrity and later review/supersession controls,
 - Final production ownership and login-role topology,
 - Least-privileged runtime grants and controlled write paths,
