@@ -4,7 +4,7 @@
 >
 > **Phase:** 2 — Session Establishment, Step-Up, and Lifecycle Enforcement
 >
-> **Status:** Normative Phase 2 contract; Steps 2 through 4 validated; Step 5 multi-connection concurrency proofs are an implementation candidate
+> **Status:** Phase 2 accepted; authoritative acceptance record and tag: [phase-2-session-establishment-step-up-and-lifecycle-acceptance.md](phase-2-session-establishment-step-up-and-lifecycle-acceptance.md) / `phase-2-session-control-complete-v1`
 >
 > **Depends on:**
 > [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
@@ -1076,43 +1076,50 @@ search paths, and all accepted Phase 1 and Step 2 regressions.
 
 ### Step 5 — Concurrency tests
 
-Implementation candidates:
+Validated on 2026-07-12 through the normal Foundation clean-install and
+regression path:
 
 ```text
+32 manifest migrations
+32 registered migrations
+12 sequential test files
+4 concurrency test files
+213 PASS
+0 FAIL
+3 understood WARN
+```
+
+Accepted concurrency tests:
+
+```text
+test-framework/sql/tests/concurrency/100_authentication_assertion_single_use.sh
 test-framework/sql/tests/concurrency/110_session_establishment_single_use.sh
 test-framework/sql/tests/concurrency/120_session_step_up_single_use.sh
 test-framework/sql/tests/concurrency/130_session_terminal_transition_race.sh
 ```
 
-The complete concurrency manifest must retain the accepted Phase 1
-Authentication Assertion single-use proof first and then run all three Phase 2
-proofs.
-
-The Step 5 gate requires:
-
-- Two independent session-establishment workers released together, with
-  exactly one session, one consumed assertion, and one `CREATED` event.
-- Two independent step-up workers released together, with exactly one consumed
-  step-up assertion, one current session evidence binding, and one
-  `STEP_UP_COMPLETED` event.
-- Independent revocation and termination workers released together, with
-  exactly one successful terminal transition, one matching terminal timestamp,
-  one matching event, and no mixed terminal state.
-- All prior migrations, sequential tests, and the accepted Phase 1 concurrency
-  proof to remain green.
+These tests prove single-use assertion consumption, single session
+establishment, single step-up completion, and serialization of incompatible
+terminal transitions across independent PostgreSQL connections.
 
 ### Step 6 — Acceptance
 
-- Clean manifest installation,
+Completed by:
+
+- Clean 32-migration installation,
 - Structural validation,
 - Complete normal test run,
-- Zero failed assertions,
+- 213 passes and zero failed assertions,
 - Documentation alignment,
-- Formal acceptance record and tag.
+- Formal acceptance record:
+  [phase-2-session-establishment-step-up-and-lifecycle-acceptance.md](phase-2-session-establishment-step-up-and-lifecycle-acceptance.md),
+- Annotated release tag: `phase-2-session-control-complete-v1`.
+
+Phase 2 is accepted only at the exact commit identified by the annotated tag.
 
 ## 37. Acceptance Gate
 
-Phase 2 is complete only when all of the following are true:
+Phase 2 is accepted at the tagged release only when all of the following are true:
 
 - This contract is committed.
 - The accepted Phase 1 tag remains identifiable.

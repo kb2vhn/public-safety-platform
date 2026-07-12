@@ -164,8 +164,21 @@ test-framework/sql/tests/concurrency/120_session_step_up_single_use.sh
 test-framework/sql/tests/concurrency/130_session_terminal_transition_race.sh
 ```
 
-The authoritative concurrency manifest now contains four tests. Step 6 remains
-responsible for the formal Phase 2 acceptance record and tag.
+The authoritative concurrency manifest contains four tests. The accepted
+Step 5 run completed with 213 passes, zero failures, and three understood
+warnings.
+
+Phase 2 acceptance is recorded in:
+
+```text
+docs/architecture/foundation/phase-2-session-establishment-step-up-and-lifecycle-acceptance.md
+```
+
+The exact accepted repository tree is identified by annotated tag
+`phase-2-session-control-complete-v1`. A later change to migrations `060`, `070`, or `072`; the
+session tables; controlled assertion or session functions; either test
+manifest; the sequential tests; the concurrency tests; or the runner requires
+fresh Phase 2 revalidation.
 
 ### Migration Completion Rule
 
@@ -200,4 +213,5 @@ The Foundation SQL test framework must test the requirements that can be demonst
 - [Platform Boundaries](platform-boundaries.md)
 - [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
 - [Phase 1 Authentication Assertion Acceptance](phase-1-authentication-assertion-acceptance.md)
+- [Phase 2 Session Establishment, Step-Up, and Lifecycle Acceptance](phase-2-session-establishment-step-up-and-lifecycle-acceptance.md)
 - [Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md)
