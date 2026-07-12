@@ -1,23 +1,74 @@
-# Non-production desired-state example.
-schema_version: 1
-baseline_id: operational-workstation-example
-release_id: replace-with-approved-release
-hardware_profile: replace-with-approved-profile
-required_state:
-  secure_boot: required
-  tpm: required
-  full_disk_encryption: required
-  package_manifest: workstation-packages-example
-  network_profile: workstation-network-example
-  workspace_profile: dispatch-workspace-example
-  remote_management_profile: restricted-sshd
-  unrestricted_internet_access: prohibited
-  direct_public_repository_access: prohibited
-verification:
-  interval: replace-with-approved-interval
-  stale_after: replace-with-approved-duration
-  material_drift_action: restrict-and-investigate
-  integrity_failure_action: isolate-and-rebuild
-owner: replace-with-owner
-approval_state: proposed
-last_reviewed: YYYY-MM-DD
+schema_version: "1.0"
+baseline_id: "workstation-baseline-example"
+console_release_id: "console-2026.07.1-example"
+status: "example-only"
+
+hardware:
+  approved_profiles:
+    - "low-cost-two-display-example"
+  tpm_required: true
+
+boot:
+  uefi_required: true
+  secure_boot_required: true
+  measured_boot_required: "evaluate"
+  external_boot_policy: "disabled-except-governed-recovery"
+
+storage:
+  full_disk_encryption_required: true
+  swap_policy: "encrypted"
+  hibernation_allowed: false
+
+operating_system:
+  distribution: "Arch Linux"
+  repository_snapshot: "arch-snapshot-2026-07-12-example"
+  kernel_package: "linux-lts"
+  kernel_version: "EXAMPLE"
+
+packages:
+  manifest_reference: "approved-packages-example"
+  unapproved_packages_allowed: false
+  direct_aur_consumption_allowed: false
+
+services:
+  required_enabled:
+    - "iron-console.target"
+    - "iron-map.socket"
+    - "iron-map.service"
+    - "sshd.service"
+  required_disabled:
+    - "bluetooth.service"
+  unexpected_enabled_service_policy: "trust-blocking-review"
+
+accounts:
+  operator_account:
+    name: "iron-console-operator"
+    sudo_allowed: false
+    ssh_allowed: false
+    shell: "non-interactive"
+  shared_admin_accounts_allowed: false
+
+network:
+  profile_reference: "network-profile-example"
+  default_host_firewall_policy: "deny"
+  unrestricted_internet_allowed: false
+  renderer_remote_access_allowed: false
+
+console:
+  managed_session_required: true
+  workspace_profile: "dispatch-two-display-example"
+  module_profiles:
+    - "map-module-example"
+
+management:
+  ssh_certificate_required: true
+  complete_session_recording_required: true
+  off_host_recording_required: true
+
+trust:
+  evidence_policy_reference: "REPLACE_WITH_POLICY"
+  maximum_unresolved_critical_fault_episodes: 0
+
+recovery:
+  rollback_required: true
+  trusted_rebuild_path_required: true

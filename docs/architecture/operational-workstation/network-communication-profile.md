@@ -1,71 +1,202 @@
 # Network Communication Profile
 
-> **Status:** Draft normative architecture.
+> Status: Normative target architecture.
 >
-> **Implementation status:** Policy model proposed; production endpoints and rules not yet selected.
+> Implementation status: Policy model defined; production endpoints and rules are not yet selected.
 
 ## Purpose
 
-Every Operational Workstation must have a documented and enforceable communication profile. A connection is permitted only because a current workflow or control requires it.
+Every Operational Workstation must have a documented and enforceable communication profile.
+
+A connection is permitted only because a current workflow, dependency, support function, or control requires it.
 
 ## Enforcement model
 
-- Host firewall deny by default.
+- Host firewall denies by default.
 - Upstream network segmentation and access control provide an independent boundary.
-- No unrestricted Internet access during normal production operation.
-- Inbound access is denied except for explicitly approved management paths.
-- Egress to external providers, when unavoidable, uses approved destinations or a controlled egress proxy or gateway.
-- DNS, time, certificate, update, logging, EDR, and management dependencies are included explicitly.
-
-A host firewall may not reliably authorize traffic by arbitrary user-space process identity. The source process remains required governance and telemetry metadata, while enforcement should use stable interfaces, destinations, ports, service identities, proxies, namespaces, or other controls selected by deployment architecture.
+- Normal production operation has no unrestricted Internet access.
+- Inbound access is denied except for approved management and required local paths.
+- External-provider access, where unavoidable, uses approved gateways, proxies, or destination sets.
+- DNS, time, certificate, update, logging, endpoint security, management, and recovery dependencies are explicit.
+- Renderer processes are denied direct remote application-content access.
+- Module services receive only their approved destination profile.
+- Loopback and Unix-domain socket communication are governed, not assumed safe.
 
 ## Communication record
 
-Each path must record:
+Each approved communication declares:
 
-- Stable rule identifier.
-- Source component and executable or service identity.
-- Direction.
-- Source interface or network zone.
-- Destination service and governed address set.
-- Protocol and port.
+- Rule identifier.
+- owning service or module.
+- local identity or systemd unit.
+- direction.
+- protocol.
+- local address and port where relevant.
+- remote service identity.
+- remote address or destination set.
 - DNS dependency.
-- Authentication and encryption.
-- Data classification.
-- Expected frequency, session duration, and bandwidth.
-- Failure and degraded behavior.
-- Logging and alert requirements.
-- Owner, approval state, expiry, and last review date.
+- certificate or mutual-authentication requirement.
+- expected session duration.
+- expected request rate and bandwidth.
+- data classification.
+- operational purpose.
+- failure effect.
+- monitoring and alerting.
+- approval.
+- review date.
+- expiration or permanent status.
+- related release and profile version.
 
-## Expected service categories
+## Remote application communication
 
-A production profile may require bounded access to:
+Only controlled native services may communicate with remote platform services.
 
-- Authentication, session, and authorization services.
-- Subscription and live-update gateway.
-- Map and GIS publication services.
-- Internal DNS and approved time service.
-- PKI, revocation, and trust-evidence services.
-- Off-host logging and health collectors.
-- EDR or endpoint-security service endpoints.
-- Internal update and configuration repositories.
-- Snapshot or backup coordination services where applicable.
-- Approved remote-management bastions and automation controllers.
+A renderer must not receive:
 
-## SSH boundary
+- Platform endpoint topology.
+- private client credentials.
+- device private keys.
+- unrestricted remote URL capability.
+- generic proxy capability.
 
-Inbound SSH must be allowed only from approved management hosts or networks and must follow the [Remote Management Model](remote-management-model.md).
+The native service validates remote identity and presents a narrow local contract.
 
-## Drift detection
+## Local IPC
 
-The platform must detect unexpected:
+Unix-domain sockets are governed by the local IPC model.
 
-- Outbound destinations.
-- Listening sockets.
-- Firewall changes.
-- Routes and resolvers.
-- Interfaces, wireless radios, and VPNs.
-- Local proxies and tunnels.
-- Repository configuration.
+Host firewall rules do not replace:
 
-See [network-communications.example.yaml](examples/network-communications.example.yaml).
+- Filesystem permissions.
+- peer credential checks.
+- module instance authentication.
+- message authorization.
+- rate and size limits.
+- replay controls.
+
+## Loopback
+
+Loopback TCP may be approved for a documented compatibility requirement.
+
+Where used:
+
+- Bind one exact loopback address.
+- prohibit wildcard binding.
+- define IPv4 and IPv6 behavior.
+- authenticate the local client.
+- restrict the expected host value.
+- apply application-layer authorization.
+- prevent generic proxying.
+- log unexpected access.
+- include the rule in baseline and drift checks.
+
+Use of an address such as `127.9.1.1` may aid organization but does not establish identity.
+
+## Inbound management
+
+SSH is permitted only from approved:
+
+- Bastions.
+- automation controllers.
+- management networks.
+- recovery networks under governed activation.
+
+The operator network and general user networks must not reach SSH.
+
+The final profile should bind `sshd` only to approved management addresses or interfaces where practical.
+
+## Updates
+
+Production consoles retrieve only:
+
+- Signed release metadata.
+- approved package or image artifacts.
+- revocation information.
+- approved emergency update data.
+
+They do not browse public package repositories directly during normal operation.
+
+Daily and Pre-production environments may have different controlled access profiles.
+
+## Logging and telemetry
+
+Logs and fault events must be exported off-host.
+
+The profile defines:
+
+- destination.
+- transport security.
+- buffering.
+- retry.
+- bandwidth ceiling.
+- classification.
+- behavior when the collector is unavailable.
+- retention of unsent critical evidence.
+- protection against log-induced resource exhaustion.
+
+## DNS
+
+DNS dependencies are minimized and explicit.
+
+A rule based on a hostname must define:
+
+- Approved resolver.
+- expected domain.
+- resolution freshness.
+- failure behavior.
+- protection against unexpected addresses.
+- whether certificate identity remains authoritative.
+
+DNS success alone does not establish remote trust.
+
+## Network time
+
+Time synchronization uses approved sources and authentication where supported.
+
+Time failure or excessive skew becomes health and trust evidence.
+
+## External systems
+
+Radio, telephony, recording, alerting, mapping, and other integrations use governed adapters.
+
+The workstation should normally communicate with platform-managed adapters rather than directly with vendor systems.
+
+Any direct exception declares:
+
+- Why an adapter is not used.
+- credentials and trust anchors.
+- vendor availability behavior.
+- data ownership.
+- recording and audit.
+- replacement path.
+- expiration or review date.
+
+## Denied communications
+
+The profile should detect and report:
+
+- Unexpected listening sockets.
+- unexpected remote destinations.
+- renderer remote connection attempts.
+- unauthorized DNS.
+- wildcard listeners.
+- peer-to-peer discovery.
+- consumer telemetry.
+- package-manager public repository access.
+- unauthorized remote administration.
+- unapproved local loopback services.
+
+## Validation
+
+Validation includes:
+
+- Rule generation.
+- rule application.
+- positive required-flow tests.
+- negative prohibited-flow tests.
+- restart persistence.
+- IPv4 and IPv6 tests.
+- renderer escape tests.
+- local pivot tests.
+- upstream segmentation tests.
+- behavior during logging, DNS, time, and update failure.

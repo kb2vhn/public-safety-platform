@@ -1,39 +1,80 @@
-# Non-production example. Addresses, identities, and ports require deployment approval.
-schema_version: 1
-profile_id: workstation-network-example
-default_policy: deny
-rules:
-  - id: workstation-ssh-management-inbound
-    direction: inbound
-    source_component: sshd.service
-    source_zone: management
-    destination_service: workstation-sshd
-    governed_source_set: approved-management-bastions
-    protocol: tcp
-    port: 22
-    authentication: ssh-certificate-or-approved-public-key
-    encryption: ssh
-    purpose: Controlled remote administration and declarative configuration.
-    data_classification: administrative
-    expected_frequency: on-demand
-    failure_behavior: Management unavailable; operator functions remain available.
-    logging: full-session-and-authentication-evidence
-    owner: replace-with-owner
-    approval_state: proposed
+schema_version: "1.0"
+profile_id: "network-profile-example"
+console_release_id: "console-2026.07.1-example"
+default_policy: "deny"
+status: "example-only"
 
-  - id: workstation-live-subscription-outbound
-    direction: outbound
-    source_component: operational-client
-    destination_service: subscription-gateway
-    governed_destination_set: internal-platform-services
-    protocol: tcp
-    port: 443
-    authentication: mutual-tls-and-operator-session
-    encryption: tls
-    purpose: Snapshot and ordered live operational updates.
-    data_classification: module-defined
-    expected_frequency: persistent-bounded-session
-    failure_behavior: Enter offline or resynchronizing state; do not display stale data as live.
-    logging: connection-health-and-policy-events
-    owner: replace-with-owner
-    approval_state: proposed
+communications:
+  - rule_id: "platform-api-outbound"
+    owner:
+      systemd_unit: "iron-console-platform-client.service"
+      linux_user: "iron-platform-client"
+    direction: "outbound"
+    protocol: "tcp"
+    local_address: "deployment-assigned"
+    remote_service: "platform-api"
+    remote_identity_set:
+      - "REPLACE_WITH_SERVICE_IDENTITY"
+    remote_address_set:
+      - "REPLACE_WITH_APPROVED_ADDRESS"
+    remote_port: 443
+    dns_dependency: "REPLACE_OR_NONE"
+    authentication:
+      tls: true
+      mutual_tls: true
+    purpose: "Authenticated console communication with platform services"
+    data_classification: "operational-protected"
+    expected:
+      session_duration: "long-lived"
+      bandwidth: "MEASURE"
+    failure_effect: "console enters module-specific degraded states"
+    monitoring:
+      alert_on_unexpected_destination: true
+      alert_on_repeated_failure: true
+    approval:
+      owner: "workstation-network"
+      last_reviewed_at: "2026-07-12T00:00:00Z"
+      expires_at: null
+
+  - rule_id: "ssh-management-inbound"
+    owner:
+      systemd_unit: "sshd.service"
+      linux_user: "root"
+    direction: "inbound"
+    protocol: "tcp"
+    local_address: "approved-management-address"
+    local_port: 22
+    remote_service: "administrative-bastion"
+    remote_identity_set:
+      - "REPLACE_WITH_BASTION_IDENTITY"
+    remote_address_set:
+      - "REPLACE_WITH_BASTION_SUBNET"
+    dns_dependency: null
+    authentication:
+      ssh_certificate_required: true
+      password_authentication: false
+    purpose: "Recorded governed remote administration"
+    data_classification: "administrative-restricted"
+    expected:
+      session_duration: "bounded"
+      bandwidth: "low"
+    failure_effect: "remote interactive administration unavailable"
+    monitoring:
+      alert_on_unexpected_source: true
+      session_recording_required: true
+    approval:
+      owner: "workstation-security"
+      last_reviewed_at: "2026-07-12T00:00:00Z"
+      expires_at: null
+
+local_ipc:
+  unix_domain_sockets:
+    - path: "/run/iron-console/modules/map/control.sock"
+      server_unit: "iron-map.service"
+      client_units:
+        - "iron-map-ui.service"
+      mode: "0660"
+      peer_credentials_required: true
+      per_start_capability_required: true
+
+loopback_exceptions: []

@@ -1,0 +1,36 @@
+# Non-production example. Final settings require measured resource and sandbox validation.
+
+[Unit]
+Description=Iron Signal Systems Map Module Service
+Requires=iron-map.socket
+After=iron-console-coordinator.service
+PartOf=iron-console.target
+StartLimitIntervalSec=30
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=iron-map
+Group=iron-map
+ExecStart=/usr/lib/iron-console/bin/iron-map-service
+Restart=on-failure
+RestartSec=500ms
+TimeoutStartSec=10s
+TimeoutStopSec=5s
+RuntimeDirectory=iron-console/modules/map
+RuntimeDirectoryMode=0750
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+
+# Illustrative only. Final writable paths and address families must match implementation.
+ReadWritePaths=/var/lib/iron-console/map
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+StandardOutput=journal
+StandardError=journal

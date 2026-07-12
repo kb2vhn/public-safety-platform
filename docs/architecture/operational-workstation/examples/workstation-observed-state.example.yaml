@@ -1,0 +1,47 @@
+schema_version: "1.0"
+observation_id: "workstation-observed-state-example"
+baseline_reference: "workstation-baseline-example"
+workstation_id: "workstation-EXAMPLE"
+observed_at: "2026-07-12T19:00:00Z"
+collector:
+  id: "iron-workstation-state-agent"
+  version: "EXAMPLE"
+status: "example-only"
+
+observed:
+  boot:
+    secure_boot: true
+    boot_id: "REPLACE_WITH_BOOT_ID"
+  storage:
+    full_disk_encryption: true
+    free_space_mib: 48000
+  operating_system:
+    kernel_version: "EXAMPLE"
+    console_release_id: "console-2026.07.1-example"
+    release_digest: "REPLACE_WITH_REAL_DIGEST"
+  services:
+    enabled:
+      - "iron-console.target"
+      - "iron-map.socket"
+      - "iron-map.service"
+      - "sshd.service"
+    unexpected: []
+  network:
+    unexpected_listeners: []
+    renderer_remote_connections: []
+  management:
+    recorder_health: "healthy"
+  local_state:
+    integrity: "verified"
+    pending_actions: 0
+    outcome_unknown_actions: 0
+  faults:
+    unresolved_critical_episodes: 0
+
+drift_evaluation:
+  result: "compliant-example"
+  informational: []
+  operationally_significant: []
+  security_significant: []
+  trust_blocking: []
+  unevaluated: []

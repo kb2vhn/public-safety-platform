@@ -1,0 +1,79 @@
+schema_version: "1.0"
+module_profile_id: "map-module-example"
+module_id: "map"
+status: "example-only"
+
+purpose: "Present governed map data, live overlays, and map interaction"
+criticality: "operational"
+processes:
+  ui_host:
+    systemd_unit: "iron-map-ui.service"
+    linux_user: "iron-map-ui"
+    renderer: "webkitgtk-6.0"
+    remote_network_allowed: false
+  service:
+    systemd_unit: "iron-map.service"
+    linux_user: "iron-map"
+    local_socket: "/run/iron-console/modules/map/control.sock"
+    socket_unit: "iron-map.socket"
+
+content:
+  custom_uri_origin: "iron-map://ui/"
+  release_bundle: "/usr/lib/iron-console/current/map-ui"
+  direct_remote_content_allowed: false
+  persistent_renderer_storage_allowed: false
+
+ipc:
+  protocol_version: "1.0"
+  max_message_bytes: 1048576
+  authentication:
+    peer_credentials: true
+    expected_systemd_units:
+      - "iron-map-ui.service"
+    per_start_capability: true
+  rate_limits:
+    messages_per_second: "MEASURE"
+  queue_limits:
+    replaceable_projection_events: 100
+    protected_action_events: 20
+
+remote_dependencies:
+  - service: "platform-map-adapter"
+    purpose: "Approved map and overlay data"
+    mutual_authentication: true
+    failure_state: "degraded"
+
+health:
+  startup_deadline_ms: "MEASURE"
+  renderer_response_deadline_ms: "MEASURE"
+  ipc_response_deadline_ms: "MEASURE"
+  resynchronization_deadline_ms: "MEASURE"
+  functional_checks:
+    - "base map visible or explicit offline map state"
+    - "selected incident context restored"
+    - "resource overlay freshness visible"
+
+resources:
+  memory_warning_mib: "MEASURE"
+  memory_hard_limit_mib: "MEASURE"
+  cpu_warning_percent: "MEASURE"
+  cache_limit_mib: "MEASURE"
+  restart_limit:
+    interval_seconds: 30
+    attempts: 3
+    exhausted_state: "disabled-degraded"
+
+state:
+  authoritative_owner: "platform map and operational services"
+  local_cache_allowed: true
+  recoverable_operator_context:
+    - "selected incident"
+    - "viewport"
+    - "approved layers"
+  protected_actions:
+    - "none in this example"
+
+failure:
+  visible_message: "Mapping unavailable — recovering"
+  unrelated_modules_must_remain_available: true
+  operational_fault_episode_required: true

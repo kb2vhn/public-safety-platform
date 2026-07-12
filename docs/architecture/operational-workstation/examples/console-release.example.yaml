@@ -1,0 +1,74 @@
+schema_version: "1.0"
+release_id: "console-2026.07.1-example"
+channel: "pre-production"
+status: "example-only"
+
+promotion:
+  originating_daily_artifact: "daily-2026-07-12.1842-example"
+  artifact_sha256: "REPLACE_WITH_IDENTICAL_PROMOTED_DIGEST"
+  rebuilt_during_promotion: false
+
+source:
+  repository: "Iron-Signal-Systems/public-safety-platform"
+  revision: "REPLACE_WITH_COMMIT"
+  build_environment_id: "builder-arch-x86_64-example"
+  build_provenance_reference: "REPLACE_WITH_REFERENCE"
+
+components:
+  bootloader:
+    name: "EXAMPLE"
+    version: "EXAMPLE"
+  kernel:
+    name: "linux-lts"
+    version: "EXAMPLE"
+  firmware_snapshot: "firmware-EXAMPLE"
+  graphics_stack: "graphics-EXAMPLE"
+  gtk_version: "EXAMPLE"
+  webkitgtk_version: "EXAMPLE"
+  go_binaries:
+    - module: "console-coordinator"
+      version: "EXAMPLE"
+      sha256: "REPLACE_WITH_REAL_DIGEST"
+    - module: "map-service"
+      version: "EXAMPLE"
+      sha256: "REPLACE_WITH_REAL_DIGEST"
+  ui_bundles:
+    - module: "map"
+      uri_origin: "iron-map://ui/"
+      sha256: "REPLACE_WITH_REAL_DIGEST"
+
+profiles:
+  package_manifest: "approved-packages-example"
+  workstation_baseline: "workstation-baseline-example"
+  network_profile: "network-profile-example"
+  workspace_profile: "dispatch-two-display-example"
+  accessibility_profile: "REPLACE_WITH_PROFILE"
+  module_profiles:
+    - "map-module-example"
+
+compatibility:
+  local_ipc_protocols:
+    map: "1.0"
+  platform_api_versions:
+    - "EXAMPLE"
+  local_state_schema: "1"
+  rollback_compatible_releases:
+    - "console-2026.06.3-example"
+
+validation:
+  automated_suite_reference: "REPLACE_WITH_TEST_EVIDENCE"
+  hardware_profiles:
+    - "low-cost-two-display-example"
+  required_results:
+    failures: 0
+  approvals:
+    security: "PENDING"
+    operations: "PENDING"
+    accessibility: "PENDING"
+    release: "PENDING"
+
+known_issues: []
+activation:
+  reboot_required: true
+  maintenance_state_required: true
+  automatic_rollback_on_failed_validation: true

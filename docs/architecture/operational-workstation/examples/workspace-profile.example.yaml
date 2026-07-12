@@ -1,25 +1,64 @@
-# Non-production public-safety example. Not a universal platform layout.
-schema_version: 1
-profile_id: dispatch-workspace-example
-window_manager: i3
-workspaces:
-  - number: 1
-    name: call-intake
-    purpose: Receive and manage new calls for service.
-  - number: 2
-    name: active-incidents
-    purpose: Maintain active incident context.
-  - number: 3
-    name: map-and-resources
-    purpose: Present authorized map and live resource state.
+schema_version: "1.0"
+workspace_profile_id: "dispatch-two-display-example"
+status: "example-only"
+
+display_profile:
+  monitor_count: 2
+  arrangement: "horizontal"
+  resolutions:
+    - "1920x1080"
+    - "1920x1080"
+  single_display_fallback: "dispatch-single-display-example"
+  required_global_surface: "top-status-band"
+
+regions:
+  - region_id: "incident-queue"
+    monitor: 1
+    position: "left"
+    module: "incident"
+  - region_id: "active-incident"
+    monitor: 1
+    position: "right"
+    module: "incident"
+  - region_id: "map"
+    monitor: 2
+    position: "top"
+    module: "map"
+  - region_id: "resources"
+    monitor: 2
+    position: "bottom"
+    module: "resources"
+
 bindings:
-  - chord: Super+1
-    action: focus-workspace-1
-    authorization_effect: none
-    visible_alternative: workspace-selector
-  - chord: Super+3
-    action: focus-workspace-3
-    authorization_effect: none
-    visible_alternative: workspace-selector
-owner: replace-with-owner
-approval_state: proposed
+  - chord: "Super+1"
+    scope: "console"
+    action: "focus-incident-queue"
+    visible_alternative: "Incident Queue navigation control"
+    accessibility_alternative: "Landmark navigation"
+    collision_review: "approved-example"
+    risk_classification: "low"
+    confirmation_behavior: "none"
+    focus_effect: "moves focus to incident queue heading"
+    authorization_effect: "none"
+    owner: "console-human-factors"
+    approval_state: "example"
+
+  - chord: "Super+M"
+    scope: "console"
+    action: "focus-map"
+    visible_alternative: "Map navigation control"
+    accessibility_alternative: "Landmark navigation"
+    collision_review: "approved-example"
+    risk_classification: "low"
+    confirmation_behavior: "none"
+    focus_effect: "moves focus to map controls"
+    authorization_effect: "none"
+    owner: "console-human-factors"
+    approval_state: "example"
+
+accessibility:
+  profile_reference: "REPLACE_WITH_ACCESSIBILITY_PROFILE"
+  meaning_depends_on_color_alone: false
+  screen_reader_validation_required: true
+  keyboard_only_validation_required: true
+  magnification_validation_required: true

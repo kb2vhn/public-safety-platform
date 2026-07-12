@@ -1,0 +1,19 @@
+# Non-production example. Review permissions, paths, and hardening before use.
+
+[Unit]
+Description=Iron Signal Systems Map Module IPC Socket
+PartOf=iron-console.target
+
+[Socket]
+ListenStream=/run/iron-console/modules/map/control.sock
+FileDescriptorName=map-control
+SocketUser=iron-map
+SocketGroup=iron-console-ipc
+SocketMode=0660
+DirectoryMode=0750
+Accept=no
+RemoveOnStop=yes
+Service=iron-map.service
+
+[Install]
+WantedBy=iron-console.target

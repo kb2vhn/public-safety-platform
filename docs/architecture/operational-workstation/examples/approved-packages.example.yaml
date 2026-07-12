@@ -1,26 +1,93 @@
-# Non-production example. Do not deploy unchanged.
-schema_version: 1
-manifest_id: workstation-packages-example
-release_id: replace-with-approved-release
+schema_version: "1.0"
+manifest_id: "approved-packages-example"
+console_release_id: "console-2026.07.1-example"
+repository_snapshot_id: "arch-snapshot-2026-07-12-example"
+status: "example-only"
+
 packages:
-  - name: openssh
-    version: replace-with-pinned-version
-    source_repository: replace-with-internal-repository-snapshot
-    checksum: replace-with-package-integrity-reference
-    inclusion: explicit
-    classification: runtime-management
-    purpose: Secure remote-management transport from approved management systems.
-    required_by:
-      - remote-management-model
-      - declarative-configuration-transport
-    optional_features_enabled: []
-    introduced_services:
-      - sshd.service
-    network_requirements:
-      - workstation-ssh-management-inbound
-    privileges:
-      - privileged-system-service
-    owner: replace-with-owner
-    approval_state: proposed
-    last_reviewed: YYYY-MM-DD
-    removal_impact: Remote management and configuration transport unavailable.
+  - name: "webkitgtk-6.0"
+    version: "EXAMPLE"
+    source_repository: "iron-console-release"
+    source_snapshot: "arch-snapshot-2026-07-12-example"
+    sha256: "REPLACE_WITH_REAL_DIGEST"
+    upstream_project: "WebKitGTK"
+    license: "REVIEW_AND_RECORD"
+    inclusion:
+      type: "explicit"
+      reason: "Renders release-controlled console HTML, CSS, and JavaScript"
+      required_by:
+        - "iron-console-ui-host"
+    classifications:
+      - "runtime"
+      - "accessibility"
+    optional_features:
+      enabled: []
+      disabled:
+        - "unmanaged_remote_content"
+    introduced_runtime:
+      services: []
+      sockets: []
+      timers: []
+      kernel_modules: []
+      users: []
+      groups: []
+      capabilities: []
+    network_behavior:
+      remote_access_allowed: false
+      local_ipc:
+        - "native host callbacks"
+    resource_review:
+      expected_memory_mib: "MEASURE"
+      expected_cpu: "MEASURE"
+      expected_disk_mib: "MEASURE"
+    security_review:
+      vulnerability_monitoring_required: true
+      review_owner: "workstation-security"
+      last_reviewed_at: "2026-07-12T00:00:00Z"
+    lifecycle:
+      removal_impact: "Console renderer unavailable"
+      first_release: "console-2026.07.1-example"
+      last_release: null
+
+  - name: "openssh"
+    version: "EXAMPLE"
+    source_repository: "iron-console-release"
+    source_snapshot: "arch-snapshot-2026-07-12-example"
+    sha256: "REPLACE_WITH_REAL_DIGEST"
+    upstream_project: "OpenSSH"
+    license: "REVIEW_AND_RECORD"
+    inclusion:
+      type: "explicit"
+      reason: "Governed remote administration through approved management paths"
+      required_by:
+        - "remote-management-profile"
+    classifications:
+      - "runtime"
+      - "maintenance"
+      - "recovery"
+    introduced_runtime:
+      services:
+        - "sshd.service"
+      sockets: []
+      timers: []
+      kernel_modules: []
+      users: []
+      groups:
+        - "iron-console-admin"
+      capabilities: []
+    network_behavior:
+      inbound:
+        - "tcp/22 from approved bastions only"
+      outbound: []
+    resource_review:
+      expected_memory_mib: "MEASURE"
+      expected_cpu: "MEASURE"
+      expected_disk_mib: "MEASURE"
+    security_review:
+      vulnerability_monitoring_required: true
+      review_owner: "workstation-security"
+      last_reviewed_at: "2026-07-12T00:00:00Z"
+    lifecycle:
+      removal_impact: "Remote interactive recovery unavailable"
+      first_release: "console-2026.07.1-example"
+      last_release: null

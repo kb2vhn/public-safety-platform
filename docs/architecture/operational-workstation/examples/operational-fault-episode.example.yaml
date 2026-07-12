@@ -1,0 +1,80 @@
+schema_version: "1.0"
+fault_episode_id: "OFE-2026-000184"
+status: "recovered-pending-review"
+classification: "operational-internal"
+opened_at: "2026-07-12T14:07:12.083Z"
+status_note: "example-only"
+
+context:
+  workstation_id: "workstation-EXAMPLE"
+  console_session_id: "console-session-EXAMPLE"
+  operator_session_reference: "operator-session-REDACTED"
+  console_release_id: "console-2026.07.1-example"
+  affected_module: "map"
+  affected_module_instance: "map-instance-old"
+  unrelated_modules_verified_healthy:
+    - "incident"
+    - "resources"
+
+impact:
+  capability: "mapping"
+  operator_visible: true
+  started_at: "2026-07-12T14:07:12.607Z"
+  ended_at: "2026-07-12T14:07:17.012Z"
+  alternate_procedure_required: false
+  pending_actions_affected: 0
+  outcome_unknown_actions: 0
+
+events:
+  - event_id: "event-001"
+    observed_at: "2026-07-12T14:07:12.083Z"
+    source: "iron-console-health"
+    event_type: "response-deadline-exceeded"
+    state_before: "healthy"
+    state_after: "delayed"
+    action: "continue-observation"
+    outcome: "threshold-not-yet-reached"
+
+  - event_id: "event-002"
+    parent_event_id: "event-001"
+    observed_at: "2026-07-12T14:07:14.120Z"
+    source: "iron-console-coordinator"
+    event_type: "module-failed"
+    state_before: "degraded"
+    state_after: "failed"
+    action: "display-degraded-surface"
+    outcome: "operator-notified"
+
+  - event_id: "event-003"
+    parent_event_id: "event-002"
+    observed_at: "2026-07-12T14:07:15.050Z"
+    source: "systemd"
+    event_type: "module-restart"
+    state_before: "failed"
+    state_after: "restarting"
+    action: "restart-map-service"
+    outcome: "started"
+
+  - event_id: "event-004"
+    parent_event_id: "event-003"
+    observed_at: "2026-07-12T14:07:17.009Z"
+    source: "iron-console-coordinator"
+    event_type: "functional-health-verified"
+    state_before: "resynchronizing"
+    state_after: "healthy"
+    action: "restore-normal-surface"
+    outcome: "operator-notified"
+
+support:
+  owner: "workstation-support"
+  ticket_reference: "REPLACE_WITH_TICKET"
+  root_cause: null
+  corrective_release: null
+  closure_approval: null
+
+evidence:
+  diagnostic_bundle_reference: "REPLACE_WITH_RESTRICTED_REFERENCE"
+  full_operational_content_included: false
+  incident_references:
+    - id: "INC-2026-002341"
+      projection_sha256: "REPLACE_WITH_DIGEST"

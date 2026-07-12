@@ -1,24 +1,59 @@
-# Non-production evidence-shape example. This is not a final trust decision.
-schema_version: 1
-statement_id: replace-with-unique-id
-device_id: replace-with-device-id
-collector_id: replace-with-collector-id
-verifier_id: replace-with-verifier-id
-observed_at: YYYY-MM-DDThh:mm:ssZ
-issued_at: YYYY-MM-DDThh:mm:ssZ
-expires_at: YYYY-MM-DDThh:mm:ssZ
-baseline_version: replace-with-baseline-version
-anti_replay_context: replace-with-nonce-or-sequence
-evidence:
-  secure_boot_enabled: true
-  tpm_identity_verified: true
-  full_disk_encryption_enabled: true
-  package_manifest_matches: true
-  firewall_profile_matches: true
-  edr_sensor_current: true
-  logging_current: true
-  time_synchronized: true
-protection:
-  transport: mutual-tls
-  signature_reference: replace-with-signature-reference
-# The Foundation Decision Engine evaluates these facts for a specific operation.
+schema_version: "1.0"
+evidence_document_id: "trust-evidence-example"
+workstation_id: "workstation-EXAMPLE"
+observed_at: "2026-07-12T19:00:00Z"
+collector:
+  id: "iron-workstation-evidence-agent"
+  version: "EXAMPLE"
+console_release_id: "console-2026.07.1-example"
+status: "example-only"
+
+claims:
+  - evidence_type: "secure_boot_state"
+    observed_value: "enabled"
+    expected_reference: "workstation-baseline-example"
+    verification_method: "firmware-and-kernel-observation"
+    confidence: "verified"
+    observed_at: "2026-07-12T19:00:00Z"
+    expires_at: "2026-07-12T19:05:00Z"
+    source_identity: "local-platform-agent"
+    anti_replay:
+      boot_id: "REPLACE_WITH_BOOT_ID"
+      sequence: 101
+    supporting_reference: "REPLACE_WITH_EVIDENCE_REFERENCE"
+    contradictions: []
+
+  - evidence_type: "console_release_digest"
+    observed_value: "REPLACE_WITH_REAL_DIGEST"
+    expected_reference: "console-2026.07.1-example"
+    verification_method: "signed-manifest-and-file-integrity"
+    confidence: "verified"
+    observed_at: "2026-07-12T19:00:00Z"
+    expires_at: "2026-07-12T20:00:00Z"
+    source_identity: "release-integrity-agent"
+    anti_replay:
+      boot_id: "REPLACE_WITH_BOOT_ID"
+      sequence: 102
+    supporting_reference: "REPLACE_WITH_EVIDENCE_REFERENCE"
+    contradictions: []
+
+  - evidence_type: "remote_management_recorder_health"
+    observed_value: "healthy"
+    expected_reference: "remote-management-profile-example"
+    verification_method: "gateway-and-target-recorder-check"
+    confidence: "verified"
+    observed_at: "2026-07-12T19:00:00Z"
+    expires_at: "2026-07-12T19:01:00Z"
+    source_identity: "management-health-agent"
+    anti_replay:
+      boot_id: "REPLACE_WITH_BOOT_ID"
+      sequence: 103
+    supporting_reference: "REPLACE_WITH_EVIDENCE_REFERENCE"
+    contradictions: []
+
+provider_result:
+  normalization_complete: true
+  missing_required_claims: []
+  contradictory_claims: []
+  decision: null
+  note: "The Foundation Decision Engine, not this provider, determines operation-specific sufficiency."
