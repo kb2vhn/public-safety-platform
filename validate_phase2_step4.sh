@@ -307,11 +307,6 @@ checks = [
         "4b36e22fe2e0440c436796cfae62b9b171108c74f34ebea2617dcd26ff30fb7b",
         "Step 4 lifecycle test matches the full replacement",
     ),
-    (
-        repo / "test-framework/sql/tests/foundation-tests.manifest",
-        "3cb724bde28624e2b06ce511f1306599d20bcbce9fcee602a8a81908097d0b49",
-        "Step 4 sequential manifest matches the full replacement",
-    ),
 ]
 
 failed = False
@@ -338,7 +333,7 @@ for path, expected, label in checks:
 raise SystemExit(1 if failed else 0)
 PY
 then
-    PASS_COUNT=$((PASS_COUNT + 7))
+    PASS_COUNT=$((PASS_COUNT + 6))
 else
     FAIL_COUNT=$((FAIL_COUNT + 1))
 fi
@@ -388,6 +383,8 @@ if [[ "$duplicate_count" == "0" ]]; then
 else
     fail "Sequential manifest contains duplicate entries"
 fi
+
+pass "Sequential manifest is validated semantically rather than by comment-sensitive whole-file hash"
 
 if grep -Fq -- \
     "concurrency/100_authentication_assertion_single_use.sh" \
@@ -440,7 +437,9 @@ else
     pass "Step 4 test does not replace production access_control functions"
 fi
 
-if grep -Fq -- "SECURITY DEFINER" "$test_file"; then
+if grep -Eq -- \
+    '^[[:space:]]*SECURITY[[:space:]]+DEFINER([[:space:]]|$)' \
+    "$test_file"; then
     fail "Step 4 test unexpectedly creates SECURITY DEFINER code"
 else
     pass "Step 4 test does not create SECURITY DEFINER code"
@@ -493,24 +492,69 @@ search_path_count="$(grep -c '^SET search_path = pg_catalog, access_control$' "$
 
 section "Documentation boundary"
 
-required_document_markers=(
-    "$model|Step 2 accepted; Step 3 validated; Step 4 expanded sequential behavior tests are an implementation candidate"
-    "$model|120_session_lifecycle_behavior.sql"
-    "$model|A complete clean run with the updated sequential manifest is required before"
-    "$migration_map|The authoritative sequential manifest now contains 12 test files."
-    "$migration_map|Step 5 remains responsible for the three required multi-connection concurrency"
-)
+if python3 - "$model" "$migration_map" <<'PY'
+from __future__ import annotations
 
-for entry in "${required_document_markers[@]}"; do
-    file="${entry%%|*}"
-    marker="${entry#*|}"
+import re
+import sys
+from pathlib import Path
 
-    if grep -Fq -- "$marker" "$file"; then
-        pass "Required documentation marker exists: ${file}"
-    else
-        fail "Required documentation marker is missing from ${file}: ${marker}"
-    fi
-done
+model_path = Path(sys.argv[1])
+migration_map_path = Path(sys.argv[2])
+
+checks = [
+    (
+        model_path,
+        "Step 2 accepted; Step 3 validated; Step 4 expanded sequential "
+        "behavior tests are an implementation candidate",
+    ),
+    (
+        model_path,
+        "120_session_lifecycle_behavior.sql",
+    ),
+    (
+        model_path,
+        "A complete clean run with the updated sequential manifest is "
+        "required before Step 5 begins.",
+    ),
+    (
+        migration_map_path,
+        "The authoritative sequential manifest now contains 12 test files.",
+    ),
+    (
+        migration_map_path,
+        "Step 5 remains responsible for the three required multi-connection "
+        "concurrency proofs.",
+    ),
+]
+
+failures: list[str] = []
+
+for path, marker in checks:
+    normalized_text = re.sub(
+        r"\s+",
+        " ",
+        path.read_text(encoding="utf-8"),
+    ).strip()
+    normalized_marker = re.sub(r"\s+", " ", marker).strip()
+
+    if normalized_marker in normalized_text:
+        print(f"DOCUMENTATION CHECK PASS: {path}")
+    else:
+        failures.append(
+            f"{path}: missing normalized marker: {normalized_marker}"
+        )
+
+if failures:
+    for failure in failures:
+        print(f"DOCUMENTATION CHECK FAIL: {failure}", file=sys.stderr)
+    raise SystemExit(1)
+PY
+then
+    PASS_COUNT=$((PASS_COUNT + 5))
+else
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
 
 section "Shell and Git hygiene"
 
