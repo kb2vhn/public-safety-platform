@@ -205,7 +205,7 @@ cd "$repository_root"
 section "Repository identity"
 
 printf 'Repository root: %s\n' "$repository_root"
-printf 'Host: %s\n' "$(hostname 2>/dev/null || printf 'unknown')"
+printf 'Host: %s\n' "$(uname -n 2>/dev/null || printf 'unknown')"
 printf 'Operating system: %s\n' "$(uname -s)"
 printf 'Current branch: %s\n' "$(git branch --show-current 2>/dev/null || printf 'detached')"
 printf 'Current commit: %s\n' "$(git rev-parse --short=12 HEAD)"
@@ -380,12 +380,66 @@ search_path_count="$(grep -c '^SET search_path = pg_catalog, access_control$' "$
     && pass "Every migration function has the fixed trusted search_path" \
     || fail "Expected 9 trusted search_path settings; found ${search_path_count}"
 
-if grep -Eq -- \
-    'p_[a-z_]*(at|time|timestamp)[[:space:]]+timestamptz' \
-    "$migration"; then
-    fail "A controlled API accepts a caller-supplied transition timestamp"
-else
+if python3 - "$migration" <<'PY'
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+migration_path = Path(sys.argv[1])
+migration_text = migration_path.read_text(encoding="utf-8")
+
+controlled_api_names = (
+    "establish_session_from_authentication_assertion",
+    "complete_session_step_up",
+    "record_session_activity",
+    "lock_session",
+    "unlock_session",
+    "expire_session",
+    "revoke_session",
+    "terminate_session",
+)
+
+failures: list[str] = []
+
+for function_name in controlled_api_names:
+    pattern = re.compile(
+        rf"""
+        CREATE[ ]FUNCTION[ ]access_control\.{re.escape(function_name)}
+        \(
+        (?P<parameters>.*?)
+        \)
+        [\r\n]+RETURNS\b
+        """,
+        re.VERBOSE | re.DOTALL,
+    )
+
+    match = pattern.search(migration_text)
+
+    if match is None:
+        failures.append(
+            f"Could not inspect the parameter list for "
+            f"access_control.{function_name}"
+        )
+        continue
+
+    parameters = match.group("parameters")
+
+    if re.search(r"\btimestamptz\b", parameters, re.IGNORECASE):
+        failures.append(
+            f"access_control.{function_name} accepts a timestamptz parameter"
+        )
+
+if failures:
+    for failure in failures:
+        print(failure, file=sys.stderr)
+    raise SystemExit(1)
+PY
+then
     pass "No controlled API accepts a caller-supplied transition timestamp"
+else
+    fail "A controlled API accepts a caller-supplied transition timestamp, or its signature could not be inspected"
 fi
 
 if grep -Fq -- "SECURITY DEFINER" "$migration"; then
@@ -577,7 +631,7 @@ if (( connection_succeeded == 0 )); then
     printf 'PostgreSQL environment preflight: BLOCKED\n\n' >&2
     printf 'The Step 3 files passed every static check, but this host could not\n' >&2
     printf 'connect to the maintenance database "%s".\n\n' "$maintenance_database" >&2
-    printf 'Host: %s\n' "$(hostname 2>/dev/null || printf 'unknown')" >&2
+    printf 'Host: %s\n' "$(uname -n 2>/dev/null || printf 'unknown')" >&2
     printf 'Operating system: %s\n' "$(uname -s)" >&2
     printf 'PGHOST: %s\n' "${original_pghost:-<unset>}" >&2
     printf 'PGPORT: %s\n' "${PGPORT:-<unset/default>}" >&2
@@ -634,26 +688,141 @@ if [[ ! -f "$summary" ]]; then
     exit 1
 fi
 
-required_summary_markers=(
-    "Overall result: PASS"
-    "Runner exit status: 0"
-    "Sequential test files: 11"
-    "Concurrency test files: 1"
-    "PASS"
-    "147"
-    "FAIL"
-    "0"
-    "WARN"
-    "3"
+if python3 - "$summary" <<'PY'
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+summary_path = Path(sys.argv[1])
+summary_text = summary_path.read_text(encoding="utf-8")
+
+failures: list[str] = []
+
+exact_line_checks = {
+    "overall result": r"(?m)^Overall result:[ \t]+PASS[ \t]*$",
+    "runner exit status": r"(?m)^Runner exit status:[ \t]+0[ \t]*$",
+    "sequential test file count": r"(?m)^Sequential test files:[ \t]+11[ \t]*$",
+    "concurrency test file count": r"(?m)^Concurrency test files:[ \t]+1[ \t]*$",
+}
+
+for label, pattern in exact_line_checks.items():
+    if re.search(pattern, summary_text) is None:
+        failures.append(f"Missing or incorrect {label}")
+
+result_totals_match = re.search(
+    r"""
+    Result[ ]totals
+    (?P<section>.*?)
+    Failed[ ]assertions
+    """,
+    summary_text,
+    re.VERBOSE | re.DOTALL,
 )
 
-for marker in "${required_summary_markers[@]}"; do
-    if grep -Fq -- "$marker" "$summary"; then
-        pass "Summary contains: ${marker}"
-    else
-        fail "Summary is missing expected marker: ${marker}"
-    fi
-done
+if result_totals_match is None:
+    failures.append("Could not locate the Result totals section")
+else:
+    result_totals = result_totals_match.group("section")
+
+    pass_match = re.search(
+        r"\|[ \t]*PASS[ \t]*\|[ \t]*(\d+)[ \t]*\|",
+        result_totals,
+    )
+    warn_match = re.search(
+        r"\|[ \t]*WARN[ \t]*\|[ \t]*(\d+)[ \t]*\|",
+        result_totals,
+    )
+    fail_match = re.search(
+        r"\|[ \t]*FAIL[ \t]*\|[ \t]*(\d+)[ \t]*\|",
+        result_totals,
+    )
+
+    if pass_match is None or int(pass_match.group(1)) != 147:
+        failures.append("Result totals do not report PASS=147")
+
+    if warn_match is None or int(warn_match.group(1)) != 3:
+        failures.append("Result totals do not report WARN=3")
+
+    # A successful summary normally omits the FAIL row entirely.
+    if fail_match is not None and int(fail_match.group(1)) != 0:
+        failures.append(
+            f"Result totals report FAIL={fail_match.group(1)} instead of zero"
+        )
+
+failed_assertions_match = re.search(
+    r"""
+    Failed[ ]assertions
+    (?P<section>.*?)
+    Warnings
+    """,
+    summary_text,
+    re.VERBOSE | re.DOTALL,
+)
+
+if failed_assertions_match is None:
+    failures.append("Could not locate the Failed assertions section")
+else:
+    failed_assertions = failed_assertions_match.group("section")
+
+    if re.search(r"\(0[ ]rows\)", failed_assertions) is None:
+        failures.append("Failed assertions section is not empty")
+
+migration_totals_match = re.search(
+    r"""
+    Migration[ ]totals
+    (?P<section>.*)
+    """,
+    summary_text,
+    re.VERBOSE | re.DOTALL,
+)
+
+if migration_totals_match is None:
+    failures.append("Could not locate the Migration totals section")
+else:
+    migration_totals = migration_totals_match.group("section")
+    totals_match = re.search(
+        r"\|[ \t]*(\d+)[ \t]*\|[ \t]*(\d+)[ \t]*\|",
+        migration_totals,
+    )
+
+    if totals_match is None:
+        failures.append("Could not parse manifest and registered migration totals")
+    else:
+        manifest_count = int(totals_match.group(1))
+        registered_count = int(totals_match.group(2))
+
+        if manifest_count != 32:
+            failures.append(
+                f"Manifest migration count is {manifest_count}, expected 32"
+            )
+
+        if registered_count != 32:
+            failures.append(
+                f"Registered migration count is {registered_count}, expected 32"
+            )
+
+if failures:
+    for failure in failures:
+        print(f"SUMMARY CHECK FAIL: {failure}", file=sys.stderr)
+    raise SystemExit(1)
+
+print("SUMMARY CHECK PASS: Overall result is PASS")
+print("SUMMARY CHECK PASS: Runner exit status is 0")
+print("SUMMARY CHECK PASS: Sequential test files = 11")
+print("SUMMARY CHECK PASS: Concurrency test files = 1")
+print("SUMMARY CHECK PASS: PASS = 147")
+print("SUMMARY CHECK PASS: FAIL = 0")
+print("SUMMARY CHECK PASS: WARN = 3")
+print("SUMMARY CHECK PASS: Manifest migrations = 32")
+print("SUMMARY CHECK PASS: Registered migrations = 32")
+PY
+then
+    PASS_COUNT=$((PASS_COUNT + 9))
+else
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
 
 if (( FAIL_COUNT > 0 )); then
     printf '\nPhase 2 Step 3 database gate FAILED.\n' >&2
