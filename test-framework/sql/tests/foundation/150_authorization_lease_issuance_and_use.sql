@@ -487,32 +487,32 @@ SELECT sql_test.assert_true(
 
 SELECT sql_test.assert_raises(
     'A Decision Record cannot issue a second lease',
-    '28000',
     format(
         'SELECT access_control.issue_authorization_lease_from_decision(%L::uuid, %L)',
         (SELECT decision_id FROM pg_temp.step4_lease_fixtures WHERE fixture_key = 'reusable'),
         'another-phase3-step4-secret-000000000000000000000000'
-    )
+    ),
+    '28000'
 );
 
 SELECT sql_test.assert_raises(
     'A finalized DENY Decision Record cannot issue a lease',
-    '28000',
     format(
         'SELECT access_control.issue_authorization_lease_from_decision(%L::uuid, %L)',
         (SELECT decision_id FROM pg_temp.step4_lease_fixtures WHERE fixture_key = 'denied'),
         'denied-phase3-step4-secret-0000000000000000000000000'
-    )
+    ),
+    '28000'
 );
 
 SELECT sql_test.assert_raises(
     'Lease issuance rejects a short secret',
-    '22023',
     format(
         'SELECT access_control.issue_authorization_lease_from_decision(%L::uuid, %L)',
         (SELECT decision_id FROM pg_temp.step4_lease_fixtures WHERE fixture_key = 'denied'),
         'short'
-    )
+    ),
+    '22023'
 );
 
 CREATE FUNCTION sql_test.step4_lease_is_usable(p_fixture_key text, p_secret text, p_audience text)
@@ -595,6 +595,50 @@ BEGIN
 END;
 $function$;
 
+CREATE FUNCTION sql_test.consume_and_expect_phase3_step4_fixture(
+    p_fixture_key text,
+    p_expected_use_count integer,
+    p_expected_status text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, sql_test
+AS $function$
+DECLARE
+    v_actual_use_count integer;
+    v_state_matches boolean;
+BEGIN
+    v_actual_use_count :=
+        sql_test.consume_phase3_step4_fixture(p_fixture_key);
+
+    SELECT EXISTS (
+        SELECT 1
+        FROM pg_temp.step4_lease_fixtures AS fixture
+        JOIN access_control.authorization_leases AS lease
+          ON lease.authorization_lease_id = fixture.lease_id
+        WHERE fixture.fixture_key = p_fixture_key
+          AND lease.status = p_expected_status
+          AND lease.successful_use_count = p_expected_use_count
+          AND (
+              (
+                  p_expected_status = 'ACTIVE'
+                  AND lease.consumed_at IS NULL
+              )
+              OR
+              (
+                  p_expected_status = 'CONSUMED'
+                  AND lease.consumed_at IS NOT NULL
+              )
+          )
+    )
+    INTO v_state_matches;
+
+    RETURN
+        v_actual_use_count = p_expected_use_count
+        AND v_state_matches;
+END;
+$function$;
+
 SELECT sql_test.assert_true(
     'Reusable lease records its first successful use',
     sql_test.consume_phase3_step4_fixture('reusable') = 1
@@ -644,40 +688,32 @@ SELECT sql_test.assert_true(
 
 SELECT sql_test.assert_raises(
     'Consumed single-use lease cannot be replayed',
-    '28000',
-    $$SELECT sql_test.consume_phase3_step4_fixture('single_use')$$
+    $$SELECT sql_test.consume_phase3_step4_fixture('single_use')$$,
+    '28000'
 );
 
 SELECT sql_test.assert_true(
     'Limited-use lease remains ACTIVE before its limit',
-    sql_test.consume_phase3_step4_fixture('limited_use') = 1
-    AND EXISTS (
-        SELECT 1 FROM pg_temp.step4_lease_fixtures AS fixture
-        JOIN access_control.authorization_leases AS lease
-          ON lease.authorization_lease_id = fixture.lease_id
-        WHERE fixture.fixture_key = 'limited_use'
-          AND lease.status = 'ACTIVE'
-          AND lease.successful_use_count = 1
+    sql_test.consume_and_expect_phase3_step4_fixture(
+        'limited_use',
+        1,
+        'ACTIVE'
     )
 );
 
 SELECT sql_test.assert_true(
     'Limited-use lease becomes CONSUMED at its limit',
-    sql_test.consume_phase3_step4_fixture('limited_use') = 2
-    AND EXISTS (
-        SELECT 1 FROM pg_temp.step4_lease_fixtures AS fixture
-        JOIN access_control.authorization_leases AS lease
-          ON lease.authorization_lease_id = fixture.lease_id
-        WHERE fixture.fixture_key = 'limited_use'
-          AND lease.status = 'CONSUMED'
-          AND lease.successful_use_count = 2
+    sql_test.consume_and_expect_phase3_step4_fixture(
+        'limited_use',
+        2,
+        'CONSUMED'
     )
 );
 
 SELECT sql_test.assert_raises(
     'Limited-use lease cannot exceed its usage limit',
-    '28000',
-    $$SELECT sql_test.consume_phase3_step4_fixture('limited_use')$$
+    $$SELECT sql_test.consume_phase3_step4_fixture('limited_use')$$,
+    '28000'
 );
 
 SELECT sql_test.assert_true(
@@ -736,6 +772,39 @@ SELECT sql_test.assert_true(
 
 SELECT pg_catalog.pg_sleep(0.02);
 
+CREATE FUNCTION sql_test.expire_and_expect_phase3_step4_fixture(
+    p_fixture_key text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, sql_test
+AS $function$
+DECLARE
+    v_lease_id uuid;
+    v_expired boolean;
+    v_state_matches boolean;
+BEGIN
+    SELECT fixture.lease_id
+    INTO STRICT v_lease_id
+    FROM pg_temp.step4_lease_fixtures AS fixture
+    WHERE fixture.fixture_key = p_fixture_key;
+
+    v_expired :=
+        access_control.expire_authorization_lease(v_lease_id);
+
+    SELECT EXISTS (
+        SELECT 1
+        FROM access_control.authorization_leases AS lease
+        WHERE lease.authorization_lease_id = v_lease_id
+          AND lease.status = 'EXPIRED'
+          AND lease.expired_at IS NOT NULL
+    )
+    INTO v_state_matches;
+
+    RETURN v_expired AND v_state_matches;
+END;
+$function$;
+
 SELECT sql_test.assert_true(
     'Expired lease is unusable before materialization',
     NOT sql_test.step4_lease_is_usable(
@@ -747,17 +816,7 @@ SELECT sql_test.assert_true(
 
 SELECT sql_test.assert_true(
     'Expiration function materializes terminal EXPIRED state',
-    access_control.expire_authorization_lease(
-        (SELECT lease_id FROM pg_temp.step4_lease_fixtures WHERE fixture_key = 'expiration')
-    )
-    AND EXISTS (
-        SELECT 1 FROM pg_temp.step4_lease_fixtures AS fixture
-        JOIN access_control.authorization_leases AS lease
-          ON lease.authorization_lease_id = fixture.lease_id
-        WHERE fixture.fixture_key = 'expiration'
-          AND lease.status = 'EXPIRED'
-          AND lease.expired_at IS NOT NULL
-    )
+    sql_test.expire_and_expect_phase3_step4_fixture('expiration')
 );
 
 SELECT sql_test.assert_true(
@@ -797,12 +856,12 @@ SELECT sql_test.assert_true(
 
 SELECT sql_test.assert_raises(
     'Lease revocation rejects a malformed reason code',
-    '22023',
     format(
         'SELECT access_control.revoke_lease(%L::uuid, %L)',
         (SELECT lease_id FROM pg_temp.step4_lease_fixtures WHERE fixture_key = 'reusable'),
         'not a reason code'
-    )
+    ),
+    '22023'
 );
 
 SELECT sql_test.assert_true(

@@ -274,10 +274,10 @@ import sys
 from pathlib import Path
 
 checks = {
-    'sql/schema/migrations/foundation/081_postgresql_authorization_decision_and_lease_issuance.sql': 'e788b9a28b6e2d107728e45490b838888375d617f5276edd6f13219739b2bf52',
+    'sql/schema/migrations/foundation/081_postgresql_authorization_decision_and_lease_issuance.sql': '7cbc1ba2bb2c9fbdb745fa3b705a38d70125174a7523d90818660306a8b74dab',
     'sql/schema/manifests/foundation.manifest': 'a20ae81980e72b715ff1974017db6acc2e14356e752a18d59d3203cc1b8e8a02',
     'test-framework/sql/tests/foundation/130_authorization_decision_and_lease_structure.sql': 'b0549e8b48307d121289e3ace064354a621ea654ed15bc2b29e110dca7de060a',
-    'test-framework/sql/tests/foundation/150_authorization_lease_issuance_and_use.sql': '2a53629be749b7c3c51fd7296b7c19e60b9eacde67c20fb9868ecc874156af27',
+    'test-framework/sql/tests/foundation/150_authorization_lease_issuance_and_use.sql': '1495ba7f8aea6c0d8df347df1165b334840b93e7b2f679c1005fb11102bfa62c',
     'test-framework/sql/tests/foundation-tests.manifest': '864f0fe0b51f6a7ea226e2541d675d8aa69b3be9a3ee35e35280c2eb73586ed1',
     'docs/architecture/foundation/authorization-decision-and-lease-issuance-model.md': '741eed7d6949c03da6acbc02d577ea97c9590fc7d29ae7c07a34857792255233',
     'docs/architecture/foundation/README.md': 'c5c5e45c3e95460a35cfb9acf92bad2ab58f7f2ef0e433e1a805295316806f8a',

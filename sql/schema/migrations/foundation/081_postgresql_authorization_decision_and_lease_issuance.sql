@@ -1233,12 +1233,6 @@ BEGIN
       AND supporting.required_for_result
       AND supporting.effective_until IS NOT NULL;
 
-    IF v_expires_at <= v_now THEN
-        RAISE EXCEPTION USING
-            ERRCODE = 'invalid_authorization_specification',
-            MESSAGE = 'Authorization Lease issuance is unavailable';
-    END IF;
-
     IF EXISTS (
         SELECT 1
         FROM access_control.authorization_policy_stage_requirements AS stage
