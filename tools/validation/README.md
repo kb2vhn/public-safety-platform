@@ -5,10 +5,10 @@
 Phase gates are retained under `tools/validation/phase-gates/` so executable
 validation scripts do not clutter the repository root.
 
-Active Phase 4 Step 2 gate:
+Active Phase 4 Step 3 gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step2.sh
+./tools/validation/phase-gates/validate_phase4_step3.sh
 ```
 
 Phase 4 Step 1 contract checkpoint:
@@ -24,7 +24,7 @@ Formal Phase 3 acceptance checkpoint:
 ```
 
 The Step 2 gate validates the accepted Phase 3 boundary, frozen Phase 4
-contract, migration `083`, structural test `170`, authoritative manifests,
+contract, migration `083`, structural test `170`, controlled-action test `180`, authoritative manifests,
 resource-aware wrapper, synchronized documentation, correctness totals, and
 resource JSON contract.
 

@@ -2,7 +2,7 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current checkpoint:** Phase 4 Step 2 structural candidate
+> **Current checkpoint:** Phase 4 Step 3 controlled-action candidate
 >
 > **Scope:** Test-only PostgreSQL, `psql`, Bash, and resource-observation
 > infrastructure for the active Platform Foundation SQL.
@@ -53,28 +53,41 @@ Resource observation: RECORDED or NOT_RECORDED
 Performance thresholds: NOT_EVALUATED
 ```
 
-Phase 4 Step 2 does not enforce a performance budget.
+Phase 4 Step 3 does not enforce a performance budget.
 
 On minimal Arch Linux, the resource-aware path additionally requires GNU
 `time`, provided by package `time`.
 
 ## Sequential Tests
 
-The sequential manifest contains 17 files.
+The sequential manifest contains 18 files.
 
-Phase 4 Step 2 adds:
+Phase 4 Step 3 adds controlled behavioral coverage:
 
 ```text
-foundation/170_approval_independence_and_separation_of_duties_structure.sql
+foundation/180_controlled_approval_action_recording.sql
 ```
 
-This test contributes 37 functional assertions covering structural context,
-constraints, foreign keys, generated effective-actor identity, duty catalog,
-incompatible-authority modes, stage-evaluation structure, indexes, and direct
-PUBLIC privilege posture.
+Test `170` retains 37 structural assertions. Test `180` contributes 55
+functional assertions for the controlled write boundary, exact actor/session/
+organization/Authority Grant binding, action-lineage behavior, and append-only
+mutation guards.
 
-It does not claim controlled Approval Action recording or behavioral
-independence enforcement.
+Current target:
+
+```text
+34 manifest migrations
+34 registered migrations
+18 sequential test files
+9 concurrency test files
+500 PASS
+0 FAIL
+3 understood WARN
+```
+
+The resource-aware wrapper adds no SQL PASS rows. Correctness remains the
+authority, resource observation remains `RECORDED`, and performance thresholds
+remain `NOT_EVALUATED`.
 
 ## Concurrency Tests
 
@@ -92,14 +105,14 @@ concurrency/170_authorization_lease_limited_use_race.sh
 concurrency/180_authorization_lease_terminal_transition_race.sh
 ```
 
-## Step 2 Correctness Target
+## Step 3 Correctness Target
 
 ```text
 34 manifest migrations
 34 registered migrations
-17 sequential test files
+18 sequential test files
 9 concurrency test files
-445 PASS
+500 PASS
 0 FAIL
 3 understood WARN
 ```

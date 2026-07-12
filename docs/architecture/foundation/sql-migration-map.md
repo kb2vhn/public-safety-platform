@@ -494,14 +494,52 @@ latest-resources.json
 ```text
 34 manifest migrations
 34 registered migrations
-17 sequential test files
+18 sequential test files
 9 concurrency test files
-445 PASS
+500 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
 ```
 
-Controlled Approval Action recording and behavioral independence enforcement
-remain later Phase 4 steps.
+Phase 4 Step 3 extends migration `083` with the controlled Approval Action
+recording function, exact current context validation, typed action lineage, and
+append-only mutation guards. Behavioral independence enforcement remains Step
+4.
+
+
+### Phase 4 Step 3 Controlled Approval Action Recording
+
+Migration `083` now includes:
+
+```text
+approval.record_approval_action
+approval.prevent_approval_action_record_mutation
+```
+
+Behavioral test:
+
+```text
+test-framework/sql/tests/foundation/
+180_controlled_approval_action_recording.sql
+```
+
+Step 3 target:
+
+```text
+34 manifest migrations
+34 registered migrations
+18 sequential test files
+9 concurrency test files
+500 PASS
+0 FAIL
+3 understood WARN
+Resource observation: RECORDED
+Performance thresholds: NOT_EVALUATED
+```
+
+The migration count remains 34 because Phase 4 extends the pre-stable migration
+`083` through deliberate steps. Step 3 does not claim the independence,
+incompatible-authority, duty-conflict, stage-satisfaction, or finalization
+behavior assigned to later Phase 4 steps.

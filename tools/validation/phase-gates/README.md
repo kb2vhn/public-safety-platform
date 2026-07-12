@@ -20,6 +20,7 @@ validate_phase3_step6.sh
 validate_phase3_step7.sh
 validate_phase4_step1.sh
 validate_phase4_step2.sh
+validate_phase4_step3.sh
 ```
 
 Historical gates validate their own checkpoint trees and are not expected to

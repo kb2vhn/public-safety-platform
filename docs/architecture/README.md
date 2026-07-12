@@ -4,8 +4,8 @@
 >
 > **Status:** Normative architecture under active refinement
 >
-> **Current status:** Phase 4 Step 2 — approval-independence structural
-> extension and baseline resource observation
+> **Current status:** Phase 4 Step 3 — controlled Approval Action recording
+> with observation-only resource telemetry
 
 ## Dependency Direction
 
@@ -57,9 +57,11 @@ phase-3-authorization-control-complete-v1
 
 ## Active Architecture Boundary
 
-Phase 4 Step 2 adds structural approval context without claiming behavioral
-completion. It also adds a resource-aware wrapper around the unchanged
-correctness suite.
+Phase 4 Step 2 added structural approval context. Phase 4 Step 3 adds the
+controlled Approval Action write boundary, exact current-context validation,
+typed action lineage, and append-only mutation guards. Independence and
+finalization behavior remain later steps. The resource-aware wrapper continues
+to observe the correctness suite separately.
 
 Correctness and resource observations remain distinct:
 

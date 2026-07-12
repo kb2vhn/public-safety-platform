@@ -199,16 +199,20 @@ Existing structures:
 055_authority_purpose_and_authorization_policy.sql
 ```
 
-Phase 4 Step 2 structural extension:
+Phase 4 Step 3 controlled boundary:
 
 ```text
 083_postgresql_approval_independence_and_separation_of_duties.sql
 ```
 
-Phase 4 Step 2 adds migration `083`, structural test `170`, and typed
-request, actor, Authority Grant, duty, incompatible-authority, and stage-
-evaluation structure. Controlled action recording and finalization remain
-later steps.
+Phase 4 Step 2 added the typed request, actor, Authority Grant, duty,
+incompatible-authority, and stage-evaluation structure. Phase 4 Step 3 extends
+migration `083` with `approval.record_approval_action`, exact current context
+binding, typed prior-action lineage, and append-only mutation guards.
+
+Test `180_controlled_approval_action_recording.sql` proves the controlled write
+boundary. Independence, incompatible-authority, duty-conflict, stage-
+satisfaction, and finalization behavior remain later steps.
 
 ## Validation Expectations
 

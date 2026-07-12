@@ -154,7 +154,7 @@ as an Assurance Artifact through the applicable assurance process.
 
 ## 6. Baseline Collection
 
-Phase 4 Step 2 begins observation-only baseline collection.
+Phase 4 Step 2 began observation-only baseline collection. Step 3 continues the same observation-only contract while controlled Approval Action behavior is added.
 
 A useful baseline requires multiple successful runs with:
 
@@ -187,7 +187,7 @@ Budgets must identify the workload, environment profile, sample window,
 statistical rule, owner, rationale, exception process, and revalidation
 conditions.
 
-No threshold is active in Phase 4 Step 2.
+No threshold is active in Phase 4 Step 3.
 
 ## 8. Performance-Regression Evaluation
 
@@ -223,7 +223,7 @@ correct run is a validation-infrastructure failure.
 
 ### Resource Threshold Result
 
-There is no resource-threshold failure in Step 2. Values are recorded for
+There is no resource-threshold failure in Step 3. Values are recorded for
 baseline and trend analysis only.
 
 ## 10. Security and Data Handling
@@ -240,7 +240,7 @@ Resource reports must not contain:
 
 Labels must be non-secret and single-line.
 
-## 11. Phase 4 Step 2 Integration
+## 11. Phase 4 Step 3 Integration
 
 The approval-independence migration and structural SQL test remain functional
 work:
@@ -265,7 +265,7 @@ resource wrapper contributes no SQL PASS rows and no performance threshold.
 
 ## 12. Validation Expectations
 
-Phase 4 Step 2 validation requires:
+Phase 4 Step 3 validation requires:
 
 - The normal correctness summary to pass
 - The expected migration and test counts

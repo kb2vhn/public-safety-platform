@@ -815,7 +815,8 @@ The normative Phase 4 contract is:
 - [Approval Independence and Separation of Duties Model](approval-independence-and-separation-of-duties-model.md)
 
 Phase 4 Step 1 changed no production SQL, migration manifest, or SQL test
-file. Phase 4 Step 2 adds migration `083` and structural test `170`.
+file. Phase 4 Step 2 added migration `083` and structural test `170`.
+Phase 4 Step 3 adds controlled Approval Action recording test `180`.
 
 The planned migration is:
 
@@ -845,9 +846,37 @@ The planned boundary requires:
 - Independent-connection concurrency proofs
 - Preservation of every accepted Phase 1, Phase 2, and Phase 3 invariant
 
-Phase 4 Step 2 adds migration `083` and the structural test
-`170_approval_independence_and_separation_of_duties_structure.sql` only after
-the Step 1 contract gate passes completely.
+Phase 4 Step 2 added migration `083` and structural test
+`170_approval_independence_and_separation_of_duties_structure.sql`. Phase 4
+Step 3 extends migration `083` with controlled action recording and adds
+`180_controlled_approval_action_recording.sql`.
+
+A recorded action is still only a policy input. Step 3 does not determine stage
+satisfaction or authorize a Protected Operation.
+
+
+## Phase 4 Step 3 Controlled Approval Action Recording
+
+The controlled function is:
+
+```text
+approval.record_approval_action
+```
+
+It independently resolves and validates the persisted Approval Request,
+Approval Policy Version, policy stage, effective actor, acting organization,
+acting session, and exact Authority Grant. It uses one captured authoritative
+time and returns a typed `RECORDED` result only after the Approval Action Record
+is inserted.
+
+Normal denials create no successful Approval Action Record. Withdrawal,
+correction, and supersession require an exact prior Approval Action Record from
+the same request, stage, and effective actor. Existing Approval Action Records
+are not rewritten.
+
+Self-approval, affected-identity exclusion, duplicate actor, reciprocal-cycle,
+incompatible-authority, separation-of-duties, stage-satisfaction, and
+finalization checks remain later Phase 4 stages.
 
 ## Phase 4 Step 2 Resource Observation
 

@@ -7,9 +7,9 @@
 >
 > **Phase:** 4 — Approval Independence and Separation of Duties
 >
-> **Step:** 2 — Structural Extension
+> **Step:** 3 — Controlled Approval Actions
 >
-> **Status:** Normative Phase 4 contract; Step 2 structural candidate
+> **Status:** Normative Phase 4 contract; Step 3 controlled-action candidate
 >
 > **Accepted prerequisite:** `phase-3-authorization-control-complete-v1`
 >
@@ -722,8 +722,9 @@ Expected structural capabilities include:
 - Controlled write and finalization routines
 - Indexes supporting exact current-context evaluation
 
-Step 2 will freeze exact table, column, constraint, index, and routine names
-before behavioral expansion.
+Step 2 froze the structural table, column, constraint, and index names.
+Step 3 freezes the first controlled routine and action-lineage behavior before
+independence enforcement.
 
 ## 24. Test Mapping
 
@@ -784,10 +785,24 @@ performance budget.
 
 ### Step 3 — Controlled Approval Actions
 
-- Controlled action-recording API
-- Actor, session, organization, and Authority Grant binding
-- Request and stage context validation
-- Action-lineage rules
+Step 3 adds:
+
+- `approval.record_approval_action`
+- Exact current Approval Request and policy-stage validation
+- Effective actor, acting organization, acting session, and Authority Grant
+  binding
+- Identity, session, service, purpose, operation, organization, Governed Scope,
+  target, status, and effective-time checks
+- Typed `RECORDED` result and stable reason code
+- Typed prior-action lineage for withdrawal, correction, and supersession
+- Append-only UPDATE and DELETE guards for Approval Action Records and typed
+  duty links
+- Behavioral test `180_controlled_approval_action_recording.sql`
+- Continued observation-only resource telemetry
+
+Step 3 does not yet add self-approval, directly affected identity, duplicate
+actor, reciprocal-cycle, incompatible-authority, duty-conflict, stage-
+satisfaction, or Approval Request finalization enforcement.
 
 ### Step 4 — Independence Enforcement
 
@@ -878,7 +893,31 @@ Step 2 is complete only when:
 - No controlled Approval Action behavior is claimed by structural presence.
 - The accepted Phase 3 tag and formal acceptance record remain unchanged.
 
-## 28. Revalidation Triggers
+
+## 28. Step 3 Acceptance Criteria
+
+Step 3 is complete only when:
+
+- The manifest remains at 34 ordered migrations.
+- Migration `083` installs into an empty database with the controlled function
+  and append-only mutation guards.
+- The sequential manifest contains 18 tests.
+- Test `180` contributes exactly 55 functional assertions.
+- Exact request, policy, stage, actor, organization, session, and Authority
+  Grant binding passes.
+- Missing, stale, mismatched, or substituted context fails closed without
+  creating a successful Approval Action Record.
+- Withdrawal, correction, and supersession require exact typed prior-action
+  lineage.
+- Existing Approval Action Records reject UPDATE and DELETE.
+- No Step 4 through Step 6 behavior is claimed by Step 3.
+- The accepted nine concurrency tests remain unchanged.
+- The complete correctness result is 500 PASS, 0 FAIL, and the same three
+  understood WARN results.
+- Resource observation is `RECORDED` and thresholds remain `NOT_EVALUATED`.
+- The accepted Phase 3 tag and formal acceptance record remain unchanged.
+
+## 29. Revalidation Triggers
 
 Phase 4 must be revalidated after any change to:
 
@@ -901,7 +940,7 @@ Phase 4 must be revalidated after any change to:
 - The accepted Phase 3 tag or acceptance record
 - This normative contract
 
-## 29. Related Documents
+## 30. Related Documents
 
 - [Approval Framework](approval-framework.md)
 - [Authority and Authorization Model](authority-and-authorization-model.md)

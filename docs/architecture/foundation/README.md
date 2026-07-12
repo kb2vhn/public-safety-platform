@@ -6,8 +6,8 @@
 > controls are database-enforced and tested; structural presence does not imply
 > complete runtime, deployment, or operational enforcement.
 >
-> **Current status:** Phase 4 Step 2 — approval-independence structural
-> extension and baseline resource observation.
+> **Current status:** Phase 4 Step 3 — controlled Approval Action recording
+> with observation-only resource telemetry.
 
 ## Purpose
 
@@ -157,46 +157,49 @@ must not alter that accepted implementation without Phase 3 revalidation.
 ## Current Phase 4 Boundary
 
 Phase 4 Step 1 froze the normative approval-independence and
-separation-of-duties contract.
+separation-of-duties contract. Step 2 added the relational structure and
+resource-observation path.
 
-Phase 4 Step 2 adds:
+Phase 4 Step 3 extends the same migration:
 
 ```text
 sql/schema/migrations/foundation/
 └── 083_postgresql_approval_independence_and_separation_of_duties.sql
-
-test-framework/sql/tests/foundation/
-└── 170_approval_independence_and_separation_of_duties_structure.sql
 ```
 
-The migration extends the existing approval and authority structures with
-typed directly affected identity context, approval-chain relationships,
-effective actors, acting sessions, Authority Grant linkage, action lineage,
-governed duties, incompatible-authority modes, and persisted stage-evaluation
-structure.
+Behavioral coverage is split deliberately:
 
-Step 2 does not yet claim controlled Approval Action recording, behavioral
-independence enforcement, stage satisfaction, or Approval Request finalization.
+```text
+test-framework/sql/tests/foundation/
+├── 170_approval_independence_and_separation_of_duties_structure.sql
+└── 180_controlled_approval_action_recording.sql
+```
 
-Resource observation is implemented separately:
+The controlled function records an Approval Action Record only after exact
+current request, policy, stage, acting identity, acting organization, acting
+session, and Authority Grant validation. It also validates typed prior-action
+lineage for withdrawal, correction, and supersession. Approval Action Records
+and their duty links reject UPDATE and DELETE.
+
+Step 3 does not yet enforce self-approval, affected-identity exclusion,
+duplicate effective actors, reciprocal approval, incompatible authority,
+prohibited duty combinations, stage satisfaction, or request finalization.
+
+Resource observation remains separate:
 
 ```text
 test-framework/sql/schema/scripts/
 └── test_foundation_with_resources.sh
 ```
 
-The normal runner remains the correctness authority. The wrapper records
-elapsed time, CPU, memory, I/O counters, PostgreSQL statistics, WAL change, and
-database size without applying a performance threshold.
-
-Step 2 target:
+Step 3 target:
 
 ```text
 34 manifest migrations
 34 registered migrations
-17 sequential test files
+18 sequential test files
 9 concurrency test files
-445 PASS
+500 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED

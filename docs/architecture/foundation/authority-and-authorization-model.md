@@ -233,7 +233,7 @@ Existing principal mapping:
 055_authority_purpose_and_authorization_policy.sql
 ```
 
-Phase 4 Step 2 structural extension:
+Phase 4 Step 3 controlled boundary:
 
 ```text
 083_postgresql_approval_independence_and_separation_of_duties.sql
@@ -242,8 +242,13 @@ Phase 4 Step 2 structural extension:
 Migrations `080` and `081` record and consume authorization results.
 Migration `083` adds typed approval-stage Authority Definition references,
 Approval Action Record-to-Authority Grant linkage, incompatible-authority
-modes, and stage-evaluation structure. Later Phase 4 steps
-must preserve their accepted boundaries.
+modes, and stage-evaluation structure. Phase 4 Step 3 adds controlled current
+Authority Grant validation for Approval Action recording. It verifies exact
+identity, required authority, service, purpose, operation, organization,
+Governed Scope, target, status, and effective time.
+
+Incompatible-authority and delegated-authority accumulation remain later Phase
+4 behavior and must preserve the accepted Step 3 boundary.
 
 ## Governing Phase Contract
 

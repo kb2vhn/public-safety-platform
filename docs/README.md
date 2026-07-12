@@ -2,8 +2,8 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current status:** Phase 4 Step 2 — approval-independence structural
-> extension and baseline resource observation
+> **Current status:** Phase 4 Step 3 — controlled Approval Action recording
+> with observation-only resource telemetry
 >
 > **Status:** Pre-alpha; not ready for production use
 
@@ -28,40 +28,46 @@
 - Phase 3 Authorization Decision and Controlled Lease Issuance:
   `phase-3-authorization-control-complete-v1`
 
-## Active Phase 4 Step 2
+## Active Phase 4 Step 3
 
-Functional structure:
+Functional implementation:
 
 ```text
 sql/schema/migrations/foundation/
 └── 083_postgresql_approval_independence_and_separation_of_duties.sql
 
 test-framework/sql/tests/foundation/
-└── 170_approval_independence_and_separation_of_duties_structure.sql
+├── 170_approval_independence_and_separation_of_duties_structure.sql
+└── 180_controlled_approval_action_recording.sql
 ```
 
-Resource-observation infrastructure:
+Migration `083` now includes the controlled Approval Action API, exact current
+request/policy/stage/actor/session/organization/Authority Grant validation,
+typed action-lineage rules, and append-only mutation guards. Test `180`
+contributes 55 functional assertions.
+
+Resource-observation infrastructure remains:
 
 ```text
 test-framework/sql/schema/scripts/
 └── test_foundation_with_resources.sh
 ```
 
-The SQL test contributes 37 functional assertions. The resource wrapper adds no
-SQL PASS rows and enforces no performance threshold.
-
-Step 2 target:
+Step 3 target:
 
 ```text
 34 migrations
-17 sequential tests
+18 sequential tests
 9 concurrency tests
-445 PASS
+500 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
 ```
+
+The resource wrapper contributes no SQL PASS rows and enforces no performance
+threshold.
 
 ## Change Discipline
 

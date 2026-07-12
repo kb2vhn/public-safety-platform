@@ -82,23 +82,31 @@ Acceptance record:
 Phase 4 Step 1 froze the approval-independence and separation-of-duties
 contract.
 
-Phase 4 Step 2 adds structural database support through migration `083` and
-structural test `170`. It does not yet claim controlled Approval Action
-recording, behavioral independence enforcement, stage satisfaction, or Approval
-Request finalization.
+Phase 4 Step 2 added the typed structural extension in migration `083`,
+structural test `170`, and observation-only resource telemetry.
 
-Step 2 also adds observation-only resource telemetry around the unchanged
-correctness runner. Correctness results remain separate from elapsed time, CPU,
-memory, I/O, WAL, and database-size observations.
+Phase 4 Step 3 extends migration `083` with the controlled Approval Action
+recording boundary and adds behavioral test `180`. The controlled function
+binds one exact Approval Request, policy stage, effective actor, organization,
+session, and Authority Grant at one authoritative time. Withdrawal,
+correction, and supersession create new Approval Action Records linked to the
+exact prior record. UPDATE and DELETE are rejected by append-only mutation
+guards.
 
-Step 2 target:
+Step 3 does not yet claim self-approval prevention, directly affected identity
+exclusion, duplicate effective-actor enforcement, reciprocal-cycle detection,
+incompatible-authority enforcement, prohibited-duty enforcement, stage
+satisfaction, or Approval Request finalization. Those remain Phase 4 Steps 4
+through 6.
+
+Step 3 target:
 
 ```text
 34 manifest migrations
 34 registered migrations
-17 sequential test files
+18 sequential test files
 9 concurrency test files
-445 PASS
+500 PASS
 0 FAIL
 3 understood WARN
 
@@ -121,10 +129,10 @@ Performance thresholds: NOT_EVALUATED
 
 ## Validation
 
-Run the active Phase 4 Step 2 gate:
+Run the active Phase 4 Step 3 gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step2.sh
+./tools/validation/phase-gates/validate_phase4_step3.sh
 ```
 
 Run the normal correctness suite:
