@@ -1,8 +1,8 @@
 -- ============================================================================
 -- Migration: 072_postgresql_session_control.sql
--- Title: PostgreSQL session establishment and step-up control
+-- Title: PostgreSQL session establishment, step-up, and lifecycle control
 -- Layer: Platform Foundation
--- Status: PHASE 2 IMPLEMENTATION CANDIDATE
+-- Status: PHASE 2 STEP 3 IMPLEMENTATION CANDIDATE
 -- Target: PostgreSQL 18
 -- Compatibility policy: prefer mature features supported before PostgreSQL 18.
 -- ============================================================================
@@ -623,12 +623,745 @@ REVOKE ALL ON FUNCTION access_control.complete_session_step_up(
     text
 ) FROM PUBLIC;
 
+-- ---------------------------------------------------------------------------
+-- Controlled activity checkpoint
+-- ---------------------------------------------------------------------------
+
+CREATE FUNCTION access_control.record_session_activity(
+    p_session_id uuid,
+    p_environment_key text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control
+AS $function$
+DECLARE
+    v_evaluated_at timestamptz := pg_catalog.statement_timestamp();
+    v_session access_control.sessions%ROWTYPE;
+BEGIN
+    IF p_session_id IS NULL THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Session identifier must not be null';
+    END IF;
+
+    IF p_environment_key IS NULL
+       OR p_environment_key !~ '^[a-z][a-z0-9_-]*$' THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Environment key is invalid';
+    END IF;
+
+    SELECT session_record.*
+    INTO v_session
+    FROM access_control.sessions AS session_record
+    WHERE session_record.session_id = p_session_id
+    FOR UPDATE;
+
+    IF NOT FOUND
+       OR v_session.status <> 'ACTIVE'
+       OR v_evaluated_at < v_session.authenticated_at
+       OR v_evaluated_at >= v_session.expires_at
+       OR (
+            v_session.inactivity_timeout IS NOT NULL
+            AND v_evaluated_at >=
+                COALESCE(
+                    v_session.last_activity_at,
+                    v_session.authenticated_at
+                ) + v_session.inactivity_timeout
+       )
+       OR v_evaluated_at <= COALESCE(
+            v_session.last_activity_at,
+            v_session.authenticated_at
+       ) THEN
+        RETURN false;
+    END IF;
+
+    IF NOT access_control.session_context_is_locally_usable(
+        v_session.identity_id,
+        v_session.device_id,
+        v_session.trust_provider_id,
+        v_session.service_id,
+        v_session.organization_id,
+        p_environment_key,
+        v_evaluated_at
+    ) THEN
+        RETURN false;
+    END IF;
+
+    UPDATE access_control.sessions
+    SET last_activity_at = v_evaluated_at
+    WHERE session_id = v_session.session_id;
+
+    INSERT INTO access_control.session_events (
+        session_id,
+        event_type,
+        event_at,
+        acting_identity_id,
+        details
+    )
+    VALUES (
+        v_session.session_id,
+        'ACTIVITY_RECORDED',
+        v_evaluated_at,
+        v_session.identity_id,
+        pg_catalog.jsonb_build_object(
+            'environment_key',
+            p_environment_key
+        )
+    );
+
+    RETURN true;
+END;
+$function$;
+
+COMMENT ON FUNCTION access_control.record_session_activity(
+    uuid,
+    text
+) IS
+    'Atomically records a bounded activity checkpoint for one active session that remains within its absolute and inactivity limits and whose current locally owned trust context remains usable. The session mutation and ACTIVITY_RECORDED event use one PostgreSQL statement time. This does not authorize a Protected Operation.';
+
+REVOKE ALL ON FUNCTION access_control.record_session_activity(
+    uuid,
+    text
+) FROM PUBLIC;
+
+-- ---------------------------------------------------------------------------
+-- Controlled lock
+-- ---------------------------------------------------------------------------
+
+CREATE FUNCTION access_control.lock_session(
+    p_session_id uuid,
+    p_reason_code text,
+    p_acting_identity_id uuid DEFAULT NULL,
+    p_actor_reference text DEFAULT NULL
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control
+AS $function$
+DECLARE
+    v_evaluated_at timestamptz := pg_catalog.statement_timestamp();
+    v_session access_control.sessions%ROWTYPE;
+    v_reason_code text;
+    v_actor_reference text;
+BEGIN
+    IF p_session_id IS NULL THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Session identifier must not be null';
+    END IF;
+
+    v_reason_code := pg_catalog.btrim(p_reason_code);
+
+    IF p_reason_code IS NULL
+       OR v_reason_code = ''
+       OR v_reason_code !~ '^[A-Z][A-Z0-9_]*$' THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Reason code is invalid';
+    END IF;
+
+    IF p_actor_reference IS NOT NULL THEN
+        v_actor_reference := pg_catalog.btrim(p_actor_reference);
+
+        IF v_actor_reference = '' THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_parameter_value',
+                    MESSAGE = 'Actor reference must not be empty';
+        END IF;
+    END IF;
+
+    IF pg_catalog.num_nonnulls(
+        p_acting_identity_id,
+        p_actor_reference
+    ) > 1 THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'At most one actor context may be supplied';
+    END IF;
+
+    SELECT session_record.*
+    INTO v_session
+    FROM access_control.sessions AS session_record
+    WHERE session_record.session_id = p_session_id
+    FOR UPDATE;
+
+    IF NOT FOUND OR v_session.status <> 'ACTIVE' THEN
+        RETURN false;
+    END IF;
+
+    UPDATE access_control.sessions
+    SET
+        status = 'LOCKED',
+        locked_at = v_evaluated_at
+    WHERE session_id = v_session.session_id;
+
+    INSERT INTO access_control.session_events (
+        session_id,
+        event_type,
+        event_at,
+        acting_identity_id,
+        actor_reference,
+        reason_code,
+        details
+    )
+    VALUES (
+        v_session.session_id,
+        'LOCKED',
+        v_evaluated_at,
+        p_acting_identity_id,
+        v_actor_reference,
+        v_reason_code,
+        pg_catalog.jsonb_build_object(
+            'previous_status',
+            v_session.status
+        )
+    );
+
+    RETURN true;
+END;
+$function$;
+
+COMMENT ON FUNCTION access_control.lock_session(
+    uuid,
+    text,
+    uuid,
+    text
+) IS
+    'Atomically transitions one ACTIVE session to LOCKED, records the authoritative lock time and stable reason code, and writes one attributable LOCKED event. Locking does not pause or extend absolute expiration.';
+
+REVOKE ALL ON FUNCTION access_control.lock_session(
+    uuid,
+    text,
+    uuid,
+    text
+) FROM PUBLIC;
+
+-- ---------------------------------------------------------------------------
+-- Controlled administrative unlock
+-- ---------------------------------------------------------------------------
+
+CREATE FUNCTION access_control.unlock_session(
+    p_session_id uuid,
+    p_reason_code text,
+    p_environment_key text,
+    p_acting_identity_id uuid DEFAULT NULL,
+    p_actor_reference text DEFAULT NULL
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control
+AS $function$
+DECLARE
+    v_evaluated_at timestamptz := pg_catalog.statement_timestamp();
+    v_session access_control.sessions%ROWTYPE;
+    v_reason_code text;
+    v_actor_reference text;
+BEGIN
+    IF p_session_id IS NULL THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Session identifier must not be null';
+    END IF;
+
+    v_reason_code := pg_catalog.btrim(p_reason_code);
+
+    IF p_reason_code IS NULL
+       OR v_reason_code = ''
+       OR v_reason_code !~ '^[A-Z][A-Z0-9_]*$' THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Reason code is invalid';
+    END IF;
+
+    IF p_environment_key IS NULL
+       OR p_environment_key !~ '^[a-z][a-z0-9_-]*$' THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Environment key is invalid';
+    END IF;
+
+    IF p_actor_reference IS NOT NULL THEN
+        v_actor_reference := pg_catalog.btrim(p_actor_reference);
+
+        IF v_actor_reference = '' THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_parameter_value',
+                    MESSAGE = 'Actor reference must not be empty';
+        END IF;
+    END IF;
+
+    IF pg_catalog.num_nonnulls(
+        p_acting_identity_id,
+        p_actor_reference
+    ) <> 1 THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Exactly one administrative actor context is required';
+    END IF;
+
+    SELECT session_record.*
+    INTO v_session
+    FROM access_control.sessions AS session_record
+    WHERE session_record.session_id = p_session_id
+    FOR UPDATE;
+
+    IF NOT FOUND
+       OR v_session.status <> 'LOCKED'
+       OR v_evaluated_at < v_session.authenticated_at
+       OR v_evaluated_at >= v_session.expires_at
+       OR (
+            v_session.inactivity_timeout IS NOT NULL
+            AND v_evaluated_at >=
+                COALESCE(
+                    v_session.last_activity_at,
+                    v_session.authenticated_at
+                ) + v_session.inactivity_timeout
+       ) THEN
+        RETURN false;
+    END IF;
+
+    IF NOT access_control.session_context_is_locally_usable(
+        v_session.identity_id,
+        v_session.device_id,
+        v_session.trust_provider_id,
+        v_session.service_id,
+        v_session.organization_id,
+        p_environment_key,
+        v_evaluated_at
+    ) THEN
+        RETURN false;
+    END IF;
+
+    UPDATE access_control.sessions
+    SET
+        status = 'ACTIVE',
+        locked_at = NULL,
+        last_activity_at = v_evaluated_at
+    WHERE session_id = v_session.session_id;
+
+    INSERT INTO access_control.session_events (
+        session_id,
+        event_type,
+        event_at,
+        acting_identity_id,
+        actor_reference,
+        reason_code,
+        details
+    )
+    VALUES (
+        v_session.session_id,
+        'UNLOCKED',
+        v_evaluated_at,
+        p_acting_identity_id,
+        v_actor_reference,
+        v_reason_code,
+        pg_catalog.jsonb_build_object(
+            'previous_status',
+            v_session.status,
+            'environment_key',
+            p_environment_key
+        )
+    );
+
+    RETURN true;
+END;
+$function$;
+
+COMMENT ON FUNCTION access_control.unlock_session(
+    uuid,
+    text,
+    text,
+    uuid,
+    text
+) IS
+    'Atomically performs an attributable administrative LOCKED-to-ACTIVE transition only while the session remains within its absolute and inactivity limits and its current locally owned trust context remains usable. Unlock records activity at the same PostgreSQL statement time but does not extend absolute expiration or create step-up evidence.';
+
+REVOKE ALL ON FUNCTION access_control.unlock_session(
+    uuid,
+    text,
+    text,
+    uuid,
+    text
+) FROM PUBLIC;
+
+-- ---------------------------------------------------------------------------
+-- Controlled expiration
+-- ---------------------------------------------------------------------------
+
+CREATE FUNCTION access_control.expire_session(
+    p_session_id uuid,
+    p_acting_identity_id uuid DEFAULT NULL,
+    p_actor_reference text DEFAULT NULL
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control
+AS $function$
+DECLARE
+    v_evaluated_at timestamptz := pg_catalog.statement_timestamp();
+    v_session access_control.sessions%ROWTYPE;
+    v_actor_reference text;
+    v_expiration_cause text;
+    v_inactivity_deadline timestamptz;
+BEGIN
+    IF p_session_id IS NULL THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Session identifier must not be null';
+    END IF;
+
+    IF p_actor_reference IS NOT NULL THEN
+        v_actor_reference := pg_catalog.btrim(p_actor_reference);
+
+        IF v_actor_reference = '' THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_parameter_value',
+                    MESSAGE = 'Actor reference must not be empty';
+        END IF;
+    END IF;
+
+    IF pg_catalog.num_nonnulls(
+        p_acting_identity_id,
+        p_actor_reference
+    ) > 1 THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'At most one actor context may be supplied';
+    END IF;
+
+    SELECT session_record.*
+    INTO v_session
+    FROM access_control.sessions AS session_record
+    WHERE session_record.session_id = p_session_id
+    FOR UPDATE;
+
+    IF NOT FOUND OR v_session.status NOT IN ('ACTIVE', 'LOCKED') THEN
+        RETURN false;
+    END IF;
+
+    IF v_session.inactivity_timeout IS NOT NULL THEN
+        v_inactivity_deadline :=
+            COALESCE(
+                v_session.last_activity_at,
+                v_session.authenticated_at
+            ) + v_session.inactivity_timeout;
+    END IF;
+
+    IF v_evaluated_at >= v_session.expires_at THEN
+        v_expiration_cause := 'ABSOLUTE_TIMEOUT';
+    ELSIF v_inactivity_deadline IS NOT NULL
+          AND v_evaluated_at >= v_inactivity_deadline THEN
+        v_expiration_cause := 'INACTIVITY_TIMEOUT';
+    ELSE
+        RETURN false;
+    END IF;
+
+    UPDATE access_control.sessions
+    SET
+        status = 'EXPIRED',
+        locked_at = NULL,
+        expired_at = v_evaluated_at
+    WHERE session_id = v_session.session_id;
+
+    INSERT INTO access_control.session_events (
+        session_id,
+        event_type,
+        event_at,
+        acting_identity_id,
+        actor_reference,
+        reason_code,
+        details
+    )
+    VALUES (
+        v_session.session_id,
+        'EXPIRED',
+        v_evaluated_at,
+        p_acting_identity_id,
+        v_actor_reference,
+        v_expiration_cause,
+        pg_catalog.jsonb_build_object(
+            'previous_status',
+            v_session.status,
+            'absolute_deadline',
+            v_session.expires_at,
+            'inactivity_deadline',
+            v_inactivity_deadline
+        )
+    );
+
+    RETURN true;
+END;
+$function$;
+
+COMMENT ON FUNCTION access_control.expire_session(
+    uuid,
+    uuid,
+    text
+) IS
+    'Atomically transitions one ACTIVE or LOCKED session to terminal EXPIRED only after its absolute or inactivity deadline is reached, records the database-determined timeout cause, clears current lock state, and writes one matching EXPIRED event.';
+
+REVOKE ALL ON FUNCTION access_control.expire_session(
+    uuid,
+    uuid,
+    text
+) FROM PUBLIC;
+
+-- ---------------------------------------------------------------------------
+-- Controlled revocation
+-- ---------------------------------------------------------------------------
+
+CREATE FUNCTION access_control.revoke_session(
+    p_session_id uuid,
+    p_reason_code text,
+    p_acting_identity_id uuid DEFAULT NULL,
+    p_actor_reference text DEFAULT NULL
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control
+AS $function$
+DECLARE
+    v_evaluated_at timestamptz := pg_catalog.statement_timestamp();
+    v_session access_control.sessions%ROWTYPE;
+    v_reason_code text;
+    v_actor_reference text;
+BEGIN
+    IF p_session_id IS NULL THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Session identifier must not be null';
+    END IF;
+
+    v_reason_code := pg_catalog.btrim(p_reason_code);
+
+    IF p_reason_code IS NULL
+       OR v_reason_code = ''
+       OR v_reason_code !~ '^[A-Z][A-Z0-9_]*$' THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Reason code is invalid';
+    END IF;
+
+    IF p_actor_reference IS NOT NULL THEN
+        v_actor_reference := pg_catalog.btrim(p_actor_reference);
+
+        IF v_actor_reference = '' THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_parameter_value',
+                    MESSAGE = 'Actor reference must not be empty';
+        END IF;
+    END IF;
+
+    IF pg_catalog.num_nonnulls(
+        p_acting_identity_id,
+        p_actor_reference
+    ) <> 1 THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Exactly one revocation actor context is required';
+    END IF;
+
+    SELECT session_record.*
+    INTO v_session
+    FROM access_control.sessions AS session_record
+    WHERE session_record.session_id = p_session_id
+    FOR UPDATE;
+
+    IF NOT FOUND OR v_session.status NOT IN ('ACTIVE', 'LOCKED') THEN
+        RETURN false;
+    END IF;
+
+    UPDATE access_control.sessions
+    SET
+        status = 'REVOKED',
+        locked_at = NULL,
+        revoked_at = v_evaluated_at
+    WHERE session_id = v_session.session_id;
+
+    INSERT INTO access_control.session_events (
+        session_id,
+        event_type,
+        event_at,
+        acting_identity_id,
+        actor_reference,
+        reason_code,
+        details
+    )
+    VALUES (
+        v_session.session_id,
+        'REVOKED',
+        v_evaluated_at,
+        p_acting_identity_id,
+        v_actor_reference,
+        v_reason_code,
+        pg_catalog.jsonb_build_object(
+            'previous_status',
+            v_session.status
+        )
+    );
+
+    RETURN true;
+END;
+$function$;
+
+COMMENT ON FUNCTION access_control.revoke_session(
+    uuid,
+    text,
+    uuid,
+    text
+) IS
+    'Atomically transitions one ACTIVE or LOCKED session to terminal REVOKED, requires exactly one attributable revocation actor context, clears current lock state, preserves prior authentication evidence, and writes one matching REVOKED event.';
+
+REVOKE ALL ON FUNCTION access_control.revoke_session(
+    uuid,
+    text,
+    uuid,
+    text
+) FROM PUBLIC;
+
+-- ---------------------------------------------------------------------------
+-- Controlled termination
+-- ---------------------------------------------------------------------------
+
+CREATE FUNCTION access_control.terminate_session(
+    p_session_id uuid,
+    p_reason_code text,
+    p_acting_identity_id uuid DEFAULT NULL,
+    p_actor_reference text DEFAULT NULL
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, access_control
+AS $function$
+DECLARE
+    v_evaluated_at timestamptz := pg_catalog.statement_timestamp();
+    v_session access_control.sessions%ROWTYPE;
+    v_reason_code text;
+    v_actor_reference text;
+BEGIN
+    IF p_session_id IS NULL THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Session identifier must not be null';
+    END IF;
+
+    v_reason_code := pg_catalog.btrim(p_reason_code);
+
+    IF p_reason_code IS NULL
+       OR v_reason_code = ''
+       OR v_reason_code !~ '^[A-Z][A-Z0-9_]*$' THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'Reason code is invalid';
+    END IF;
+
+    IF p_actor_reference IS NOT NULL THEN
+        v_actor_reference := pg_catalog.btrim(p_actor_reference);
+
+        IF v_actor_reference = '' THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_parameter_value',
+                    MESSAGE = 'Actor reference must not be empty';
+        END IF;
+    END IF;
+
+    IF pg_catalog.num_nonnulls(
+        p_acting_identity_id,
+        p_actor_reference
+    ) > 1 THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'At most one actor context may be supplied';
+    END IF;
+
+    SELECT session_record.*
+    INTO v_session
+    FROM access_control.sessions AS session_record
+    WHERE session_record.session_id = p_session_id
+    FOR UPDATE;
+
+    IF NOT FOUND OR v_session.status NOT IN ('ACTIVE', 'LOCKED') THEN
+        RETURN false;
+    END IF;
+
+    UPDATE access_control.sessions
+    SET
+        status = 'TERMINATED',
+        locked_at = NULL,
+        terminated_at = v_evaluated_at
+    WHERE session_id = v_session.session_id;
+
+    INSERT INTO access_control.session_events (
+        session_id,
+        event_type,
+        event_at,
+        acting_identity_id,
+        actor_reference,
+        reason_code,
+        details
+    )
+    VALUES (
+        v_session.session_id,
+        'TERMINATED',
+        v_evaluated_at,
+        p_acting_identity_id,
+        v_actor_reference,
+        v_reason_code,
+        pg_catalog.jsonb_build_object(
+            'previous_status',
+            v_session.status
+        )
+    );
+
+    RETURN true;
+END;
+$function$;
+
+COMMENT ON FUNCTION access_control.terminate_session(
+    uuid,
+    text,
+    uuid,
+    text
+) IS
+    'Atomically transitions one ACTIVE or LOCKED session to terminal TERMINATED, clears current lock state, preserves prior authentication evidence, and writes one matching TERMINATED event with a stable reason and optional attributable actor context.';
+
+REVOKE ALL ON FUNCTION access_control.terminate_session(
+    uuid,
+    text,
+    uuid,
+    text
+) FROM PUBLIC;
+
 SELECT foundation_meta.register_migration(
     p_migration_id => '072_postgresql_session_control',
-    p_migration_name => 'PostgreSQL session establishment and step-up control',
+    p_migration_name => 'PostgreSQL session establishment, step-up, and lifecycle control',
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes => 'Added Authentication Assertion linkage, current local trust revalidation, atomic session establishment, atomic step-up completion, and same-transaction session events without weakening migration 070.'
+    p_notes => 'Added Authentication Assertion linkage, current local trust revalidation, atomic session establishment and step-up completion, controlled activity, lock, administrative unlock, expiration, revocation, termination, and same-transaction session events without weakening migration 070.'
 );
 
 COMMIT;

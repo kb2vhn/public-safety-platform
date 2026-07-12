@@ -4,7 +4,7 @@
 >
 > **Phase:** 2 — Session Establishment, Step-Up, and Lifecycle Enforcement
 >
-> **Status:** Normative Phase 2 contract; Step 2 implementation candidate; clean-install and regression validation required
+> **Status:** Normative Phase 2 contract; Step 2 accepted; Step 3 implementation candidate; clean-install and regression validation required
 >
 > **Depends on:**
 > [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
@@ -1017,12 +1017,16 @@ Phase 2 is divided into six controlled steps.
 
 ### Step 2 — Schema and atomic assertion workflows
 
+Accepted on 2026-07-12 under the [Phase 2 Step 2 Session Establishment and Step-Up Acceptance](phase-2-step-2-session-establishment-and-step-up-acceptance.md).
+
 - Strengthen `060_sessions.sql`.
 - Add `072_postgresql_session_control.sql`.
 - Implement atomic establishment.
 - Implement atomic step-up completion.
 
 ### Step 3 — Controlled lifecycle APIs
+
+Implementation candidate in migration `072`; clean-install and regression validation are required before Step 4 begins.
 
 - Activity,
 - Lock,

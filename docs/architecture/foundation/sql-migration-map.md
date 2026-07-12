@@ -36,7 +36,7 @@ Map the normative Foundation architecture to the current manifest-driven SQL imp
 | `060` | `060_sessions.sql` | Operator and service sessions |
 | `065` | `065_authorization_leases.sql` | Short-lived, revocable authorization capabilities |
 | `070` | `070_postgresql_authentication_assertion_gate.sql` | Authentication Assertion state machine, local verification gate, rejection, expiration, revocation, and exact-context single-use consumption |
-| `072` | `072_postgresql_session_control.sql` | Authentication Assertion linkage, current-trust revalidation, atomic session establishment, and atomic step-up completion |
+| `072` | `072_postgresql_session_control.sql` | Authentication Assertion linkage, current-trust revalidation, atomic session establishment and step-up completion, controlled activity, lock, administrative unlock, expiration, revocation, termination, and same-transaction events |
 | `075` | `075_controlled_authorization_api.sql` | Controlled Authorization Lease verification and protected API foundations |
 | `080` | `080_decision_record_repository.sql` | Decision and evaluation records |
 | `082` | `082_data_classification_and_governance.sql` | Classification and information-governance structures |
@@ -133,13 +133,14 @@ The planned migration ownership is:
 |---|---|
 | `060_sessions.sql` | Session and session-event structure, state constraints, chronology, and indexes |
 | `070_postgresql_authentication_assertion_gate.sql` | Accepted Phase 1 assertion verification and single-use consumption boundary; unchanged unless revalidation is required |
-| `072_postgresql_session_control.sql` | Assertion linkage, current local trust revalidation, atomic session establishment, atomic step-up completion, and later Phase 2 activity/lifecycle APIs |
+| `072_postgresql_session_control.sql` | Assertion linkage, current local trust revalidation, atomic session establishment and step-up completion, controlled activity and lifecycle APIs, and same-transaction session events |
 | `075_controlled_authorization_api.sql` | Later controlled authorization boundary; not the owner of session lifecycle |
 
-Migration `072` is added by Phase 2 Step 2 after `070` and before `075`. Step 2
-implements assertion linkage, current local trust revalidation, atomic session
-establishment, and atomic step-up completion. Step 3 extends the same migration
-with controlled activity and lifecycle APIs before Phase 2 acceptance.
+Migration `072` was added by Phase 2 Step 2 after `070` and before `075`. Step 2
+is accepted for assertion linkage, current local trust revalidation, atomic session
+establishment, and atomic step-up completion. Step 3 now extends the same
+migration with controlled activity and lifecycle APIs as an implementation
+candidate. Expanded sequential behavior tests remain Step 4 work.
 
 ### Migration Completion Rule
 
