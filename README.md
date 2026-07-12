@@ -1,5 +1,7 @@
-# Public Safety Platform
+# Iron Signal Platform
 
+> An Iron Signal Systems project
+> Built on purpose. Backed by discipline. Engineered to endure.
 > **Development status: Pre-alpha, domain-neutral Platform Foundation**
 >
 > This repository began with public safety as its first operational focus.
