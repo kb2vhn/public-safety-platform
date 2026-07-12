@@ -136,11 +136,23 @@ The planned migration ownership is:
 | `072_postgresql_session_control.sql` | Assertion linkage, current local trust revalidation, atomic session establishment and step-up completion, controlled activity and lifecycle APIs, and same-transaction session events |
 | `075_controlled_authorization_api.sql` | Later controlled authorization boundary; not the owner of session lifecycle |
 
-Migration `072` was added by Phase 2 Step 2 after `070` and before `075`. Step 2
-is accepted for assertion linkage, current local trust revalidation, atomic session
-establishment, and atomic step-up completion. Step 3 now extends the same
-migration with controlled activity and lifecycle APIs as an implementation
-candidate. Expanded sequential behavior tests remain Step 4 work.
+Migration `072` was added by Phase 2 Step 2 after `070` and before `075`.
+Step 2 is accepted for assertion linkage, current local trust revalidation,
+atomic session establishment, and atomic step-up completion.
+
+Step 3 added controlled activity and lifecycle APIs and passed the normal
+clean-install and accepted regression path with 147 passes, zero failures, and
+three understood warnings.
+
+Step 4 adds the complete sequential lifecycle behavior test:
+
+```text
+test-framework/sql/tests/foundation/120_session_lifecycle_behavior.sql
+```
+
+The authoritative sequential manifest now contains 12 test files. Step 5
+remains responsible for the three required multi-connection concurrency
+proofs.
 
 ### Migration Completion Rule
 

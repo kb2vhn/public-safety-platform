@@ -4,7 +4,7 @@
 >
 > **Phase:** 2 — Session Establishment, Step-Up, and Lifecycle Enforcement
 >
-> **Status:** Normative Phase 2 contract; Step 2 accepted; Step 3 implementation candidate; clean-install and regression validation required
+> **Status:** Normative Phase 2 contract; Step 2 accepted; Step 3 validated; Step 4 expanded sequential behavior tests are an implementation candidate
 >
 > **Depends on:**
 > [Authentication Assertion Verification and Consumption Model](authentication-assertion-verification-and-consumption-model.md)
@@ -1026,7 +1026,20 @@ Accepted on 2026-07-12 under the [Phase 2 Step 2 Session Establishment and Step-
 
 ### Step 3 — Controlled lifecycle APIs
 
-Implementation candidate in migration `072`; clean-install and regression validation are required before Step 4 begins.
+Validated on 2026-07-12 through the normal Foundation clean-install and
+regression path:
+
+```text
+32 manifest migrations
+32 registered migrations
+11 sequential test files
+1 concurrency test file
+147 PASS
+0 FAIL
+3 understood WARN
+```
+
+Implemented in migration `072`:
 
 - Activity,
 - Lock,
@@ -1038,13 +1051,22 @@ Implementation candidate in migration `072`; clean-install and regression valida
 
 ### Step 4 — Sequential tests
 
+Implementation candidate in
+`test-framework/sql/tests/foundation/120_session_lifecycle_behavior.sql`.
+A complete clean run with the updated sequential manifest is required before
+Step 5 begins.
+
+The Step 4 test package covers:
+
 - Positive behavior,
 - Negative behavior,
 - Chronology,
 - Terminality,
+- Event consistency,
+- Current local trust revalidation,
 - Privileges,
 - Search paths,
-- Phase 1 regression.
+- Phase 1 and Step 2 regression.
 
 ### Step 5 — Concurrency tests
 

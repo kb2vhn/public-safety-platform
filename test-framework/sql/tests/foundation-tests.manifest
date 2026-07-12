@@ -1,4 +1,7 @@
-# Platform Foundation SQL tests
+# Foundation sequential SQL tests
+#
+# Order is authoritative and intentionally preserves all accepted Phase 0,
+# Phase 1, and Phase 2 regression tests before later-phase additions.
 
 foundation/010_foundation_smoke.sql
 foundation/020_schema_security.sql
@@ -11,3 +14,5 @@ foundation/080_foundation_baseline_integrity.sql
 foundation/090_authentication_assertion_behavior.sql
 foundation/100_authentication_assertion_phase1_behavior.sql
 foundation/110_session_establishment_and_step_up_behavior.sql
+foundation/120_session_lifecycle_behavior.sql
+
