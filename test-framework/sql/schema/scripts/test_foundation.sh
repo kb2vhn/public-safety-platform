@@ -303,7 +303,7 @@ preflight_dependencies
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 test_sql_root="$(cd -- "${script_dir}/../.." && pwd -P)"
 test_framework_root="$(cd -- "${test_sql_root}/.." && pwd -P)"
-repository_root="$(cd -- "${test_framework_root}/../.." && pwd -P)"
+repository_root="$(cd -- "${test_framework_root}/.." && pwd -P)"
 foundation_schema_root="${repository_root}/sql/schema"
 foundation_manifest="${foundation_schema_root}/manifests/foundation.manifest"
 test_root="${test_sql_root}/tests"
