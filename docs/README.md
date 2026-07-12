@@ -2,8 +2,8 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current status:** Phase 4 Step 3 — controlled Approval Action recording
-> with observation-only resource telemetry
+> **Current status:** Phase 4 Step 3 accepted; Phase 4 Step 4 independence
+> enforcement candidate with observation-only resource telemetry
 >
 > **Status:** Pre-alpha; not ready for production use
 
@@ -21,16 +21,15 @@
 
 ## Accepted Boundaries
 
-- Phase 1 Authentication Assertions:
-  `phase-1-authentication-assertion-complete-v1`
-- Phase 2 Session Control:
-  `phase-2-session-control-complete-v1`
+- Phase 1 Authentication Assertions: `phase-1-authentication-assertion-complete-v1`
+- Phase 2 Session Control: `phase-2-session-control-complete-v1`
 - Phase 3 Authorization Decision and Controlled Lease Issuance:
   `phase-3-authorization-control-complete-v1`
+- Phase 4 Step 3 controlled Approval Action recording:
+  34 migrations, 18 sequential tests, 9 concurrency tests,
+  500 PASS, 0 FAIL, 3 understood WARN
 
-## Active Phase 4 Step 3
-
-Functional implementation:
+## Active Phase 4 Step 4
 
 ```text
 sql/schema/migrations/foundation/
@@ -38,40 +37,31 @@ sql/schema/migrations/foundation/
 
 test-framework/sql/tests/foundation/
 ├── 170_approval_independence_and_separation_of_duties_structure.sql
-└── 180_controlled_approval_action_recording.sql
+├── 180_controlled_approval_action_recording.sql
+└── 190_approval_independence_enforcement.sql
 ```
 
-Migration `083` now includes the controlled Approval Action API, exact current
-request/policy/stage/actor/session/organization/Authority Grant validation,
-typed action-lineage rules, and append-only mutation guards. Test `180`
-contributes 55 functional assertions.
+The Step 4 candidate extends the controlled Approval Action API with
+self-approval, directly affected identity, duplicate effective actor, distinct
+organization, Authority Grant origin, and explicit reciprocal-chain checks.
+Test `190` contributes exactly 40 functional assertions.
 
-Resource-observation infrastructure remains:
-
-```text
-test-framework/sql/schema/scripts/
-└── test_foundation_with_resources.sh
-```
-
-Step 3 target:
+Step 4 target:
 
 ```text
 34 migrations
-18 sequential tests
+19 sequential tests
 9 concurrency tests
-500 PASS
+540 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
 ```
 
-The resource wrapper contributes no SQL PASS rows and enforces no performance
-threshold.
+## Documentation Synchronization Rule
 
-## Change Discipline
-
-A material Foundation change normally updates the governing architecture, SQL
-migration, authoritative manifests, positive and negative tests, concurrency
-tests when applicable, phase gate, testing documentation, and resource
-observation contract when execution cost can change.
+A phase step is not complete until the root README, documentation indexes,
+architecture status, test documentation, validation documentation, active gate,
+counts, terminology, and next-step statement all describe the same accepted
+repository state.

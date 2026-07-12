@@ -6,8 +6,8 @@
 > controls are database-enforced and tested; structural presence does not imply
 > complete runtime, deployment, or operational enforcement.
 >
-> **Current status:** Phase 4 Step 3 — controlled Approval Action recording
-> with observation-only resource telemetry.
+> **Current status:** Phase 4 Step 3 accepted; Phase 4 Step 4 independence
+> enforcement candidate with observation-only resource telemetry.
 
 ## Purpose
 
@@ -160,46 +160,36 @@ Phase 4 Step 1 froze the normative approval-independence and
 separation-of-duties contract. Step 2 added the relational structure and
 resource-observation path.
 
-Phase 4 Step 3 extends the same migration:
+Phase 4 Step 3 is accepted at 500 PASS, 0 FAIL, and 3 understood WARN.
+Phase 4 Step 4 extends the same migration and controlled function:
 
 ```text
 sql/schema/migrations/foundation/
 └── 083_postgresql_approval_independence_and_separation_of_duties.sql
-```
 
-Behavioral coverage is split deliberately:
-
-```text
 test-framework/sql/tests/foundation/
 ├── 170_approval_independence_and_separation_of_duties_structure.sql
-└── 180_controlled_approval_action_recording.sql
+├── 180_controlled_approval_action_recording.sql
+└── 190_approval_independence_enforcement.sql
 ```
 
-The controlled function records an Approval Action Record only after exact
-current request, policy, stage, acting identity, acting organization, acting
-session, and Authority Grant validation. It also validates typed prior-action
-lineage for withdrawal, correction, and supersession. Approval Action Records
-and their duty links reject UPDATE and DELETE.
+The Step 4 candidate enforces requester and affected-identity policy,
+duplicate effective-actor prevention, distinct acting organizations,
+Authority Grant origin independence, and explicit reciprocal approval chains.
+Withdrawn, corrected, or superseded approvals are not treated as current.
 
-Step 3 does not yet enforce self-approval, affected-identity exclusion,
-duplicate effective actors, reciprocal approval, incompatible authority,
-prohibited duty combinations, stage satisfaction, or request finalization.
+Step 4 does not yet enforce incompatible Authority Sets, prohibited duty
+combinations, stage satisfaction, request finalization, or independent-
+connection approval races.
 
-Resource observation remains separate:
-
-```text
-test-framework/sql/schema/scripts/
-└── test_foundation_with_resources.sh
-```
-
-Step 3 target:
+Step 4 target:
 
 ```text
 34 manifest migrations
 34 registered migrations
-18 sequential test files
+19 sequential test files
 9 concurrency test files
-500 PASS
+540 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
@@ -273,7 +263,6 @@ controlled APIs, security inventories, and validation views.
 
 The following remain incomplete until separately implemented and tested:
 
-- Phase 4 approval-independence and self-approval implementation,
 - Complete Authority Grant, incompatible-authority, and separation-of-duties enforcement,
 - Complete Decision Record cryptographic integrity and later review/supersession controls,
 - Final production ownership and login-role topology,

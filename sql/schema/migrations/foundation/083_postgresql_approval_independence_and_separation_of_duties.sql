@@ -2,7 +2,7 @@
 -- Migration: 083_postgresql_approval_independence_and_separation_of_duties.sql
 -- Title: PostgreSQL approval independence and separation of duties structure
 -- Layer: Platform Foundation
--- Status: PHASE 4 STEP 3 CONTROLLED ACTION CANDIDATE
+-- Status: PHASE 4 STEP 4 INDEPENDENCE ENFORCEMENT CANDIDATE
 -- Target: PostgreSQL 18
 -- Compatibility policy: prefer mature features supported before PostgreSQL 18.
 -- ============================================================================
@@ -113,15 +113,15 @@ ALTER TABLE approval.approval_policy_stages
 
 COMMENT ON COLUMN
     approval.approval_policy_stages.required_authority_definition_id IS
-    'Typed Authority Definition required for an actor to satisfy this stage. Step 2 defines structure only; controlled eligibility evaluation is introduced later.';
+    'Typed Authority Definition required for an actor to satisfy this stage. Controlled eligibility is enforced by approval.record_approval_action.';
 
 COMMENT ON COLUMN
     approval.approval_policy_stages.requester_approval_allowed IS
-    'Explicit stage policy. False is the default and does not by itself implement the later controlled action-recording check.';
+    'Explicit stage policy for requester approval. False is the default; controlled Approval Action recording enforces the policy together with approval_policies.self_approval_allowed.';
 
 COMMENT ON COLUMN
     approval.approval_policy_stages.affected_identity_approval_allowed IS
-    'Explicit stage policy for the directly affected identity. False is the default.';
+    'Explicit stage policy for directly affected identity approval. False is the default and controlled Approval Action recording enforces it.';
 
 -- --------------------------------------------------------------------------
 -- Approval Request context, dependency, and finalization structure
@@ -432,6 +432,15 @@ CREATE INDEX approval_actions_phase4_actor_idx
         approval_request_id,
         approval_policy_stage_id,
         effective_actor_identity_id,
+        action_type,
+        action_at
+    );
+
+CREATE INDEX approval_actions_phase4_organization_idx
+    ON approval.approval_actions(
+        approval_request_id,
+        approval_policy_stage_id,
+        acting_organization_id,
         action_type,
         action_at
     );
@@ -790,6 +799,243 @@ BEGIN
                 MESSAGE = 'APPROVER_AUTHORITY_NOT_CURRENT';
     END IF;
 
+    -- ------------------------------------------------------------------
+    -- Phase 4 Step 4 independence enforcement
+    -- ------------------------------------------------------------------
+    -- Independence is evaluated only for new APPROVE actions. Withdrawal,
+    -- correction, and supersession preserve typed lineage and may make an
+    -- earlier approval non-current without re-exercising approval authority.
+    IF p_action_type = 'APPROVE' THEN
+        IF p_acting_identity_id = v_request.requester_identity_id
+           AND NOT (
+                v_policy.self_approval_allowed
+                AND v_stage.requester_approval_allowed
+           )
+        THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'SELF_APPROVAL_PROHIBITED';
+        END IF;
+
+        IF v_request.directly_affected_identity_id IS NOT NULL
+           AND p_acting_identity_id =
+               v_request.directly_affected_identity_id
+           AND NOT v_stage.affected_identity_approval_allowed
+        THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'AFFECTED_IDENTITY_APPROVAL_PROHIBITED';
+        END IF;
+
+        IF v_stage.independent_identity_required
+           AND EXISTS (
+                SELECT 1
+                FROM approval.approval_actions AS prior_approval
+                WHERE prior_approval.approval_request_id =
+                      p_approval_request_id
+                  AND prior_approval.approval_policy_stage_id =
+                      p_approval_policy_stage_id
+                  AND prior_approval.effective_actor_identity_id =
+                      p_acting_identity_id
+                  AND prior_approval.action_type = 'APPROVE'
+                  AND NOT EXISTS (
+                        SELECT 1
+                        FROM approval.approval_actions AS later_action
+                        WHERE later_action.prior_approval_action_id =
+                              prior_approval.approval_action_id
+                          AND later_action.action_type IN (
+                              'WITHDRAW_APPROVAL',
+                              'CORRECT',
+                              'SUPERSEDE'
+                          )
+                  )
+           )
+        THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'DUPLICATE_EFFECTIVE_ACTOR';
+        END IF;
+
+        IF v_stage.independent_organization_required THEN
+            IF p_acting_organization_id IS NULL
+               OR EXISTS (
+                    SELECT 1
+                    FROM approval.approval_actions AS prior_approval
+                    WHERE prior_approval.approval_request_id =
+                          p_approval_request_id
+                      AND prior_approval.approval_policy_stage_id =
+                          p_approval_policy_stage_id
+                      AND prior_approval.acting_organization_id =
+                          p_acting_organization_id
+                      AND prior_approval.action_type = 'APPROVE'
+                      AND NOT EXISTS (
+                            SELECT 1
+                            FROM approval.approval_actions AS later_action
+                            WHERE later_action.prior_approval_action_id =
+                                  prior_approval.approval_action_id
+                              AND later_action.action_type IN (
+                                  'WITHDRAW_APPROVAL',
+                                  'CORRECT',
+                                  'SUPERSEDE'
+                              )
+                      )
+               )
+            THEN
+                RAISE EXCEPTION
+                    USING
+                        ERRCODE = 'invalid_authorization_specification',
+                        MESSAGE = 'INDEPENDENT_ORGANIZATION_REQUIRED';
+            END IF;
+        END IF;
+
+        IF v_stage.authority_origin_independence_required THEN
+            IF v_authority_grant.granted_by_identity_id IS NULL
+               OR v_authority_grant.granted_by_identity_id =
+                  p_acting_identity_id
+               OR v_authority_grant.granted_by_identity_id =
+                  v_request.requester_identity_id
+               OR (
+                    v_request.directly_affected_identity_id IS NOT NULL
+                    AND v_authority_grant.granted_by_identity_id =
+                        v_request.directly_affected_identity_id
+               )
+               OR (
+                    v_authority_grant.approval_request_id IS NOT NULL
+                    AND EXISTS (
+                        SELECT 1
+                        FROM approval.approval_requests AS origin_request
+                        WHERE origin_request.approval_request_id =
+                              v_authority_grant.approval_request_id
+                          AND (
+                              origin_request.approval_request_id =
+                                  p_approval_request_id
+                              OR origin_request.approval_chain_id =
+                                  v_request.approval_chain_id
+                              OR origin_request.requester_identity_id IN (
+                                  p_acting_identity_id,
+                                  v_request.requester_identity_id
+                              )
+                              OR (
+                                  v_request.directly_affected_identity_id
+                                      IS NOT NULL
+                                  AND origin_request.requester_identity_id =
+                                      v_request.directly_affected_identity_id
+                              )
+                              OR origin_request.directly_affected_identity_id
+                                  IN (
+                                      p_acting_identity_id,
+                                      v_request.requester_identity_id
+                                  )
+                              OR (
+                                  v_request.directly_affected_identity_id
+                                      IS NOT NULL
+                                  AND origin_request.directly_affected_identity_id =
+                                      v_request.directly_affected_identity_id
+                              )
+                              OR EXISTS (
+                                  SELECT 1
+                                  FROM approval.approval_request_dependencies AS dep
+                                  WHERE (
+                                      dep.approval_request_id =
+                                          p_approval_request_id
+                                      AND dep.depends_on_approval_request_id =
+                                          origin_request.approval_request_id
+                                  )
+                                  OR (
+                                      dep.approval_request_id =
+                                          origin_request.approval_request_id
+                                      AND dep.depends_on_approval_request_id =
+                                          p_approval_request_id
+                                  )
+                              )
+                          )
+                    )
+               )
+            THEN
+                RAISE EXCEPTION
+                    USING
+                        ERRCODE = 'invalid_authorization_specification',
+                        MESSAGE = 'AUTHORITY_ORIGIN_NOT_INDEPENDENT';
+            END IF;
+        END IF;
+
+        IF EXISTS (
+            SELECT 1
+            FROM approval.approval_requests AS linked_request
+            WHERE linked_request.approval_request_id <>
+                  p_approval_request_id
+              AND (
+                  linked_request.requester_identity_id =
+                      p_acting_identity_id
+                  OR linked_request.directly_affected_identity_id =
+                      p_acting_identity_id
+              )
+              AND (
+                  linked_request.approval_chain_id =
+                      v_request.approval_chain_id
+                  OR EXISTS (
+                      SELECT 1
+                      FROM approval.approval_request_dependencies AS dep
+                      WHERE dep.dependency_type IN (
+                                'RECIPROCAL_REVIEW',
+                                'SHARED_APPROVAL_CHAIN'
+                            )
+                        AND (
+                            (
+                                dep.approval_request_id =
+                                    p_approval_request_id
+                                AND dep.depends_on_approval_request_id =
+                                    linked_request.approval_request_id
+                            )
+                            OR
+                            (
+                                dep.approval_request_id =
+                                    linked_request.approval_request_id
+                                AND dep.depends_on_approval_request_id =
+                                    p_approval_request_id
+                            )
+                        )
+                  )
+              )
+              AND EXISTS (
+                  SELECT 1
+                  FROM approval.approval_actions AS reciprocal_approval
+                  WHERE reciprocal_approval.approval_request_id =
+                        linked_request.approval_request_id
+                    AND reciprocal_approval.action_type = 'APPROVE'
+                    AND (
+                        reciprocal_approval.effective_actor_identity_id =
+                            v_request.requester_identity_id
+                        OR (
+                            v_request.directly_affected_identity_id
+                                IS NOT NULL
+                            AND reciprocal_approval.effective_actor_identity_id =
+                                v_request.directly_affected_identity_id
+                        )
+                    )
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM approval.approval_actions AS later_action
+                        WHERE later_action.prior_approval_action_id =
+                              reciprocal_approval.approval_action_id
+                          AND later_action.action_type IN (
+                              'WITHDRAW_APPROVAL',
+                              'CORRECT',
+                              'SUPERSEDE'
+                          )
+                    )
+              )
+        ) THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'CIRCULAR_APPROVAL_PROHIBITED';
+        END IF;
+    END IF;
+
     v_requires_prior := p_action_type IN (
         'WITHDRAW_APPROVAL',
         'CORRECT',
@@ -911,7 +1157,7 @@ COMMENT ON FUNCTION approval.record_approval_action(
     text,
     uuid
 ) IS
-    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, and action-lineage validation. Phase 4 Steps 4 through 6 add independence, duty-conflict, stage-satisfaction, and finalization behavior.';
+    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, action-lineage, self-approval, affected-identity, duplicate-actor, organization-independence, authority-origin, and explicit reciprocal-chain validation. Phase 4 Steps 5 and 6 add incompatible-authority, duty-conflict, stage-satisfaction, and finalization behavior.';
 
 REVOKE ALL ON FUNCTION
     approval.prevent_approval_action_record_mutation()
@@ -948,7 +1194,7 @@ SELECT foundation_meta.register_migration(
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
     p_notes =>
-        'Added Phase 4 structural context plus the controlled Approval Action recording boundary, exact actor/session/organization/Authority Grant validation, typed action-lineage rules, and append-only mutation guards. Independence, incompatible-authority, duty-conflict, stage-satisfaction, and finalization behavior remain later Phase 4 steps.'
+        'Added Phase 4 structural context, controlled Approval Action recording, exact actor/session/organization/Authority Grant validation, typed action-lineage rules, append-only mutation guards, and Step 4 self-approval, affected-identity, duplicate-actor, distinct-organization, authority-origin, and explicit reciprocal-chain independence enforcement. Incompatible-authority, duty-conflict, stage-satisfaction, and finalization behavior remain later Phase 4 steps.'
 );
 
 COMMIT;

@@ -2,32 +2,23 @@
 
 > **Owner:** Iron Signal Systems
 
-Phase gates are retained under `tools/validation/phase-gates/` so executable
-validation scripts do not clutter the repository root.
+Phase gates are retained under `tools/validation/phase-gates/`.
 
-Active Phase 4 Step 3 gate:
-
-```bash
-./tools/validation/phase-gates/validate_phase4_step3.sh
-```
-
-Phase 4 Step 1 contract checkpoint:
+Active Phase 4 Step 4 gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step1.sh
+./tools/validation/phase-gates/validate_phase4_step4.sh
 ```
 
-Formal Phase 3 acceptance checkpoint:
+Static repository and documentation validation only:
 
 ```bash
-./tools/validation/phase-gates/validate_phase3_step7.sh
+./tools/validation/phase-gates/validate_phase4_step4.sh --static-only
 ```
 
-The Step 2 gate validates the accepted Phase 3 boundary, frozen Phase 4
-contract, migration `083`, structural test `170`, controlled-action test `180`, authoritative manifests,
-resource-aware wrapper, synchronized documentation, correctness totals, and
-resource JSON contract.
+The gate verifies the accepted Step 3 baseline, migration `083`, tests `170`,
+`180`, and `190`, authoritative manifests, exact Step 4 reason codes, 40 new
+assertions, synchronized status documentation, correctness totals, and the
+resource-observation contract.
 
-The gate runs the resource-aware wrapper by default. `--static-only` skips
-PostgreSQL and resource execution but retains repository, hash, manifest,
-syntax, and documentation checks.
+Historical gates remain available for their own checkpoint trees.

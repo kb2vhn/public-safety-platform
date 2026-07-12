@@ -222,19 +222,24 @@ Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
 ```
 
-Phase 4 Step 3 is the current candidate. It adds controlled Approval Action
+Phase 4 Step 3 is accepted. It established controlled Approval Action
 recording, exact actor/session/Authority Grant context binding, typed
-withdrawal/correction/supersession lineage, and mutation guards for Approval
-Action Records and their duty links.
+withdrawal/correction/supersession lineage, mutation guards, and the accepted
+500 PASS, 0 FAIL, 3 WARN boundary.
 
-The Step 3 target is:
+Phase 4 Step 4 is the current candidate. It adds fail-closed requester and
+directly affected identity checks, duplicate effective-actor prevention,
+distinct-organization enforcement, Authority Grant origin independence, and
+explicit circular or reciprocal approval prevention.
+
+The Step 4 target is:
 
 ```text
 34 manifest migrations
 34 registered migrations
-18 sequential test files
+19 sequential test files
 9 concurrency test files
-500 PASS
+540 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
@@ -486,39 +491,34 @@ Accepted behavior now includes:
 - Manifest-driven clean installation
 - Structural, catalog, privilege, behavioral, negative, and concurrency tests
 
-### Current Phase 4 Step 3 Candidate
+### Current Phase 4 Step 4 Candidate
 
-The current Step 3 candidate adds:
+The accepted Step 3 controlled write boundary remains in place. The Step 4
+candidate extends `approval.record_approval_action(...)` with:
 
-- Controlled Approval Action recording through
-  `approval.record_approval_action(...)`
-- Exact Approval Request and policy-stage binding
-- Exact acting identity and session binding
-- Exact current Authority Grant binding
-- Typed prior-action lineage for withdrawal, correction, and supersession
-- Approval Action Record mutation guards
-- Approval Action duty-link mutation guards
-- Focused positive and hostile-condition behavior tests
+- Requester self-approval prevention unless both policy and exact stage permit it
+- Directly affected identity exclusion unless the exact stage permits it
+- Duplicate current approval prevention by effective actor
+- Distinct acting-organization enforcement when required by stage policy
+- Authority Grant origin independence using persisted grant and request lineage
+- Explicit circular and reciprocal approval prevention using request
+  dependencies and approval-chain identifiers
+- Withdrawal-aware current-approval derivation
+- Behavioral test `190_approval_independence_enforcement.sql`
 
-Step 3 does not yet claim:
+Step 4 does not yet claim:
 
-- Requester self-approval prevention
-- Directly affected identity exclusion
-- Duplicate effective-actor prevention
-- Reciprocal approval-cycle prevention
 - Incompatible-authority enforcement
 - Prohibited-duty enforcement
 - Current approval-stage satisfaction
 - Approval Request finalization
+- Independent-connection approval-race proofs
 
 ### Remaining Foundation Work
 
 The following remain active Foundation work:
 
-- Complete Phase 4 independence and separation-of-duties enforcement
-- Requester and directly affected identity exclusion
-- Duplicate-effective-actor prevention
-- Reciprocal approval-cycle prevention
+- Complete Phase 4 separation-of-duties enforcement
 - Incompatible-authority evaluation
 - Prohibited-duty-combination evaluation
 - Current approval-stage satisfaction
@@ -730,15 +730,15 @@ See:
 
 ## Current Phase Gate
 
-Run the active Phase 4 Step 3 gate from the repository root:
+Run the active Phase 4 Step 4 gate from the repository root:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step3.sh
+./tools/validation/phase-gates/validate_phase4_step4.sh
 ```
 
-The gate validates the accepted Phase 3 boundary, exact Phase 4 Step 3 files,
-manifests, controlled-action structure, documentation, file hygiene,
-correctness results, and resource observations.
+The gate validates the accepted Step 3 boundary, exact Phase 4 Step 4 files,
+manifests, independence reason codes and behavior, synchronized status
+documentation, file hygiene, correctness results, and resource observations.
 
 ## Go Experiments
 

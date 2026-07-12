@@ -1,37 +1,23 @@
-
 # Phase Gates
 
 > **Owner:** Iron Signal Systems
 
 This directory contains reproducible acceptance gates for completed and active
-Foundation phases.
+Foundation phases. Historical gates validate their own checkpoint trees.
+
+Newest gate:
 
 ```text
-validate_phase2_step3.sh
-validate_phase2_step4.sh
-validate_phase2_step5.sh
-validate_phase2_step6.sh
-validate_phase3_step1.sh
-validate_phase3_step2.sh
-validate_phase3_step3.sh
-validate_phase3_step4.sh
-validate_phase3_step5.sh
-validate_phase3_step6.sh
-validate_phase3_step7.sh
-validate_phase4_step1.sh
-validate_phase4_step2.sh
-validate_phase4_step3.sh
+validate_phase4_step4.sh
 ```
 
-Historical gates validate their own checkpoint trees and are not expected to
-accept later-phase documentation.
+Phase 4 progression:
 
-- Step 6 validates the accepted Phase 3 implementation.
-- Step 7 validates the formal Phase 3 acceptance record.
-- Phase 4 Step 1 validates the frozen approval-independence and
-  separation-of-duties contract.
-- Phase 4 Step 2 validates migration `083`, structural test `170`, the
-  unchanged nine-test concurrency boundary, and observation-only resource
-  telemetry without applying a performance threshold.
+- Step 1 froze the approval-independence and separation-of-duties contract.
+- Step 2 added migration `083`, structural test `170`, and resource telemetry.
+- Step 3 added controlled Approval Action recording and test `180`; it is
+  accepted at 500 PASS, 0 FAIL, and 3 understood WARN.
+- Step 4 adds independence enforcement and test `190`; its candidate target is
+  540 PASS, 0 FAIL, and 3 understood WARN.
 
 Run the newest gate for the current repository state.

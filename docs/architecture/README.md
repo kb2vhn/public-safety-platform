@@ -4,8 +4,8 @@
 >
 > **Status:** Normative architecture under active refinement
 >
-> **Current status:** Phase 4 Step 3 — controlled Approval Action recording
-> with observation-only resource telemetry
+> **Current status:** Phase 4 Step 3 accepted; Phase 4 Step 4 independence
+> enforcement candidate with observation-only resource telemetry
 
 ## Dependency Direction
 
@@ -38,46 +38,28 @@ monitoring vendor, identity provider, or compliance framework.
 
 ## Accepted Implementation Status
 
-Phase 1, Phase 2, and Phase 3 are accepted.
+Phases 1, 2, and 3 are formally accepted. Phase 4 Step 3 is the current
+accepted implementation boundary:
 
 ```text
-33 accepted Phase 3 migrations
-16 accepted Phase 3 sequential tests
-9 accepted Phase 3 concurrency tests
-408 PASS
+34 migrations
+18 sequential tests
+9 concurrency tests
+500 PASS
 0 FAIL
 3 understood WARN
-```
-
-Accepted Phase 3 tag:
-
-```text
-phase-3-authorization-control-complete-v1
+Resource observation: RECORDED
+Performance thresholds: NOT_EVALUATED
 ```
 
 ## Active Architecture Boundary
 
-Phase 4 Step 2 added structural approval context. Phase 4 Step 3 adds the
-controlled Approval Action write boundary, exact current-context validation,
-typed action lineage, and append-only mutation guards. Independence and
-finalization behavior remain later steps. The resource-aware wrapper continues
-to observe the correctness suite separately.
+Phase 4 Step 4 extends the controlled Approval Action write boundary with
+fail-closed independence checks. It uses exact identities, organizations,
+Authority Grants, Approval Request dependencies, approval-chain identifiers,
+and current-action lineage. It does not infer cycles from time or free-form
+text.
 
-Correctness and resource observations remain distinct:
-
-```text
-Correctness result: PASS or FAIL
-Resource observation: RECORDED or NOT_RECORDED
-Performance thresholds: NOT_EVALUATED
-```
-
-Validation gates are maintained under:
-
-```text
-tools/validation/phase-gates/
-```
-
-Architecture documents define requirements. Migrations implement selected
-database controls. Tests demonstrate selected properties. Resource observations
-describe execution cost. None replaces production deployment security or
-operational verification.
+Step 5 incompatible-authority and duty-conflict enforcement, Step 6 stage
+satisfaction and finalization, and Step 7 independent-connection approval races
+remain future work.

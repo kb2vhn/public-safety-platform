@@ -9,7 +9,7 @@
 >
 > **Step:** 3 — Controlled Approval Actions
 >
-> **Status:** Normative Phase 4 contract; Step 3 controlled-action candidate
+> **Status:** Normative Phase 4 contract; Step 3 accepted and Step 4 independence-enforcement candidate
 >
 > **Accepted prerequisite:** `phase-3-authorization-control-complete-v1`
 >
@@ -800,18 +800,28 @@ Step 3 adds:
 - Behavioral test `180_controlled_approval_action_recording.sql`
 - Continued observation-only resource telemetry
 
-Step 3 does not yet add self-approval, directly affected identity, duplicate
-actor, reciprocal-cycle, incompatible-authority, duty-conflict, stage-
-satisfaction, or Approval Request finalization enforcement.
+Step 3 does not add independence, incompatible-authority, duty-conflict, stage-
+satisfaction, or Approval Request finalization enforcement. Those boundaries
+remain explicit so Step 4 can add independence without claiming later steps.
 
 ### Step 4 — Independence Enforcement
 
-- Self-approval
-- Directly affected identity
-- Duplicate effective actor
-- Distinct organization
-- Authority-origin independence
-- Explicit circular and reciprocal approval
+Step 4 extends `approval.record_approval_action` and adds behavioral test
+`190_approval_independence_enforcement.sql` for:
+
+- Self-approval, denied unless policy and exact stage both permit it
+- Directly affected identity approval, denied unless exact stage permits it
+- Duplicate current approval by the same effective actor
+- Distinct acting organizations when required by stage policy
+- Authority-origin independence using persisted Authority Grant and Approval
+  Request lineage
+- Explicit circular and reciprocal approval using typed dependencies and
+  approval-chain identifiers
+- Withdrawal-aware current-approval derivation
+
+Step 4 does not infer identity independence from sessions, devices, accounts,
+organizations, or grants. It does not infer reciprocal relationships from time
+proximity or free-form text.
 
 ### Step 5 — Incompatible Authority and Separation of Duties
 
@@ -917,7 +927,34 @@ Step 3 is complete only when:
 - Resource observation is `RECORDED` and thresholds remain `NOT_EVALUATED`.
 - The accepted Phase 3 tag and formal acceptance record remain unchanged.
 
-## 29. Revalidation Triggers
+
+## 29. Step 4 Acceptance Criteria
+
+Step 4 is complete only when:
+
+- The manifest remains at 34 ordered migrations.
+- The sequential manifest contains 19 tests.
+- Test `190` contributes exactly 40 functional assertions.
+- Requester self-approval fails closed unless policy and exact stage both allow it.
+- Directly affected identity approval fails closed unless the exact stage allows it.
+- Multiple sessions, organizations, or Authority Grants do not make one
+  effective actor distinct.
+- A withdrawn approval no longer blocks a legitimate replacement approval.
+- Required organization independence rejects a second current approval from
+  the same organization and accepts a distinct eligible organization.
+- Missing or prohibited Authority Grant origin lineage fails closed.
+- Circular or reciprocal denial uses explicit request linkage or a shared
+  approval-chain identifier and never a time-only heuristic.
+- Rejected independence attempts create no successful Approval Action Record.
+- The accepted nine concurrency tests remain unchanged.
+- The complete candidate result is 540 PASS, 0 FAIL, and the same three
+  understood WARN results.
+- Resource observation is `RECORDED` and thresholds remain `NOT_EVALUATED`.
+- Root, architecture, test, validation, and phase-status documentation are
+  synchronized before acceptance.
+- No Step 5 through Step 7 behavior is claimed by Step 4.
+
+## 30. Revalidation Triggers
 
 Phase 4 must be revalidated after any change to:
 
