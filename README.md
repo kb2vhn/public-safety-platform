@@ -405,18 +405,19 @@ The authoritative Foundation migration order is maintained in:
 ├── go/
 │   └── experiments/
 ├── sql/
-│   ├── schema/
-│   │   ├── manifests/
-│   │   ├── migrations/
-│   │   │   └── foundation/
-│   │   └── scripts/
-│   └── test-framework/
-│       ├── INSTALL.txt
-│       ├── Makefile
-│       └── sql/
-│           ├── schema/scripts/
-│           ├── tests/
-│           └── test-results/
+│   └── schema/
+│       ├── manifests/
+│       ├── migrations/
+│       │   └── foundation/
+│       └── scripts/
+├── test-framework/
+│   ├── INSTALL.txt
+│   ├── Makefile
+│   └── sql/
+│       ├── schema/
+│       │   └── scripts/
+│       ├── tests/
+│       └── test-results/
 └── README.md
 ```
 
