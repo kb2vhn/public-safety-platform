@@ -354,7 +354,7 @@ checks = {
     'test-framework/sql/tests/README.md': 'ef6913ca9285f79f13b133280fdb2638fd66ae4b19c0f52c3acd1ae5e7d4a36d',
     'test-framework/sql/tests/foundation-tests.manifest': 'a97a42df60dbdf758d0099089151f1f97658474911c2f7d413f973c6e37009ee',
     'test-framework/sql/tests/foundation/170_approval_independence_and_separation_of_duties_structure.sql': 'f205e0e91ce2010356057307b0aa765de3733f9409af25f1d837e62acf985251',
-    'test-framework/sql/tests/foundation/180_controlled_approval_action_recording.sql': '6af77039b3796514869fb346034d78e2b156efc444b37bc65a8e87dcea9b3ca6',
+    'test-framework/sql/tests/foundation/180_controlled_approval_action_recording.sql': '07d58e5c762cafd06c3c392bd6959e2628ca2f39dd459f50227a80c2e401edcf',
     'test-framework/sql/schema/scripts/test_foundation_with_resources.sh': 'c10179c4fd18567ec7eb1e9c958a8235edf954eac951f5f24aeb8482f45c1456',
     'tools/validation/README.md': '378958fb890ed447ef91d5d9d80a62f786d79399c26fee6061782ae57c8dfba3',
     'tools/validation/phase-gates/README.md': '9e7274261eb48b5f5f227766c3b9ba97b02a1dbe8b7b66d35619a9a3fb2a1d9a',

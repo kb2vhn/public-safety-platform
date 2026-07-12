@@ -1179,7 +1179,7 @@ DO $record_primary_approve$
 DECLARE
     v_context pg_temp.step3_context%ROWTYPE;
     v_result record;
-    v_before timestamptz := clock_timestamp();
+    v_before timestamptz := statement_timestamp();
     v_after timestamptz;
 BEGIN
     SELECT * INTO STRICT v_context FROM pg_temp.step3_context;
@@ -1199,7 +1199,7 @@ BEGIN
         NULL
     );
 
-    v_after := clock_timestamp();
+    v_after := statement_timestamp();
 
     INSERT INTO pg_temp.step3_success_actions (
         fixture_key,
