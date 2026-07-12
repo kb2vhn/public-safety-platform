@@ -205,7 +205,7 @@ before `082_data_classification_and_governance.sql`.
 | `072_postgresql_session_control.sql` | Accepted Phase 2 session boundary; unchanged |
 | `075_controlled_authorization_api.sql` | Existing lease hashing, baseline verification, and revocation API |
 | `080_decision_record_repository.sql` | Existing Decision Record, evaluation, and supporting-record structures |
-| `081_postgresql_authorization_decision_and_lease_issuance.sql` | Step 2 typed policy applicability, exact policy-stage mapping, lease-request Decision Record fields, one-decision/one-lease cardinality, core decision-to-lease binding, lease chronology/state shape, and authority/use evidence binding; later steps add controlled behavior |
+| `081_postgresql_authorization_decision_and_lease_issuance.sql` | Step 2 typed structure plus Step 3 deterministic policy resolution, controlled policy binding, stage closure, supporting-evidence enforcement, finalization-once behavior, and caller-result rejection; Step 4 adds lease behavior |
 
 Migration `081` is part of the Foundation manifest during Step 2.
 
@@ -278,3 +278,19 @@ The Foundation SQL test framework must test the requirements that can be demonst
 - [Phase 2 Session Establishment, Step-Up, and Lifecycle Acceptance](phase-2-session-establishment-step-up-and-lifecycle-acceptance.md)
 - [Session Establishment, Step-Up, and Lifecycle Model](session-establishment-step-up-and-lifecycle-model.md)
 - [Authorization Decision and Lease Issuance Model](authorization-decision-and-lease-issuance-model.md)
+
+### Phase 3 Step 3 Result Target
+
+```text
+33 manifest migrations
+33 registered migrations
+14 sequential test files
+4 concurrency test files
+297 PASS
+0 FAIL
+3 understood WARN
+```
+
+Step 3 behavior is tested by
+`140_authorization_policy_selection_and_decision_finalization.sql`.
+Authorization Lease issuance remains Step 4.

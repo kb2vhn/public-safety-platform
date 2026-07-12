@@ -643,3 +643,24 @@ lease-request fields, one-decision/one-lease cardinality, core
 decision-to-lease context binding, lease chronology and terminal-state shape,
 and attributable authority and use evidence. Controlled finalization,
 issuance, verification, and consumption remain later Phase 3 steps.
+
+## Phase 3 Step 3 Controlled Decision Finalization
+
+Step 3 implements these controlled routines in migration `081`:
+
+```text
+decision.resolve_authorization_policy(uuid)
+decision.bind_authorization_policy(uuid)
+decision.finalize_authorization_decision(uuid)
+decision.finalize_decision(uuid, text, text)
+```
+
+The authoritative finalizer accepts only a Decision Record identifier and
+computes the result from persisted policy and evaluation evidence. The
+three-argument compatibility wrapper rejects caller-supplied values that do
+not exactly match the computed result.
+
+Missing, ambiguous, and expected-policy mismatch are persisted as terminal
+denials. Every policy stage must have one evaluation, required `FAIL` and
+`NOT_EVALUATED` deny, `NOT_REQUIRED` must match the selected policy rule, and
+configured supporting evidence must exist before `ALLOW`.

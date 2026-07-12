@@ -242,3 +242,14 @@ A Foundation change should normally update:
 6. Concurrency tests when state can be consumed or changed simultaneously,
 7. Operational or deployment documentation when the change crosses the
    database boundary.
+
+## Phase 3 Step 3 Controlled Decision Finalization
+
+Step 3 extends migration `081` with deterministic policy resolution,
+controlled policy binding, complete policy-stage closure, policy-backed
+`NOT_REQUIRED`, required supporting-evidence checks, finalization-once
+behavior, and rejection of caller-supplied result mismatches.
+
+The Step 3 regression target is 33 migrations, 14 sequential tests, 4
+concurrency tests, 297 passes, zero failures, and the same three understood
+warnings. Authorization Lease issuance remains Step 4.

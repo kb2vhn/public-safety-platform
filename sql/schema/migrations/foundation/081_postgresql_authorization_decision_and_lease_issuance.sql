@@ -2,7 +2,7 @@
 -- Migration: 081_postgresql_authorization_decision_and_lease_issuance.sql
 -- Title: PostgreSQL authorization decision and lease issuance structure
 -- Layer: Platform Foundation
--- Status: PHASE 3 STEP 2 IMPLEMENTATION CANDIDATE
+-- Status: PHASE 3 STEP 3 IMPLEMENTATION CANDIDATE
 -- Target: PostgreSQL 18
 -- Compatibility policy: prefer mature features supported before PostgreSQL 18.
 -- ============================================================================
@@ -12,8 +12,9 @@
 -- authorization policy selection, Decision Record finalization, and
 -- Authorization Lease issuance are implemented.
 --
--- Step 2 intentionally adds no controlled production function. Phase 3
--- Steps 3 and 4 implement behavior against the structure established here.
+-- Step 3 adds deterministic policy resolution, controlled policy binding,
+-- required-stage closure, and finalization-once Decision Record behavior.
+-- Authorization Lease issuance remains Phase 3 Step 4.
 --
 -- Accepted-boundary rule:
 -- Migrations 055, 060, 065, 070, 072, 075, and 080 remain unchanged.
@@ -556,12 +557,525 @@ CREATE INDEX authorization_lease_use_events_decision_idx
         used_at
     );
 
+
+-- ---------------------------------------------------------------------------
+-- Phase 3 Step 3 deterministic policy selection and decision finalization
+-- ---------------------------------------------------------------------------
+
+CREATE FUNCTION decision.resolve_authorization_policy(
+    p_decision_id uuid
+)
+RETURNS TABLE (
+    authorization_policy_version_id uuid,
+    resolution_code text
+)
+LANGUAGE plpgsql
+STABLE
+SET search_path = pg_catalog, decision, access_control
+AS $function$
+DECLARE
+    v_decision decision.decision_records%ROWTYPE;
+    v_candidate_count bigint;
+    v_selected_policy_id uuid;
+BEGIN
+    SELECT decision_record.*
+    INTO v_decision
+    FROM decision.decision_records AS decision_record
+    WHERE decision_record.decision_id = p_decision_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'no_data_found',
+                MESSAGE = 'Authorization Decision Record does not exist';
+    END IF;
+
+    WITH applicable_policy AS (
+        SELECT
+            policy_version.authorization_policy_version_id,
+            policy_version.selection_priority,
+            (
+                CASE WHEN policy_version.service_id IS NOT NULL THEN 1 ELSE 0 END
+                + CASE
+                    WHEN policy_version.purpose_definition_id IS NOT NULL
+                    THEN 1 ELSE 0
+                  END
+                + CASE
+                    WHEN policy_version.operation_definition_id IS NOT NULL
+                    THEN 1 ELSE 0
+                  END
+                + CASE
+                    WHEN policy_version.requester_organization_id IS NOT NULL
+                    THEN 1 ELSE 0
+                  END
+                + CASE
+                    WHEN policy_version.governed_scope_id IS NOT NULL
+                    THEN 1 ELSE 0
+                  END
+                + CASE
+                    WHEN policy_version.protected_target_type IS NOT NULL
+                    THEN 2 ELSE 0
+                  END
+                + CASE
+                    WHEN policy_version.classification_key IS NOT NULL
+                    THEN 1 ELSE 0
+                  END
+                + CASE
+                    WHEN policy_version.lease_audience IS NOT NULL
+                    THEN 1 ELSE 0
+                  END
+            ) AS specificity
+        FROM access_control.authorization_policy_versions AS policy_version
+        JOIN access_control.authorization_policies AS policy
+          ON policy.authorization_policy_id =
+             policy_version.authorization_policy_id
+        WHERE policy.status = 'ACTIVE'
+          AND policy_version.status = 'ACTIVE'
+          AND policy_version.valid_from <= v_decision.evaluated_at
+          AND (
+              policy_version.valid_until IS NULL
+              OR policy_version.valid_until > v_decision.evaluated_at
+          )
+          AND policy_version.decision_class = v_decision.decision_class
+          AND (
+              policy_version.service_id IS NULL
+              OR policy_version.service_id IS NOT DISTINCT FROM
+                 v_decision.service_id
+          )
+          AND (
+              policy_version.purpose_definition_id IS NULL
+              OR policy_version.purpose_definition_id IS NOT DISTINCT FROM
+                 v_decision.purpose_definition_id
+          )
+          AND (
+              policy_version.operation_definition_id IS NULL
+              OR policy_version.operation_definition_id =
+                 v_decision.operation_definition_id
+          )
+          AND (
+              policy_version.requester_organization_id IS NULL
+              OR policy_version.requester_organization_id IS NOT DISTINCT FROM
+                 v_decision.requester_organization_id
+          )
+          AND (
+              policy_version.applies_to_all_governed_scopes
+              OR policy_version.governed_scope_id IS NOT DISTINCT FROM
+                 v_decision.governed_scope_id
+          )
+          AND (
+              policy_version.applies_to_all_targets
+              OR (
+                  policy_version.protected_target_type =
+                      v_decision.protected_target_type
+                  AND policy_version.protected_target_reference =
+                      v_decision.protected_target_reference
+              )
+              OR (
+                  NOT policy_version.protected_target_required
+                  AND policy_version.protected_target_type IS NULL
+              )
+          )
+          AND (
+              policy_version.classification_key IS NULL
+              OR policy_version.classification_key IS NOT DISTINCT FROM
+                 v_decision.classification_key
+          )
+          AND (
+              policy_version.lease_audience IS NULL
+              OR policy_version.lease_audience IS NOT DISTINCT FROM
+                 v_decision.lease_audience
+          )
+    ),
+    highest_specificity AS (
+        SELECT max(applicable_policy.specificity) AS specificity
+        FROM applicable_policy
+    ),
+    highest_precedence AS (
+        SELECT min(applicable_policy.selection_priority) AS selection_priority
+        FROM applicable_policy
+        JOIN highest_specificity
+          ON highest_specificity.specificity =
+             applicable_policy.specificity
+    ),
+    winning_candidate AS (
+        SELECT applicable_policy.authorization_policy_version_id
+        FROM applicable_policy
+        JOIN highest_specificity
+          ON highest_specificity.specificity =
+             applicable_policy.specificity
+        JOIN highest_precedence
+          ON highest_precedence.selection_priority =
+             applicable_policy.selection_priority
+    )
+    SELECT
+        count(*),
+        (array_agg(
+            winning_candidate.authorization_policy_version_id
+            ORDER BY
+                winning_candidate.authorization_policy_version_id::text
+        ))[1]
+    INTO
+        v_candidate_count,
+        v_selected_policy_id
+    FROM winning_candidate;
+
+    IF v_candidate_count = 0 THEN
+        authorization_policy_version_id := NULL;
+        resolution_code := 'AUTHORIZATION_POLICY_NOT_FOUND';
+        RETURN NEXT;
+        RETURN;
+    END IF;
+
+    IF v_candidate_count > 1 THEN
+        authorization_policy_version_id := NULL;
+        resolution_code := 'AUTHORIZATION_POLICY_AMBIGUOUS';
+        RETURN NEXT;
+        RETURN;
+    END IF;
+
+    authorization_policy_version_id := v_selected_policy_id;
+    resolution_code := 'AUTHORIZATION_POLICY_SELECTED';
+    RETURN NEXT;
+END;
+$function$;
+
+COMMENT ON FUNCTION decision.resolve_authorization_policy(uuid) IS
+    'Resolve one uniquely applicable Authorization Policy Version using exact request context, explicit specificity, and selection priority. Returns a stable policy-resolution code and never uses physical row order as authority.';
+
+REVOKE ALL ON FUNCTION decision.resolve_authorization_policy(uuid)
+    FROM PUBLIC;
+
+CREATE FUNCTION decision.bind_authorization_policy(
+    p_decision_id uuid
+)
+RETURNS text
+LANGUAGE plpgsql
+SET search_path = pg_catalog, decision, access_control
+AS $function$
+DECLARE
+    v_now timestamptz := pg_catalog.statement_timestamp();
+    v_decision decision.decision_records%ROWTYPE;
+    v_selected_policy_id uuid;
+    v_resolution_code text;
+BEGIN
+    SELECT decision_record.*
+    INTO v_decision
+    FROM decision.decision_records AS decision_record
+    WHERE decision_record.decision_id = p_decision_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'no_data_found',
+                MESSAGE = 'Authorization Decision Record does not exist';
+    END IF;
+
+    IF v_decision.record_status <> 'DRAFT' THEN
+        RETURN 'AUTHORIZATION_DECISION_ALREADY_FINALIZED';
+    END IF;
+
+    IF v_decision.authorization_policy_version_id IS NOT NULL THEN
+        RETURN 'AUTHORIZATION_POLICY_ALREADY_BOUND';
+    END IF;
+
+    SELECT
+        resolution.authorization_policy_version_id,
+        resolution.resolution_code
+    INTO
+        v_selected_policy_id,
+        v_resolution_code
+    FROM decision.resolve_authorization_policy(p_decision_id) AS resolution;
+
+    IF v_resolution_code IN (
+        'AUTHORIZATION_POLICY_NOT_FOUND',
+        'AUTHORIZATION_POLICY_AMBIGUOUS'
+    ) THEN
+        UPDATE decision.decision_records
+        SET
+            record_status = 'FINALIZED',
+            final_result = 'DENY',
+            primary_reason_code = v_resolution_code,
+            finalized_at = v_now
+        WHERE decision_id = p_decision_id;
+
+        RETURN v_resolution_code;
+    END IF;
+
+    IF (
+        v_decision.expected_authorization_policy_version_id IS NOT NULL
+        AND v_decision.expected_authorization_policy_version_id <>
+            v_selected_policy_id
+    ) THEN
+        UPDATE decision.decision_records
+        SET
+            record_status = 'FINALIZED',
+            final_result = 'DENY',
+            primary_reason_code =
+                'AUTHORIZATION_POLICY_CONTEXT_MISMATCH',
+            finalized_at = v_now
+        WHERE decision_id = p_decision_id;
+
+        RETURN 'AUTHORIZATION_POLICY_CONTEXT_MISMATCH';
+    END IF;
+
+    UPDATE decision.decision_records
+    SET authorization_policy_version_id = v_selected_policy_id
+    WHERE decision_id = p_decision_id
+      AND record_status = 'DRAFT'
+      AND authorization_policy_version_id IS NULL;
+
+    IF NOT FOUND THEN
+        RETURN 'AUTHORIZATION_DECISION_ALREADY_FINALIZED';
+    END IF;
+
+    RETURN 'AUTHORIZATION_POLICY_SELECTED';
+END;
+$function$;
+
+COMMENT ON FUNCTION decision.bind_authorization_policy(uuid) IS
+    'Lock one draft Decision Record, resolve and bind its unique applicable Authorization Policy Version, or persist a terminal DENY for missing, ambiguous, or mismatched policy context.';
+
+REVOKE ALL ON FUNCTION decision.bind_authorization_policy(uuid)
+    FROM PUBLIC;
+
+CREATE FUNCTION decision.finalize_authorization_decision(
+    p_decision_id uuid
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, decision, access_control
+AS $function$
+DECLARE
+    v_now timestamptz := pg_catalog.statement_timestamp();
+    v_decision decision.decision_records%ROWTYPE;
+    v_bind_result text;
+    v_reason_code text;
+BEGIN
+    SELECT decision_record.*
+    INTO v_decision
+    FROM decision.decision_records AS decision_record
+    WHERE decision_record.decision_id = p_decision_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'no_data_found',
+                MESSAGE = 'Authorization Decision Record does not exist';
+    END IF;
+
+    IF v_decision.record_status <> 'DRAFT' THEN
+        RETURN false;
+    END IF;
+
+    IF v_decision.authorization_policy_version_id IS NULL THEN
+        v_bind_result :=
+            decision.bind_authorization_policy(p_decision_id);
+
+        IF v_bind_result <> 'AUTHORIZATION_POLICY_SELECTED' THEN
+            RETURN true;
+        END IF;
+
+        SELECT decision_record.*
+        INTO v_decision
+        FROM decision.decision_records AS decision_record
+        WHERE decision_record.decision_id = p_decision_id
+        FOR UPDATE;
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM access_control.authorization_policy_stage_requirements
+            AS stage_requirement
+        WHERE stage_requirement.authorization_policy_version_id =
+              v_decision.authorization_policy_version_id
+          AND NOT EXISTS (
+              SELECT 1
+              FROM decision.evaluation_records AS evaluation
+              WHERE evaluation.decision_id = p_decision_id
+                AND evaluation.authorization_policy_stage_requirement_id =
+                    stage_requirement.authorization_policy_stage_requirement_id
+          )
+    ) THEN
+        v_reason_code := 'AUTHORIZATION_DECISION_INCOMPLETE';
+
+    ELSIF EXISTS (
+        SELECT 1
+        FROM access_control.authorization_policy_stage_requirements
+            AS stage_requirement
+        JOIN decision.evaluation_records AS evaluation
+          ON evaluation.decision_id = p_decision_id
+         AND evaluation.authorization_policy_stage_requirement_id =
+             stage_requirement.authorization_policy_stage_requirement_id
+        WHERE stage_requirement.authorization_policy_version_id =
+              v_decision.authorization_policy_version_id
+          AND stage_requirement.required
+          AND evaluation.result = 'FAIL'
+    ) THEN
+        v_reason_code :=
+            'AUTHORIZATION_DECISION_REQUIRED_STAGE_FAILED';
+
+    ELSIF EXISTS (
+        SELECT 1
+        FROM access_control.authorization_policy_stage_requirements
+            AS stage_requirement
+        JOIN decision.evaluation_records AS evaluation
+          ON evaluation.decision_id = p_decision_id
+         AND evaluation.authorization_policy_stage_requirement_id =
+             stage_requirement.authorization_policy_stage_requirement_id
+        WHERE stage_requirement.authorization_policy_version_id =
+              v_decision.authorization_policy_version_id
+          AND stage_requirement.required
+          AND evaluation.result = 'NOT_EVALUATED'
+    ) THEN
+        v_reason_code :=
+            'AUTHORIZATION_DECISION_REQUIRED_STAGE_NOT_EVALUATED';
+
+    ELSIF EXISTS (
+        SELECT 1
+        FROM access_control.authorization_policy_stage_requirements
+            AS stage_requirement
+        JOIN decision.evaluation_records AS evaluation
+          ON evaluation.decision_id = p_decision_id
+         AND evaluation.authorization_policy_stage_requirement_id =
+             stage_requirement.authorization_policy_stage_requirement_id
+        WHERE stage_requirement.authorization_policy_version_id =
+              v_decision.authorization_policy_version_id
+          AND evaluation.result = 'NOT_REQUIRED'
+          AND (
+              stage_requirement.required
+              OR evaluation.reason_code <>
+                 stage_requirement.not_required_reason_code
+              OR evaluation.policy_rule_reference <>
+                 stage_requirement.not_required_rule_reference
+          )
+    ) THEN
+        v_reason_code :=
+            'AUTHORIZATION_DECISION_NOT_REQUIRED_RULE_MISSING';
+
+    ELSIF EXISTS (
+        SELECT 1
+        FROM access_control.authorization_policy_stage_requirements
+            AS stage_requirement
+        JOIN decision.evaluation_records AS evaluation
+          ON evaluation.decision_id = p_decision_id
+         AND evaluation.authorization_policy_stage_requirement_id =
+             stage_requirement.authorization_policy_stage_requirement_id
+        WHERE stage_requirement.authorization_policy_version_id =
+              v_decision.authorization_policy_version_id
+          AND stage_requirement.supporting_record_required
+          AND NOT EXISTS (
+              SELECT 1
+              FROM decision.supporting_records AS supporting_record
+              WHERE supporting_record.evaluation_id =
+                    evaluation.evaluation_id
+                AND supporting_record.required_for_result
+          )
+    ) THEN
+        v_reason_code := 'AUTHORIZATION_DECISION_INCOMPLETE';
+
+    ELSIF EXISTS (
+        SELECT 1
+        FROM decision.evaluation_records AS evaluation
+        WHERE evaluation.decision_id = p_decision_id
+          AND evaluation.result = 'FAIL'
+    ) THEN
+        v_reason_code :=
+            'AUTHORIZATION_DECISION_REQUIRED_STAGE_FAILED';
+
+    ELSIF EXISTS (
+        SELECT 1
+        FROM decision.evaluation_records AS evaluation
+        WHERE evaluation.decision_id = p_decision_id
+          AND evaluation.result = 'NOT_EVALUATED'
+    ) THEN
+        v_reason_code :=
+            'AUTHORIZATION_DECISION_REQUIRED_STAGE_NOT_EVALUATED';
+    END IF;
+
+    IF v_reason_code IS NULL THEN
+        UPDATE decision.decision_records
+        SET
+            record_status = 'FINALIZED',
+            final_result = 'ALLOW',
+            primary_reason_code = 'AUTHORIZATION_DECISION_ALLOWED',
+            finalized_at = v_now
+        WHERE decision_id = p_decision_id
+          AND record_status = 'DRAFT';
+    ELSE
+        UPDATE decision.decision_records
+        SET
+            record_status = 'FINALIZED',
+            final_result = 'DENY',
+            primary_reason_code = v_reason_code,
+            finalized_at = v_now
+        WHERE decision_id = p_decision_id
+          AND record_status = 'DRAFT';
+    END IF;
+
+    RETURN FOUND;
+END;
+$function$;
+
+COMMENT ON FUNCTION decision.finalize_authorization_decision(uuid) IS
+    'Finalize one draft authorization Decision Record exactly once. The function binds a unique applicable policy when necessary, requires complete policy-stage closure, validates NOT_REQUIRED rules and required supporting evidence, and computes ALLOW or DENY without accepting a caller-supplied result.';
+
+REVOKE ALL ON FUNCTION decision.finalize_authorization_decision(uuid)
+    FROM PUBLIC;
+
+CREATE OR REPLACE FUNCTION decision.finalize_decision(
+    p_decision_id uuid,
+    p_final_result text,
+    p_primary_reason_code text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, decision
+AS $function$
+DECLARE
+    v_finalized boolean;
+    v_actual_result text;
+    v_actual_reason_code text;
+BEGIN
+    v_finalized :=
+        decision.finalize_authorization_decision(p_decision_id);
+
+    SELECT
+        decision_record.final_result,
+        decision_record.primary_reason_code
+    INTO
+        v_actual_result,
+        v_actual_reason_code
+    FROM decision.decision_records AS decision_record
+    WHERE decision_record.decision_id = p_decision_id;
+
+    IF p_final_result IS DISTINCT FROM v_actual_result
+       OR p_primary_reason_code IS DISTINCT FROM v_actual_reason_code
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'check_violation',
+                MESSAGE =
+                    'Caller-supplied decision result does not match the authoritative computed result';
+    END IF;
+
+    RETURN v_finalized;
+END;
+$function$;
+
+COMMENT ON FUNCTION decision.finalize_decision(uuid, text, text) IS
+    'Compatibility wrapper that computes the authoritative result through finalize_authorization_decision and rejects caller-supplied values that do not exactly match the persisted result. Caller input is never the authority source.';
+
+REVOKE ALL ON FUNCTION decision.finalize_decision(uuid, text, text)
+    FROM PUBLIC;
+
 SELECT foundation_meta.register_migration(
     p_migration_id => '081_postgresql_authorization_decision_and_lease_issuance',
     p_migration_name => 'PostgreSQL authorization decision and lease issuance structure',
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
-    p_notes => 'Added typed policy applicability, exact policy-stage mapping, lease-request Decision Record fields, one-decision/one-lease cardinality, core decision-to-lease context binding, lease chronology and state shape, and attributable authority and use evidence.'
+    p_notes => 'Added typed policy applicability, exact policy-stage mapping, lease-request Decision Record fields, one-decision/one-lease cardinality, core decision-to-lease context binding, lease chronology and state shape, attributable authority and use evidence, deterministic policy resolution, controlled policy binding, and finalization-once Decision Record closure.'
 );
 
 COMMIT;

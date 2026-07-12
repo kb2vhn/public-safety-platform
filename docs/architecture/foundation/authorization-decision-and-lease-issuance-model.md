@@ -6,11 +6,11 @@
 >
 > **Phase:** 3 — Authorization Decision and Controlled Lease Issuance
 >
-> **Status:** Normative Phase 3 contract; Step 2 structural implementation candidate
+> **Status:** Normative Phase 3 contract; Step 3 controlled decision-finalization implementation candidate
 >
 > **Accepted prerequisite:** `phase-2-session-control-complete-v1`
 >
-> **Step 2 implementation migration:**
+> **Step 3 implementation migration:**
 > `081_postgresql_authorization_decision_and_lease_issuance.sql`
 
 ## 1. Purpose
@@ -891,8 +891,8 @@ Every Phase 3 run must retain the accepted Phase 2 baseline:
 3 understood WARN results
 ```
 
-The Phase 3 Step 2 target adds one migration and one 60-assertion structural
-test:
+The accepted Phase 3 Step 2 target adds one migration and one 60-assertion
+structural test:
 
 ```text
 33 manifest migrations
@@ -900,6 +900,18 @@ test:
 13 sequential test files
 4 concurrency test files
 273 PASS assertions
+0 FAIL assertions
+3 understood WARN results
+```
+
+The Phase 3 Step 3 target adds one 24-assertion controlled behavior test:
+
+```text
+33 manifest migrations
+33 registered migrations
+14 sequential test files
+4 concurrency test files
+297 PASS assertions
 0 FAIL assertions
 3 understood WARN results
 ```
@@ -950,10 +962,25 @@ functions remain Phase 3 Steps 3 and 4.
 
 ### Step 3 — Controlled Decision Finalization
 
-- Implement deterministic policy selection.
-- Implement required-stage closure.
-- Implement finalization-once behavior.
-- Persist safe reason codes and supporting evidence.
+Implementation candidate:
+
+```text
+sql/schema/migrations/foundation/
+081_postgresql_authorization_decision_and_lease_issuance.sql
+
+test-framework/sql/tests/foundation/
+140_authorization_policy_selection_and_decision_finalization.sql
+```
+
+Step 3 adds deterministic policy resolution from persisted Decision Record
+context, controlled policy binding, missing and ambiguous policy denial,
+expected-policy mismatch denial, complete policy-stage closure, exact
+`NOT_REQUIRED` rule validation, required supporting-evidence enforcement,
+finalization-once behavior, and a compatibility wrapper that rejects
+caller-supplied result mismatches.
+
+Step 3 does not issue, verify, consume, renew, or revoke Authorization Leases.
+Those behaviors remain Phase 3 Step 4.
 
 ### Step 4 — Controlled Lease Issuance and Verification
 
