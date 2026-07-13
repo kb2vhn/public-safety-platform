@@ -1,12 +1,12 @@
-# Client Experience Model
+# CAD Client Experience Model
 
-> **Document status:** Normative cross-platform user-interface architecture.
+> **Document status:** Normative CAD user-interface architecture.
 >
-> **Implementation status:** Each interface, module, client, portal, workstation, mobile application, and generated-content implementation must apply and validate these principles within its own role and operating context.
+> **Implementation status:** Each applicable CAD interface, client, workstation surface, mobile client, and generated-content implementation must apply and validate these principles within its own role and operating context.
 
 ## Purpose
 
-Define the shared experience requirements for human-facing Platform interfaces.
+Define the shared experience requirements for human-facing CAD interfaces.
 
 The interface must help a person perform an authorized role safely, efficiently, accurately, and with as little unnecessary friction as practical.
 
@@ -19,7 +19,7 @@ The interface is not the user's job. It is a tool used to perform the job.
 A successful interface becomes predictable enough that the user can focus on:
 
 - The information being evaluated,
-- The person or community being served,
+- The caller, responder, agency, or community being served,
 - The decision that must be made,
 - The condition being managed,
 - The responsibility being fulfilled,
@@ -29,18 +29,18 @@ rather than focusing on the mechanics, internal structure, or limitations of the
 
 ## Scope
 
-This model applies to all human-facing Platform capabilities, including:
+This model applies to human-facing CAD capabilities, including:
 
-- Public interfaces,
-- Employee and administrative applications,
-- Operational workstations,
-- Mobile and field interfaces,
-- Shared terminals and kiosks,
-- Authentication and session interfaces,
-- Dashboards, maps, tables, and visualizations,
-- Reports, forms, notices, and generated documents,
-- Support, recovery, installation, and administrative tools,
-- Third-party interfaces presented as part of a Platform workflow.
+- Call-taker and dispatcher workspaces,
+- Supervisor workspaces,
+- Field and mobile CAD clients,
+- CAD administrative and configuration applications,
+- Shared dispatch terminals,
+- Authentication, session, lock, and handoff interfaces,
+- Dashboards, maps, queues, tables, timelines, alerts, and visualizations,
+- Reports, forms, notices, messages, and generated documents,
+- Support, recovery, installation, and maintenance tools,
+- Third-party interfaces presented as part of a CAD workflow.
 
 Machine-to-machine APIs are not user interfaces. Their documentation, administrative clients, error presentation, and generated outputs are within scope when people use them.
 
@@ -65,13 +65,13 @@ The interface should use the language of the supported role where that language 
 
 Role-centered presentation does not grant authority.
 
-The appearance of a button, menu item, keyboard command, route, panel, or module does not establish that an action is allowed. Protected actions remain subject to Platform identity, session, device, scope, purpose, policy, approval, authorization, and audit requirements.
+The appearance of a button, menu item, keyboard command, route, panel, or workstation component does not establish that an action is allowed. Protected actions remain subject to Platform identity, session, device, scope, purpose, policy, applicable Approval Request and Approval Action continuity, authorization, and audit requirements.
 
 The interface may:
 
 - Hide clearly inapplicable actions,
 - Explain why an action is unavailable,
-- Guide the user through required approval or step-up processes,
+- Guide the user through required Foundation Approval Request participation or session step-up processes,
 - Prevent accidental submission of incomplete work.
 
 The interface must not:
@@ -80,6 +80,21 @@ The interface must not:
 - Perform a protected action only because the client believes it is allowed,
 - Represent a local assumption as a server-authoritative decision,
 - Bypass policy to reduce user friction.
+
+
+### Approval and Authorization Vocabulary
+
+The interface must distinguish:
+
+- Approval Action Record recorded.
+- Approval stage satisfied.
+- Approval Request finalized.
+- Authorization Decision allowed or denied.
+- Authorization Lease current or invalid.
+- CAD operation committed.
+- External delivery acknowledged.
+
+A generic `Approved` label must not be used where it could hide which state actually exists. A retryable serialization or deadlock result must not be presented as a policy denial.
 
 ## Preserve Attention
 
@@ -102,7 +117,7 @@ Information should be prioritized according to relevance, urgency, age, conseque
 
 Urgent information must be distinguishable from routine information. Routine information must not be presented with the same prominence as a condition requiring immediate action.
 
-The Platform should avoid alerting the user merely because an internal event occurred. A notification should normally exist because the user must know, decide, acknowledge, investigate, or act.
+CAD interfaces should avoid alerting the user merely because an internal event occurred. A notification should normally exist because the user must know, decide, acknowledge, investigate, or act.
 
 Acknowledgment of an alert must not silently mean that the underlying condition has been resolved.
 
@@ -116,7 +131,7 @@ The interface should preserve useful working context across:
 - Safe retries,
 - Reauthentication,
 - Supported session continuation,
-- Component or module recovery,
+- Workstation-component recovery,
 - Display or layout changes,
 - Degraded and resynchronizing conditions.
 
@@ -129,7 +144,7 @@ Context may include:
 - User-selected views,
 - Draft work,
 - Accessibility and interaction preferences,
-- The reason a warning or approval was requested.
+- The reason a warning, Foundation Approval Request, or session step-up was required.
 
 Context preservation must not:
 
@@ -185,7 +200,7 @@ The interface should:
 The shortest workflow is not always the safest workflow. Additional steps are justified when they provide necessary:
 
 - Verification,
-- Independent approval,
+- An independent Foundation Approval Request and eligible Approval Action when policy requires it,
 - Identity proof,
 - Safety confirmation,
 - Legal acknowledgment,
@@ -275,7 +290,7 @@ The interface should make clear:
 - What action will occur,
 - What information or people will be affected,
 - Whether the action is reversible,
-- Whether approval or additional proof is required,
+- Whether a Foundation Approval Request, independent Approval Action, session step-up, or other proof is required,
 - Whether the action has completed,
 - What the user should do when it does not complete.
 
@@ -356,7 +371,7 @@ Technical support identifiers should be copyable and attributable without requir
 
 ## Degraded Operation
 
-When a service, module, integration, network path, or data source is degraded, the interface must clearly communicate:
+When a service, workstation component, integration, network path, or data source is degraded, the interface must clearly communicate:
 
 - What is affected,
 - What remains available,
@@ -392,13 +407,13 @@ Recovery must not silently replay an operation whose prior result is uncertain.
 
 ## Consistency and Predictability
 
-Equivalent concepts should behave predictably across Platform interfaces.
+Equivalent concepts should behave predictably across CAD interfaces.
 
 Shared terminology, status representation, interaction patterns, controls, keyboard behavior, and error language should remain consistent when the underlying meaning is the same.
 
 Consistency must not force unrelated roles into one unsuitable interface.
 
-A public user, administrator, dispatcher, field employee, records worker, and support engineer may require different presentations even when they consume shared Platform services.
+A call taker, dispatcher, supervisor, responder, CAD administrator, and support engineer may require different presentations even when they consume shared Platform services.
 
 Consistency means equivalent meaning is expressed predictably. It does not mean every person receives the same screen.
 
@@ -421,7 +436,7 @@ Supported preferences may include:
 Preferences must not:
 
 - Grant authority,
-- Suppress mandatory warnings without governed approval,
+- Suppress mandatory warnings without a controlled policy exception and current Authorization Decision,
 - Expose one user's private information to another,
 - Change the meaning of committed records,
 - Conceal required information,
@@ -450,7 +465,7 @@ The interface should:
 - Request additional proof only when required,
 - Preserve safe work during reauthentication where practical,
 - Distinguish denied authority from technical failure,
-- Explain approval or step-up requirements without revealing protected policy details,
+- Explain Foundation Approval Request, Approval Action, or session step-up requirements without revealing protected policy details,
 - Prevent accidental high-consequence actions,
 - Avoid repeated prompts that provide no additional assurance.
 
@@ -515,7 +530,7 @@ Validation should include applicable evaluation of:
 - Security workflows,
 - User confidence in the represented result.
 
-Visual appearance alone is not evidence of a usable interface.
+Visual appearance alone does not establish that an interface is usable.
 
 A feature is not complete merely because its controls render successfully or its happy-path automated test passes.
 
@@ -539,7 +554,7 @@ Testing should use representative:
 
 ### Release Acceptance
 
-A release containing material interface changes should not be accepted until the responsible owner has evidence that:
+A release containing material interface changes should not be accepted until the responsible owner has retained evaluation results demonstrating that:
 
 - Critical workflows remain completable,
 - State and outcomes are represented accurately,
@@ -554,7 +569,7 @@ A release containing material interface changes should not be accepted until the
 
 Shared interface components are responsible for consistent, secure, and accessible interaction behavior within their defined scope.
 
-Module and client implementations remain responsible for:
+CAD client and workstation implementations remain responsible for:
 
 - Role-specific workflow design,
 - Domain terminology,
@@ -567,7 +582,7 @@ Module and client implementations remain responsible for:
 - User evaluation,
 - Release acceptance.
 
-Platform governance may record standards, controls, assessments, findings, remediation, exceptions, risk, and assurance evidence. Those records do not independently prove that an interface is effective, usable, accessible, or appropriate for its role.
+Platform governance may record standards, controls, assessments, findings, remediation, exceptions, risk, and Assurance Artifacts. Those records do not independently prove that an interface is effective, usable, accessible, or appropriate for its role.
 
 ## Change Discipline
 
@@ -581,7 +596,7 @@ A material change to human interaction should identify:
 - Required regression testing,
 - Updated help or training,
 - Known limitations,
-- Release evidence.
+- Release Assurance Artifacts.
 
 A shared-component change must identify consuming workflows that require regression evaluation.
 
@@ -593,7 +608,7 @@ This model does not:
 - Require every role to use the same workflow,
 - Select a frontend framework,
 - Define workstation process isolation,
-- Define local IPC or module supervision,
+- Define local IPC or workstation-component supervision,
 - Replace domain-specific workflow architecture,
 - Replace accessibility evaluation,
 - Treat interface visibility as authorization,

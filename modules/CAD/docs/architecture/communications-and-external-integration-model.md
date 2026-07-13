@@ -4,6 +4,17 @@
 >
 > **Implementation status:** Not implemented
 
+## Architecture Ownership
+
+This document is authoritative for CAD external contracts, delivery intent,
+idempotency, acknowledgment, retry, replay, and canonical delivery state.
+
+The Operational Workstation
+[Network Communication Profile](operational-workstation/network-communication-profile.md)
+is authoritative for local workstation egress, inbound paths, process ownership,
+and independent network enforcement. Network permission does not establish CAD
+business authority or delivery success.
+
 ## Purpose
 
 Define replaceable, observable, and recoverable integration boundaries for

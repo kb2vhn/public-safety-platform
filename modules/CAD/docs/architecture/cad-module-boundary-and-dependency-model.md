@@ -42,11 +42,15 @@ Expected CAD-owned concepts include:
 The Platform Foundation owns broadly reusable security, governance, trust,
 authorization, assurance, resilience, telemetry, and integration mechanisms.
 
-CAD must not redefine Foundation identity, session, authorization, approval,
-Decision Record, assurance, or governance concepts merely to make CAD
-implementation easier.
+CAD must not redefine Foundation identity, Authentication Assertion, session,
+Authority Grant, Approval Request, Approval Action Record, stage evaluation,
+Approval Request finalization, Authorization Decision, Authorization Lease,
+Decision Record, Decision Supporting Record, Assurance Artifact, or governance
+concept merely to make CAD implementation easier.
 
-CAD requests controlled Foundation decisions using exact domain context.
+CAD requests controlled Foundation Authorization Decisions using exact domain
+context and commits protected CAD effects only through controlled service and
+database boundaries.
 
 ## Shared-Resource Candidates
 

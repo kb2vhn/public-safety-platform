@@ -1,6 +1,6 @@
 # Operational Fault Episode Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Event contracts, storage, and support workflow are not yet implemented.
 
@@ -17,18 +17,18 @@ The episode must allow:
 - Operators to understand the immediate impact.
 - Tier-one support to identify the affected workstation and capability.
 - Tier-two support to reconstruct local and dependency behavior.
-- Engineering to correlate code, release, package, protocol, and resource evidence.
+- Engineering to correlate code, release, package, protocol, and resource observations.
 - Security to identify malicious or suspicious behavior.
 - Management to understand recurrence and operational impact.
 - Auditors to verify detection, response, corrective action, and closure.
 
 ## Episode creation
 
-The console coordinator, independent health service, or supervisor must be able to create the episode even when the failed module cannot emit events.
+The console coordinator, independent health service, or supervisor must be able to create the episode even when the failed workstation component cannot emit events.
 
 An episode is opened when a configured threshold is met, such as:
 
-- Module health failure.
+- Workstation Component health failure.
 - renderer crash.
 - service crash.
 - restart loop.
@@ -37,7 +37,7 @@ An episode is opened when a configured threshold is met, such as:
 - corrupted local state.
 - action outcome unknown.
 - release incompatibility.
-- trust-evidence failure.
+- trust-assertion failure.
 - security isolation.
 - failed update or rollback.
 - repeated degraded-state transition.
@@ -66,9 +66,9 @@ Each event should include:
 - workstation identifier.
 - console session identifier where applicable.
 - operator-session reference where appropriate.
-- module identifier.
-- module instance identifier.
-- console and module release identifiers.
+- component identifier.
+- component instance identifier.
+- console and workstation component release identifiers.
 - package and configuration references.
 - observed time.
 - source event time.
@@ -76,7 +76,7 @@ Each event should include:
 - state before and after.
 - action taken.
 - outcome.
-- evidence references.
+- diagnostic-record references.
 - support owner.
 - confidentiality classification.
 
@@ -87,9 +87,9 @@ Potential contributors include:
 - Console coordinator.
 - systemd.
 - Linux kernel.
-- native module host.
+- native component host.
 - WebKit web, network, and GPU processes.
-- Go module service.
+- Go component service.
 - local IPC broker or socket.
 - local state service.
 - platform API.
@@ -111,10 +111,10 @@ Potential contributors include:
 14:07:14.118  Map UI became unresponsive
 14:07:14.120  Map state changed DEGRADED → FAILED
 14:07:14.123  Operator shown "Mapping unavailable — recovering"
-14:07:14.127  Incident and resource modules verified healthy
+14:07:14.127  Incident and resource workstation components verified healthy
 14:07:14.131  Map termination requested
 14:07:15.002  Map process terminated
-14:07:15.014  Exit state and resource evidence captured
+14:07:15.014  Exit state and resource observations captured
 14:07:15.050  Restart initiated
 14:07:16.337  New process acquired IPC endpoint
 14:07:16.581  Incident context restored
@@ -162,7 +162,7 @@ The episode records:
 
 ## Sensitive information
 
-Diagnostic records should prefer identifiers, hashes, versions, and bounded evidence over full operational content.
+Diagnostic records should prefer identifiers, hashes, versions, and bounded diagnostic records over full operational content.
 
 For example, record:
 
@@ -185,13 +185,13 @@ A bounded diagnostic bundle may include:
 - Relevant journal ranges.
 - process exit and coredump metadata.
 - resource timeline.
-- module and protocol versions.
+- workstation component and protocol versions.
 - configuration digests.
 - state transition history.
 - IPC error summaries.
 - network dependency results.
 - renderer failure details.
-- integrity evidence.
+- integrity-verification records.
 - update history.
 - administrator session references.
 
@@ -208,7 +208,7 @@ Closure requires, where applicable:
 - corrective change.
 - release containing the correction.
 - regression test.
-- fault-injection or reproduction evidence.
+- fault-injection results or reproduction artifacts.
 - support knowledge update.
 - recurrence assessment.
 - closure authority.
@@ -222,7 +222,7 @@ Episode records must be:
 - exported off-host.
 - integrity protected.
 - access controlled.
-- searchable by workstation, module, release, symptom, and cause.
+- searchable by workstation, workstation component, release, symptom, and cause.
 - retained according to operational, legal, security, and contractual policy.
 - independent of one monitoring vendor.
 
@@ -234,7 +234,7 @@ Derived metrics may include:
 - mean operator-impact duration.
 - mean automatic recovery time.
 - mean support acknowledgment time.
-- recurrence by module and release.
+- recurrence by workstation component and release.
 - restart-loop frequency.
 - unresolved outcome-unknown count.
 - percentage of episodes with permanent correction.

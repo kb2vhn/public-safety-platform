@@ -1,12 +1,12 @@
-# Operational Workstation Architecture
+# CAD Operational Workstation Architecture
 
-> Status: Normative architecture under active refinement.
+> Status: Normative CAD target architecture under active refinement.
 >
 > Implementation status: Target architecture; not yet implemented or field validated.
 
 ## Purpose
 
-The Operational Workstation Architecture defines the complete computing environment used by an operational user, including the operating system, local services, graphical suite, module runtime, workstation trust, local state, input devices, displays, management path, recovery behavior, and operator-visible failure states.
+The CAD Operational Workstation Architecture defines the complete computing environment used by an operational user, including the operating system, local services, graphical suite, workstation component runtime, workstation trust, local state, input devices, displays, management path, recovery behavior, and operator-visible failure states.
 
 For a dispatcher, the console is the unified information, decision-support, and workflow environment. Radio and telephone systems remain separate systems. The console may receive call metadata, recording references, channel or unit state, timestamps, location information, and integration events, but it does not own the core communications function of those systems.
 
@@ -17,7 +17,7 @@ The console must behave like a dependable operational appliance:
 - Fast and predictable under sustained workload.
 - Understandable during normal and degraded operation.
 - Resistant to unnecessary software and service growth.
-- Able to isolate and recover individual modules.
+- Able to isolate and recover individual workstation components.
 - Unable to convert a local presentation decision into platform authority.
 - Reproducible from governed artifacts.
 - Manageable without taking over or obstructing the operator workspace.
@@ -30,28 +30,28 @@ The console must behave like a dependable operational appliance:
 Managed Operational Console Session
 │
 ├── Session coordinator and global status surface
-├── Incident module process boundary
-├── Resource or unit module process boundary
-├── Mapping module process boundary
+├── Incident and call-handling component process boundary
+├── Unit and resource component process boundary
+├── Mapping component process boundary
 ├── Messaging and notification process boundary
 ├── Search and reference process boundary
 ├── Local state and delivery service
-├── Trust-evidence and health agent
+├── Workstation trust and health agent
 └── Management, logging, and recovery services
 ```
 
-A module may contain:
+A workstation component may contain:
 
 ```text
 WebKitGTK renderer
         │
         │ narrow native message bridge
         ▼
-Go module host
+Go component host
         │
         │ authenticated Unix-domain socket
         ▼
-Go module service
+Go component service
         │
         │ authenticated platform connection
         ▼
@@ -71,10 +71,10 @@ The workstation is responsible for:
 - Protecting local temporary information.
 - Preserving safe recoverable drafts where policy permits.
 - Delivering structured actions to platform services.
-- Detecting local module and dependency failures.
+- Detecting local workstation component and dependency failures.
 - Supervising and restarting local components.
 - Reconstructing views from authoritative state.
-- Producing workstation health, security, performance, and fault evidence.
+- Producing workstation health, security, performance, and fault diagnostic records.
 - Supporting governed administration, update, rollback, isolation, and rebuild.
 
 ## Workstation non-responsibilities
@@ -86,7 +86,7 @@ The workstation does not:
 - Become the authoritative database for committed operational records.
 - Allow UI visibility to imply authorization.
 - Treat local cache as current merely because it is available.
-- Let a module communicate directly with the database.
+- Let a workstation component communicate directly with the database.
 - Make radio or telephone core operation dependent on the console.
 - Permit an external provider to declare the workstation or operator trusted.
 - Hide failed integrations behind normal-looking controls.
@@ -100,7 +100,7 @@ A JavaScript component, iframe, or panel is not a runtime failure boundary.
 
 A separate WebView inside one unsupervised process may improve rendering isolation but is not sufficient when failure of the owning process would still terminate the complete console.
 
-Each significant module profile must declare:
+Each significant component profile must declare:
 
 - Process boundary.
 - Native host boundary.
@@ -134,11 +134,11 @@ The workstation may hold:
 - Idempotent pending actions.
 - Delivery acknowledgments.
 - Workspace and accessibility preferences.
-- Diagnostic evidence.
+- Fault diagnostic records.
 
 Local state must be classified explicitly as authoritative, projected, cached, draft, pending, acknowledged, rejected, conflicted, outcome-unknown, or disposable.
 
-A module must be restartable without inventing, losing, or silently duplicating committed work.
+A workstation component must be restartable without inventing, losing, or silently duplicating committed work.
 
 ## Security boundaries
 
@@ -156,11 +156,11 @@ The management path is separate from the operator path. Named administrators use
 
 A capability that is unavailable, delayed, stale, resynchronizing, restricted, or untrusted must be clearly identified.
 
-Failure of one module must not automatically:
+Failure of one workstation component must not automatically:
 
 - Terminate the operator session.
 - Clear unrelated visible context.
-- restart unrelated modules.
+- restart unrelated workstation components.
 - discard acknowledged actions.
 - mark stale data as live.
 - disable core radio or telephone operation.
@@ -183,9 +183,9 @@ Production consoles must not follow an uncontrolled rolling repository. They con
 
 ## Acceptance conditions
 
-No workstation profile is accepted until evidence demonstrates:
+No workstation profile is accepted until retained validation results and Assurance Artifacts demonstrate:
 
-- Module failure containment.
+- Workstation Component failure containment.
 - Restart and state reconstruction.
 - No renderer remote-content path.
 - Local IPC authentication and authorization.
@@ -197,5 +197,5 @@ No workstation profile is accepted until evidence demonstrates:
 - Recorded remote administration.
 - Reproducible provisioning and rebuild.
 - Signed release promotion and rollback.
-- Drift and workstation trust evidence.
+- Drift and workstation trust assertions.
 - Fault-event correlation from detection through resolution.

@@ -151,13 +151,17 @@
 | CAD-DSP-184 | Sensitive access and bulk export must be purpose-bound and auditable. |
 | CAD-DSP-185 | No ordinary identity or accumulated role set may provide unrestricted CAD authority. |
 | CAD-DSP-186 | Break-glass access must be explicit, limited, time-bound, attributable, accessible, and reviewable. |
+| CAD-DSP-187 | Approval Action recording, stage satisfaction, Approval Request finalization, Authorization Decision, Authorization Lease continuity, CAD commit, and external delivery must remain distinguishable. |
+| CAD-DSP-188 | An approval must remain a bounded policy input and must not be represented as permission or a committed CAD action. |
+| CAD-DSP-189 | A local client, cache, or queue must not create or finalize Foundation approval or authorization records. |
+| CAD-DSP-190 | Retryable serialization, deadlock, and conflict outcomes must remain distinguishable from policy denial. |
 
 ## Degraded Operation
 
 | ID | Requirement |
 |---|---|
 | CAD-DSP-200 | The dispatcher must be told which capability is degraded and what remains authoritative. |
-| CAD-DSP-201 | The workspace must distinguish locally committed, queued, provisional, rejected, conflicted, and reconciled actions. |
+| CAD-DSP-201 | The workspace must distinguish locally recorded, queued, pending authoritative validation, rejected, expired, conflicted, reconciled, and authoritatively committed actions. |
 | CAD-DSP-202 | Offline or queued operation must define maximum authority and conflict behavior. |
 | CAD-DSP-203 | Reconciliation must preserve local action, central state, conflict, disposition, and resulting canonical state. |
 | CAD-DSP-204 | Recovery must not be declared complete until required queues, conflicts, delivery, and operational checks are resolved. |

@@ -2,49 +2,45 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Status:** Normative module documentation under active refinement
+> **Status:** Normative CAD documentation under active refinement
 
 ## Purpose
 
-This directory governs the Computer Aided Dispatch module before production SQL,
-service code, integrations, or user-interface implementation begin.
+Govern the Computer Aided Dispatch module before production SQL, service code,
+integrations, dispatcher interfaces, or Operational Workstation implementation
+begin.
 
-The documentation is organized to support the same disciplined progression used
-by the Platform Foundation:
+## Architecture Layers
 
 ```text
-Mission and boundary
+Platform Foundation and governed shared capabilities
         ↓
-Normative architecture
+CAD domain and application architecture
         ↓
-Domain invariants and controlled operations
+CAD user-interface architecture
         ↓
-Implementation design
-        ↓
-Clean installation and structural validation
-        ↓
-Positive, negative, and concurrency behavior
-        ↓
-Resource observation and accessibility evaluation
-        ↓
-Phase-gated acceptance
-        ↓
-Deployment and operational readiness
+CAD Operational Workstation implementation profile
 ```
+
+The layers are related but not interchangeable. The
+[CAD Architecture Boundary and Precedence Model](architecture/cad-architecture-boundary-and-precedence-model.md)
+defines which layer owns each kind of rule.
 
 ## Start Here
 
 - [Architecture Index](architecture/README.md)
+- [CAD User-Interface Architecture](architecture/user-interface/README.md)
+- [CAD Operational Workstation Architecture](architecture/operational-workstation/README.md)
 - [Dispatcher Capability Catalog](requirements/dispatcher-capability-catalog.md)
-- [Decision Records](decisions/README.md)
+- [CAD Architecture Decisions](decisions/README.md)
 - [Acceptance Records](acceptance/README.md)
 
 ## Documentation Synchronization Rule
 
 A CAD phase is not complete until the module README, architecture index,
-requirements, decisions, implementation paths, manifests, tests, phase gate,
+requirements, decisions, executable paths, manifests, tests, phase gate,
 acceptance record, counts, terminology, and next-step statement describe the
 same repository state.
 
 Documentation may describe planned behavior, but it must label that behavior as
-planned until the implementation and applicable tests are accepted.
+planned until implementation and applicable tests are accepted.

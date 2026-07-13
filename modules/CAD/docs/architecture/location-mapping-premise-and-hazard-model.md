@@ -157,7 +157,7 @@ A hazard record should include:
 - Responsible organization.
 - Applicable location or scope.
 - Access classification.
-- Approval or supervisory review when required.
+- Governed independent review and, when policy requires it, a finalized Foundation Approval Request.
 - Correction and supersession lineage.
 - Usage and display rules.
 

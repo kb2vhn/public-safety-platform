@@ -2,31 +2,35 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Status:** Normative architecture under active refinement
+> **Status:** Normative CAD architecture under active refinement
 >
 > **Implementation status:** Design only
 
 ## Dependency Direction
 
 ```text
-Platform Foundation
+Platform Foundation and governed platform services
         ↓
-Shared Resources and Platform Services
+CAD domain and application services
         ↓
-CAD Domain and Application Services
+CAD user-interface contracts
         ↓
-CAD External-System Adapters and User Interfaces
+CAD Operational Workstation and other CAD clients
+        ↓
+Replaceable external adapters and delivery technologies
 ```
 
-The dispatcher interface is not the CAD source of truth.
+No client, renderer, local cache, workstation component, or external provider is
+an independent source of CAD authorization or canonical operational truth.
 
-External integrations are not hidden sources of authorization or history.
+## Governing Boundary
 
-The CAD domain must remain usable through controlled service and database
-boundaries even when a particular map, radio, telephony, AVL, paging, or
-notification provider is unavailable.
+Start with the
+[CAD Architecture Boundary and Precedence Model](cad-architecture-boundary-and-precedence-model.md).
+It resolves ownership where domain, interface, and workstation documents touch
+the same workflow.
 
-## Architecture Models
+## CAD Domain and Application Models
 
 1. [CAD Module Boundary and Dependency Model](cad-module-boundary-and-dependency-model.md)
 2. [Dispatcher Operational Workspace Model](dispatcher-operational-workspace-model.md)
@@ -35,37 +39,39 @@ notification provider is unavailable.
 5. [Location, Mapping, Premise, and Hazard Model](location-mapping-premise-and-hazard-model.md)
 6. [Alerts, Timers, and Attention Management Model](alerts-timers-and-attention-management-model.md)
 7. [Authorization, Audit, and Supervisory Control Model](authorization-audit-and-supervisory-control-model.md)
-8. [Communications and External-Integration Model](communications-and-external-integration-model.md)
-9. [Degraded Operations, Continuity, and Reconciliation Model](degraded-operations-continuity-and-reconciliation-model.md)
-10. [CAD Testing and Acceptance Model](cad-testing-and-acceptance-model.md)
-11. [CAD Phased Implementation Plan](cad-phased-implementation-plan.md)
+8. [Foundation Approval and Protected CAD Operation Integration Model](foundation-approval-and-protected-operation-integration-model.md)
+9. [Communications and External-Integration Model](communications-and-external-integration-model.md)
+10. [Degraded Operations, Continuity, and Reconciliation Model](degraded-operations-continuity-and-reconciliation-model.md)
 
-## Cross-Platform Architecture
+## CAD Human Interaction
 
-CAD human-facing behavior is also governed by:
+- [CAD User-Interface Architecture](user-interface/README.md)
+- [CAD Client Experience Model](user-interface/client-experience-model.md)
+- [CAD Accessibility and Inclusive Interaction Model](user-interface/accessibility-and-inclusive-interaction-model.md)
 
-```text
-docs/architecture/user-interface/
-```
+These documents own human-facing behavior independent of a particular operating
+system, renderer, or workstation packaging choice.
 
-That cross-platform architecture remains responsible for common accessibility
-and interaction requirements. This module remains responsible for accessible
-CAD-specific workflows, alerts, queues, maps, timers, commands, status
-representations, and generated content.
+## CAD Operational Workstation
+
+- [CAD Operational Workstation Architecture](operational-workstation/README.md)
+
+This directory owns the managed workstation appliance, local workstation
+components, native services, IPC, cache, spool, release, security, management,
+resource, fault, and recovery behavior.
+
+## Delivery and Acceptance
+
+- [CAD Testing and Acceptance Model](cad-testing-and-acceptance-model.md)
+- [CAD Phased Implementation Plan](cad-phased-implementation-plan.md)
 
 ## Architecture Acceptance Rule
 
-An architecture model is not considered implemented merely because it exists.
+An architecture model is not implemented merely because it exists.
 
-Implementation claims require:
-
-- Exact executable artifacts.
-- Authoritative manifests.
-- Clean installation.
-- Structural and privilege validation.
-- Positive and negative behavioral tests.
-- Independent-connection concurrency tests when state can race.
-- Accessibility evaluation for human-facing behavior.
-- Resource observation for executable paths.
-- Synchronized status documentation.
-- A retained phase acceptance record.
+Implementation claims require exact executable artifacts, authoritative
+registration, clean installation or reproducible build, structural and
+privilege validation, positive and negative tests, independent-connection
+concurrency tests where state can race, accessibility evaluation for
+human-facing behavior, resource observation for executable paths, synchronized
+status documentation, and a retained acceptance record.

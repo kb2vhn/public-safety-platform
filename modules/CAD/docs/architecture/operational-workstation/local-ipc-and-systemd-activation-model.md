@@ -1,6 +1,6 @@
 # Local IPC and systemd Activation Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Unix-domain sockets and selective systemd socket activation are the initial reference direction.
 
@@ -12,7 +12,7 @@ This document defines secure local communication between console processes and t
 
 Unix-domain sockets are the preferred local transport for:
 
-- Module control.
+- Workstation Component control.
 - Live local projections.
 - Structured operator actions.
 - Health checks.
@@ -30,7 +30,7 @@ Runtime sockets must be created below a controlled runtime directory such as:
 /run/iron-console/
 ├── shell/
 │   └── control.sock
-├── modules/
+├── workstation components/
 │   ├── incident/
 │   │   └── control.sock
 │   ├── map/
@@ -49,7 +49,7 @@ Runtime directories should be created and permissioned by systemd rather than by
 
 One universal local API is discouraged.
 
-A module endpoint should expose only the functions required by that module.
+A workstation component endpoint should expose only the functions required by that workstation component.
 
 For example:
 
@@ -69,7 +69,7 @@ resources/control.sock
     submit governed resource actions
 ```
 
-The mapping module must not be able to close an incident merely because both functions are visible in the same console.
+The mapping workstation component must not be able to close an incident merely because both functions are visible in the same console.
 
 ## Authentication and peer verification
 
@@ -81,8 +81,8 @@ Each connection must be evaluated using multiple signals where available:
 - Connecting Linux user and group.
 - Peer process identifier.
 - Expected cgroup or systemd unit.
-- Module identity.
-- Module instance identity.
+- Workstation Component identity.
+- Workstation Component instance identity.
 - Console session identity.
 - Per-start capability.
 - Protocol version.
@@ -90,21 +90,21 @@ Each connection must be evaluated using multiple signals where available:
 - Request identifier.
 - Freshness and replay checks.
 
-A process running as the ordinary operator must not gain every local module capability simply because it can discover a socket path.
+A process running as the ordinary operator must not gain every local component capability simply because it can discover a socket path.
 
 ## Per-start capability
 
-Every module start receives a new short-lived local capability.
+Every workstation component start receives a new short-lived local capability.
 
 The capability:
 
-- Is scoped to one module and purpose.
-- Is bound to one module instance.
+- Is scoped to one workstation component and purpose.
+- Is bound to one component instance.
 - Is delivered through a protected native mechanism.
 - Is never embedded in static JavaScript.
 - Expires when the process or session ends.
 - Is rotated after restart.
-- Is not accepted from an older module instance.
+- Is not accepted from an older component instance.
 - Is redacted from ordinary logs.
 
 ## Message envelope
@@ -182,23 +182,23 @@ systemd socket activation is a supported mechanism where an operating-system-own
 
 Socket activation does not preserve an accepted connection when the service process fails. The client must reconnect and reauthenticate.
 
-## Critical modules
+## Critical workstation components
 
-Critical operational modules should normally be proactively started and health validated as part of the console target.
+Critical operational workstation components should normally be proactively started and health validated as part of the console target.
 
 Socket activation may still own their stable listening endpoints.
 
 Examples include:
 
 - Console coordinator.
-- Incident module.
-- Resource module.
-- Mapping module.
-- Messaging module.
+- Incident and call-handling component.
+- Unit and resource component.
+- Mapping component.
+- Messaging and notification component.
 - Local delivery and recovery service.
 - Audit and telemetry forwarding.
 
-## On-demand modules
+## On-demand workstation components
 
 True on-demand activation may be appropriate for:
 
@@ -208,11 +208,11 @@ True on-demand activation may be appropriate for:
 - Diagnostic collection.
 - Rarely used administrative support tools.
 
-An on-demand module must still declare a startup deadline and visible behavior while starting.
+An on-demand workstation component must still declare a startup deadline and visible behavior while starting.
 
 ## Socket activation mode
 
-The default for stateful Go module services is:
+The default for stateful Go component services is:
 
 ```ini
 Accept=no
@@ -220,7 +220,7 @@ Accept=no
 
 One supervised service receives the listening socket and manages its accepted connections.
 
-`Accept=yes` requires explicit architectural approval because it creates one service instance per connection and changes state, resource, and audit behavior.
+`Accept=yes` requires an explicit Architecture Decision Record because it creates one service instance per connection and changes state, resource, and audit behavior.
 
 ## Descriptor ownership
 
@@ -242,13 +242,13 @@ After a service failure:
 3. systemd restarts or activates the replacement service.
 4. The replacement receives the stable listening socket.
 5. The client reconnects.
-6. A new module instance authenticates.
+6. A new component instance authenticates.
 7. State resynchronization begins.
 8. Operator context is restored.
 9. Functional health is verified.
-10. The module returns to healthy.
+10. The workstation component returns to healthy.
 
-The mere existence of the socket does not prove module readiness.
+The mere existence of the socket does not prove workstation component readiness.
 
 ## Example units
 

@@ -1,6 +1,6 @@
 # Human Factors and Interaction Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Not yet field validated with operational users.
 
@@ -26,7 +26,7 @@ The interface should help the operator perceive, understand, decide, and act wit
 - Repeated warnings are grouped or escalated rather than creating an alert storm.
 - The operator can determine data age and source.
 - The interface differentiates committed, pending, rejected, conflicted, and outcome-unknown actions.
-- A failed module displays a deliberate degraded surface rather than an empty normal-looking area.
+- A failed workstation component displays a deliberate degraded surface rather than an empty normal-looking area.
 - Recovery preserves context where safe.
 - Error language explains operational effect rather than exposing only implementation detail.
 
@@ -44,7 +44,7 @@ The console should preserve:
 - monitor placement.
 - visible degraded-state indicators.
 
-A module restart must not unexpectedly redirect the operator to a default home screen when the prior context can be reconstructed safely.
+A workstation component restart must not unexpectedly redirect the operator to a default home screen when the prior context can be reconstructed safely.
 
 ## Alert hierarchy
 
@@ -73,7 +73,7 @@ Confirmation depends on:
 - frequency.
 - likelihood of accidental activation.
 - availability of later correction.
-- whether another approval is already required.
+- whether a Foundation Approval Request or independent Approval Action is already required by policy.
 
 The system must not train operators to dismiss constant generic confirmation dialogs.
 
@@ -85,7 +85,7 @@ High-frequency low-risk actions should avoid unnecessary confirmation. Rare irre
 - A newly inserted row does not displace the row currently being acted upon.
 - Keyboard focus is always visually apparent.
 - Modal surfaces are minimized.
-- A module failure does not send focus to another module unexpectedly.
+- A workstation component failure does not send focus to another workstation component unexpectedly.
 - After restart, focus returns only when doing so is safe and predictable.
 - Screen readers receive state changes in a prioritized, non-repetitive manner.
 
@@ -104,8 +104,8 @@ Each binding record includes:
 - focus effect.
 - authorization effect.
 - owner.
-- approval state.
-- test evidence.
+- governed change-authorization state.
+- retained test results and test artifacts.
 
 A keyboard binding may request an action; it does not bypass server-side authorization.
 
@@ -188,7 +188,7 @@ Validation should include:
 - high event volume.
 - interruption.
 - shift handoff.
-- module failure.
+- workstation component failure.
 - degraded data.
 - uncertain action outcome.
 - display loss.
@@ -196,4 +196,4 @@ Validation should include:
 - fatigue and extended use.
 - training and first-use behavior.
 
-Feedback becomes governed design evidence rather than informal preference alone.
+Feedback becomes governed design-review records rather than informal preference alone.

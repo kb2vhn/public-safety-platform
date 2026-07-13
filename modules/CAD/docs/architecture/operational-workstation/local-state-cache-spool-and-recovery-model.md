@@ -1,6 +1,6 @@
 # Local State, Cache, Spool, and Recovery Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Storage engines, encryption mechanisms, and replay protocols are not yet selected.
 
@@ -65,12 +65,12 @@ Presentation state that may be discarded without operational consequence.
 - A pending action must have an idempotency key.
 - A committed action must carry the authoritative commitment reference.
 - Outcome-unknown actions require reconciliation before ordinary retry.
-- Modules must not invent replacement state after restart.
+- Workstation Components must not invent replacement state after restart.
 - Local storage exhaustion must become visible before critical data is lost.
 
 ## Storage ownership
 
-Local state should be owned by a dedicated service or narrowly scoped module service rather than uncontrolled renderer storage.
+Local state should be owned by a dedicated service or narrowly scoped component service rather than uncontrolled renderer storage.
 
 The renderer must not be the sole holder of:
 
@@ -88,7 +88,7 @@ Each state class declares:
 - Classification.
 - encryption requirement.
 - TPM or device binding where applicable.
-- operator, session, module, or workstation scope.
+- operator, session, workstation component, or workstation scope.
 - retention.
 - maximum size.
 - freshness limit.
@@ -145,7 +145,7 @@ Protected actions use:
 - idempotency key.
 - expected authoritative version or context.
 - operator and session reference.
-- workstation and module instance reference.
+- workstation and component instance reference.
 - creation time.
 - expiration.
 - ordered delivery requirements.
@@ -164,7 +164,7 @@ An acknowledgment should include:
 - commitment time.
 - decision-record reference where applicable.
 - resulting state reference.
-- integrity or signature evidence where required.
+- integrity-verification or signature records where required.
 
 ## Outcome unknown
 
@@ -202,7 +202,7 @@ A replay cursor is durable and integrity protected.
 
 ## Disk and queue limits
 
-Each module and state class declares a storage budget.
+Each workstation component and state class declares a storage budget.
 
 The workstation monitors:
 
@@ -242,7 +242,7 @@ Before rebuild, governed recovery may preserve:
 - Unsent critical actions.
 - outcome-unknown references.
 - eligible drafts.
-- required fault evidence.
+- required fault diagnostic records.
 - approved diagnostic bundles.
 
 Preserved data must be integrity protected, encrypted, attributable, and imported through a validated recovery process.
@@ -252,3 +252,18 @@ Preserved data must be integrity protected, encrypted, attributable, and importe
 The workstation is not the primary backup location for authoritative platform data.
 
 Local backups are permitted only for explicitly approved state classes. A backup must not silently turn transient workstation data into a long-lived uncontrolled repository.
+
+## Prohibited Local Authority
+
+The local store and spool must never become an alternate Foundation authority. They must not contain locally authoritative:
+
+- Approval Action Records.
+- Approval Request stage evaluations or finalization.
+- Authorization Decisions.
+- Authorization Leases.
+- Decision Records.
+- Protected CAD commits.
+
+A cached copy of one of these records is read-only supporting context with an explicit freshness limit. It cannot be replayed as authority.
+
+When queued protected work is submitted, the authoritative service performs current-state validation, including Phase 4 Step 7 Approval Request, Approval Action, stage-evaluation, finalization, and Authority Grant continuity. The workstation may mark the action **committed** only after authoritative acknowledgment identifies the committed CAD result.

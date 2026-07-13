@@ -1,6 +1,6 @@
 # Network Communication Profile
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Policy model defined; production endpoints and rules are not yet selected.
 
@@ -19,7 +19,7 @@ A connection is permitted only because a current workflow, dependency, support f
 - External-provider access, where unavoidable, uses approved gateways, proxies, or destination sets.
 - DNS, time, certificate, update, logging, endpoint security, management, and recovery dependencies are explicit.
 - Renderer processes are denied direct remote application-content access.
-- Module services receive only their approved destination profile.
+- Workstation Component services receive only their approved destination profile.
 - Loopback and Unix-domain socket communication are governed, not assumed safe.
 
 ## Communication record
@@ -27,7 +27,7 @@ A connection is permitted only because a current workflow, dependency, support f
 Each approved communication declares:
 
 - Rule identifier.
-- owning service or module.
+- owning service or workstation component.
 - local identity or systemd unit.
 - direction.
 - protocol.
@@ -42,7 +42,7 @@ Each approved communication declares:
 - operational purpose.
 - failure effect.
 - monitoring and alerting.
-- approval.
+- Governed communication-profile authorization.
 - review date.
 - expiration or permanent status.
 - related release and profile version.
@@ -69,7 +69,7 @@ Host firewall rules do not replace:
 
 - Filesystem permissions.
 - peer credential checks.
-- module instance authentication.
+- component instance authentication.
 - message authorization.
 - rate and size limits.
 - replay controls.
@@ -131,7 +131,7 @@ The profile defines:
 - bandwidth ceiling.
 - classification.
 - behavior when the collector is unavailable.
-- retention of unsent critical evidence.
+- retention of unsent critical audit or diagnostic records.
 - protection against log-induced resource exhaustion.
 
 ## DNS
@@ -153,7 +153,7 @@ DNS success alone does not establish remote trust.
 
 Time synchronization uses approved sources and authentication where supported.
 
-Time failure or excessive skew becomes health and trust evidence.
+Time failure or excessive skew becomes time-health observations and workstation trust assertions.
 
 ## External systems
 

@@ -623,7 +623,7 @@ Start with:
 - [Phase 3 Authorization Acceptance](docs/architecture/foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 - [PostgreSQL Architecture](docs/architecture/postgresql.md)
 - [External-System-Independent Observability](docs/architecture/external-system-independent-observability.md)
-- [User-Interface Architecture](docs/architecture/user-interface/README.md)
+- [User-Interface Architecture](modules/CAD/docs/architecture/user-interface/README.md)
 - [Project Goals](docs/goals/README.md)
 - [Compliance Profiles](docs/compliance-profiles/README.md)
 - [Validation Tools](tools/validation/README.md)

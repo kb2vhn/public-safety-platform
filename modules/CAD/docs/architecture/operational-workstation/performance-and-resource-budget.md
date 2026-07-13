@@ -1,8 +1,8 @@
 # Performance and Resource Budget
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
-> Implementation status: Initial measurement framework defined; final budgets require benchmark and field evidence.
+> Implementation status: Initial measurement framework defined; final budgets require benchmark and field observations.
 
 ## Purpose
 
@@ -12,9 +12,9 @@ The console must be validated on the lowest supported production hardware profil
 
 ## Budget principles
 
-- Every significant module has a resource budget.
+- Every significant workstation component has a resource budget.
 - The console shell remains small and responsive.
-- A high-resource module cannot starve critical lower-resource modules.
+- A high-resource workstation component cannot starve critical lower-resource workstation components.
 - Performance measurements define start and end points.
 - p50, p95, and p99 are reported where appropriate.
 - Cold and warm behavior are distinguished.
@@ -38,7 +38,7 @@ An initial low-cost validation profile should evaluate approximately:
 
 This is not an accepted minimum. Testing establishes the supported profile.
 
-Higher-resolution, multi-display, or specialized profiles require separate evidence.
+Higher-resolution, multi-display, or specialized profiles require separate benchmark artifacts and field observations.
 
 ## Measurement environment
 
@@ -53,11 +53,11 @@ Every result records:
 - kernel.
 - console release.
 - WebKitGTK version.
-- module versions.
+- workstation component versions.
 - network conditions.
 - dataset size.
 - event rate.
-- active modules.
+- active workstation components.
 - accessibility settings.
 - test duration.
 - percentile method.
@@ -75,8 +75,8 @@ Measure at minimum:
 - search initiation to first useful result.
 - incident selection to complete primary view.
 - map pan and zoom response.
-- module cold start.
-- module warm restart.
+- workstation component cold start.
+- workstation component warm restart.
 - state resynchronization.
 - operator-context restoration.
 - lock.
@@ -99,11 +99,11 @@ Each accepted profile will define numeric thresholds for:
 - maximum time to safe automatic recovery.
 - maximum time to declare recovery failure.
 
-Numbers must be established through evidence and approved change control.
+Numbers must be established through benchmark results, field observations, and governed change control.
 
 ## Resource measurements
 
-Measure per module and complete console:
+Measure per workstation component and complete console:
 
 - Resident memory.
 - peak memory.
@@ -121,18 +121,18 @@ Measure per module and complete console:
 
 ## Resource governance
 
-Each module profile declares:
+Each component profile declares:
 
 - Normal expected range.
 - warning threshold.
 - degradation threshold.
 - hard ceiling.
 - action at each threshold.
-- evidence collection.
+- measurement and artifact collection.
 - operator-visible effect.
 - restart or disable policy.
 
-A module crossing a hard ceiling may be terminated to protect the rest of the console, but protected pending work must follow the local-state model.
+A workstation component crossing a hard ceiling may be terminated to protect the rest of the console, but protected pending work must follow the local-state model.
 
 ## Mapping
 
@@ -162,7 +162,7 @@ Testing should include:
 - high event rate.
 - memory growth.
 - cache turnover.
-- repeated module restart.
+- repeated workstation component restart.
 - network interruption.
 - log collector outage.
 - storage pressure.
@@ -190,16 +190,16 @@ A release cannot be promoted when:
 
 - A critical interaction exceeds its accepted threshold.
 - Memory or resource growth is unexplained.
-- one module can starve another.
+- one workstation component can starve another.
 - restart fails to restore context.
 - degraded-state presentation is delayed beyond policy.
-- log or fault evidence causes unacceptable resource load.
+- log or fault diagnostic records causes unacceptable resource load.
 - accessibility mode violates accepted thresholds without governed exception.
 - results are not reproducible.
 
-## Capacity evidence
+## Capacity observations and benchmark artifacts
 
-Performance evidence becomes a versioned release artifact.
+Performance observations and benchmark artifacts becomes a versioned release artifact.
 
 Changes to hardware minimums or budgets require:
 
@@ -209,4 +209,4 @@ Changes to hardware minimums or budgets require:
 - security impact.
 - cost impact.
 - accessibility impact.
-- approval.
+- Governed budget-change authorization.

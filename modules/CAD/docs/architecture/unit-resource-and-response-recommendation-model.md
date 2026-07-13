@@ -51,7 +51,7 @@ A unit may be technically available but not dispatchable because of:
 - Training status.
 - Location freshness.
 - Communications failure.
-- Approval or supervisory restrictions.
+- A policy-required finalized Foundation Approval Request, current Authorization Decision, or supervisory restriction.
 - Temporary operational hold.
 
 The system must record the reason a resource is or is not dispatchable.
@@ -142,7 +142,7 @@ A response plan should define:
 - Mutual-aid behavior.
 - Version.
 - Effective dates.
-- Approval and governance.
+- Governed configuration authorization and, when policy requires it, a finalized Foundation Approval Request.
 - Explanation text.
 - Exception behavior.
 
@@ -184,7 +184,7 @@ An override should record:
 - Authorization context.
 - Reason.
 - Relevant operational conditions.
-- Whether supervisory approval was required.
+- Whether an independent Foundation Approval Request and eligible Approval Action were required by policy.
 - Resulting assignment.
 
 The system must not shame the operator for a justified override or conceal the

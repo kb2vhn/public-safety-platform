@@ -1,6 +1,6 @@
 # Software Package and Release Governance
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Release tooling, repository infrastructure, and approved package set are not yet implemented.
 
@@ -31,7 +31,7 @@ Every explicit and transitive package must identify:
 - runtime CPU, memory, disk, and startup impact.
 - update and vulnerability-review requirements.
 - removal impact.
-- owner and approval.
+- owner and governed package authorization.
 - first and last release containing it.
 
 ## Package classifications
@@ -103,7 +103,7 @@ A console release is a coherent set that may include:
 - accessibility profile.
 - protocol versions.
 - database or local-state migrations.
-- trust-evidence policy.
+- trust-assertion policy.
 - rollback instructions.
 - release manifest and signatures.
 
@@ -129,7 +129,7 @@ Daily receives automated current builds and performs:
 - static analysis.
 - unit and integration tests.
 - dependency and vulnerability analysis.
-- module compatibility tests.
+- workstation component compatibility tests.
 - workstation image construction.
 - startup tests.
 - renderer policy tests.
@@ -154,7 +154,7 @@ Pre-production receives a selected immutable Daily artifact and validates it on 
 - datasets.
 - operator workflows.
 - shift handoff.
-- module failure and recovery.
+- workstation component failure and recovery.
 - update and rollback.
 - remote administration.
 - degraded operation.
@@ -185,7 +185,7 @@ An emergency security or operational release may shorten scheduling and observat
 - minimum compatibility tests.
 - startup and rollback validation.
 - fault-containment checks relevant to the change.
-- approval.
+- Governed release authorization and, when policy requires it, a finalized Foundation Approval Request.
 - deployment tracking.
 
 ## Release manifest
@@ -198,7 +198,7 @@ The signed release manifest includes:
 - source revision.
 - build environment reference.
 - package snapshot.
-- module versions.
+- workstation component versions.
 - protocol versions.
 - configuration versions.
 - security fixes.
@@ -226,17 +226,17 @@ Release activation must:
 10. roll back automatically or procedurally when validation fails.
 11. record the complete change.
 
-## Module hot update
+## Workstation Component hot update
 
-An independently restartable module may be updated without restarting the entire console only when:
+An independently restartable workstation component may be updated without restarting the entire console only when:
 
-- The module boundary is real.
+- The workstation component boundary is real.
 - Local IPC and platform protocol compatibility are declared.
 - shared library changes are not required.
 - state migration is safe.
 - rollback remains available.
 - operator impact is explicit.
-- the signed release policy permits independent module activation.
+- the signed release policy permits independent workstation component activation.
 
 Kernel, WebKitGTK, graphics-stack, libc, systemd, or broadly shared dependency changes normally require a coherent console release.
 
@@ -249,7 +249,7 @@ Internal repositories must retain enough approved history to:
 - investigate a fault.
 - reproduce a security issue.
 - verify package provenance.
-- support legal or contractual evidence.
+- support legal or contractual records.
 
 ## Unsupported release
 

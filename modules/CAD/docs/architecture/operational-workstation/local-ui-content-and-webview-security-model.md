@@ -1,6 +1,6 @@
 # Local UI Content and WebView Security Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: GTK 4 and WebKitGTK 6.0 are the initial reference direction; no production renderer profile is yet accepted.
 
@@ -14,7 +14,7 @@ The initial reference direction is:
 
 - GTK 4 for native window integration.
 - WebKitGTK 6.0 for standards-based rendering.
-- Go for native module hosts and local services.
+- Go for native component hosts and local services.
 - Application-registered custom URI schemes for approved UI resources.
 - A narrow native message bridge for renderer-to-host communication.
 - Authenticated Unix-domain sockets for host-to-service communication.
@@ -45,7 +45,7 @@ Controlled Go service
 Authenticated local IPC
         │
         ▼
-Native module host
+Native component host
         │
         ▼
 Narrow renderer bridge or custom URI response
@@ -70,7 +70,7 @@ The scheme handler may serve resources from:
 - Assets embedded into a verified binary.
 - A read-only verified release directory.
 - An in-memory generated response.
-- A tightly controlled local module source.
+- A tightly controlled local workstation component source.
 
 The handler must not become a generic file server or arbitrary path resolver.
 
@@ -79,7 +79,7 @@ The handler must not become a generic file server or arbitrary path resolver.
 Every served UI asset must be associated with:
 
 - Console release identifier.
-- Module release identifier.
+- Workstation Component release identifier.
 - Path or logical resource identifier.
 - Cryptographic digest.
 - Content type.
@@ -158,7 +158,7 @@ Every bridge method defines:
 - timeout.
 - allowed call rate.
 - required renderer origin.
-- required module state.
+- required workstation component state.
 - error behavior.
 - audit or diagnostic requirement.
 - whether the method can cause a protected platform action.
@@ -172,7 +172,7 @@ A compromised renderer should still be unable to:
 - read platform credentials.
 - connect directly to platform servers.
 - perform arbitrary protected actions.
-- impersonate another module.
+- impersonate another workstation component.
 - modify the signed release.
 - read another operator's cached state.
 - access unrestricted local files.
@@ -181,7 +181,7 @@ A compromised renderer should still be unable to:
 
 ## Storage
 
-Web storage, cookies, IndexedDB, caches, service workers, and other persistent renderer storage are disabled unless a specific module profile approves them.
+Web storage, cookies, IndexedDB, caches, service workers, and other persistent renderer storage are disabled unless a specific component profile approves them.
 
 Where approved, the profile defines:
 
@@ -199,7 +199,7 @@ Service workers must not introduce an uncontrolled second update or cache mechan
 
 ## Content security policy
 
-Each module uses a restrictive Content Security Policy.
+Each workstation component uses a restrictive Content Security Policy.
 
 The default intent is:
 
@@ -214,7 +214,7 @@ The default intent is:
 - no mixed content.
 - no browser extension dependency.
 
-Exceptions require documented risk acceptance and test evidence.
+Exceptions require documented risk acceptance and retained test results and test artifacts.
 
 ## Local HTTP exception
 

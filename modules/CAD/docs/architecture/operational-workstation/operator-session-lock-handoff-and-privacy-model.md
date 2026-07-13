@@ -1,6 +1,6 @@
 # Operator Session, Lock, Handoff, and Privacy Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Not yet implemented or field validated.
 
@@ -23,7 +23,7 @@ Each operator session is bound to:
 - console-session identifier.
 - approved organization and scope.
 - current operational assignment.
-- authentication and step-up evidence.
+- Authentication Assertion and session step-up records.
 - session lifecycle.
 - current trust and authorization state.
 - accessibility and workspace preference references.
@@ -35,7 +35,7 @@ Lock protects the current operator session without implying sign-out.
 A lock must:
 
 - Obscure protected operational content.
-- stop ordinary operator input from reaching modules.
+- stop ordinary operator input from reaching workstation components.
 - retain only state permitted by policy.
 - keep critical machine-level alerts available where safe.
 - prevent another person from acting as the locked operator.
@@ -67,7 +67,7 @@ Unlock requires:
 - valid session or governed re-establishment.
 - current workstation trust.
 - current scope and shift state.
-- module readiness or explicit degraded presentation.
+- workstation component readiness or explicit degraded presentation.
 - restoration of the correct operator context.
 
 Failed unlock attempts are rate limited and recorded.
@@ -87,7 +87,7 @@ The handoff process must:
 7. terminate or close former-operator platform sessions as required.
 8. authenticate the incoming operator.
 9. load the incoming operator's approved workspace and accessibility profile.
-10. re-evaluate current workstation and module health.
+10. re-evaluate current workstation and workstation component health.
 11. present any unresolved operational items explicitly.
 12. record the complete handoff.
 
@@ -127,7 +127,7 @@ The incoming operator may need to see:
 - assigned resources.
 - current alerts.
 - integration failures.
-- module degraded states.
+- workstation component degraded states.
 - unresolved outcome-unknown actions.
 - pending team work.
 - stale-data warnings.
@@ -183,7 +183,7 @@ Clipboard policy must define:
 
 - permitted content types.
 - maximum retention.
-- cross-module access.
+- component-to-component access.
 - clearing on lock.
 - clearing on handoff.
 - sensitive-content restrictions.
@@ -193,11 +193,11 @@ Clipboard policy must define:
 
 Clipboard history is disabled unless explicitly approved.
 
-## Privacy evidence
+## Privacy-clearing records
 
-The workstation must produce evidence that handoff and sign-out completed required clearing actions without recording unnecessary protected content.
+The workstation must produce privacy-clearing records showing that handoff and sign-out completed required clearing actions without recording unnecessary protected content.
 
-Evidence may include:
+Privacy-clearing records may include:
 
 - state categories cleared.
 - capability revocation results.

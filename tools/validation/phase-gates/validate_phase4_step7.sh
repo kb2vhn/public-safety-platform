@@ -86,10 +86,10 @@ module_boundary_files=(
     'docs/architecture/communications/resource-subscription-and-live-update-model.md'
     'docs/architecture/gis-and-mapping/README.md'
     'docs/architecture/gis-and-mapping/map-rendering-and-data-delivery-architecture.md'
-    'docs/architecture/operational-workstation/README.md'
-    'docs/architecture/operational-workstation/operational-workstation-architecture.md'
-    'docs/architecture/user-interface/README.md'
-    'docs/architecture/user-interface/accessibility-and-inclusive-interaction-model.md'
+    'modules/CAD/docs/architecture/operational-workstation/README.md'
+    'modules/CAD/docs/architecture/operational-workstation/operational-workstation-architecture.md'
+    'modules/CAD/docs/architecture/user-interface/README.md'
+    'modules/CAD/docs/architecture/user-interface/accessibility-and-inclusive-interaction-model.md'
 )
 
 pass() {
@@ -522,20 +522,20 @@ check_contains docs/architecture/gis-and-mapping/map-rendering-and-data-delivery
     'render' \
     'GIS architecture remains client-rendering aware'
 
-check_contains docs/architecture/operational-workstation/operational-workstation-architecture.md \
+check_contains modules/CAD/docs/architecture/operational-workstation/operational-workstation-architecture.md \
     'Unable to convert a local presentation decision into platform authority.' \
     'Operational Workstation cannot convert presentation into authority'
 
-check_contains docs/architecture/operational-workstation/operational-workstation-architecture.md \
+check_contains modules/CAD/docs/architecture/operational-workstation/operational-workstation-architecture.md \
     'Grant protected platform authority.' \
     'Operational Workstation cannot grant protected platform authority'
 
-check_contains docs/architecture/operational-workstation/operational-workstation-architecture.md \
+check_contains modules/CAD/docs/architecture/operational-workstation/operational-workstation-architecture.md \
     'Replace the Foundation Decision Engine.' \
     'Operational Workstation cannot replace the Foundation Decision Engine'
 
-check_contains docs/architecture/user-interface/README.md \
-    'does not independently create identity, authority, approval, commitment, or truth' \
+check_contains modules/CAD/docs/architecture/user-interface/README.md \
+    'does not independently create identity, Authority Grants, Approval Action Records, Authorization Decisions, Authorization Leases, committed state, or canonical truth' \
     'User interface cannot independently create governed truth'
 
 if [[ "$STATIC_ONLY" -eq 1 ]]; then

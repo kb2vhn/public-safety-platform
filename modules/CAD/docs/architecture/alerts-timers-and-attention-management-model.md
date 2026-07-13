@@ -4,6 +4,16 @@
 >
 > **Implementation status:** Not implemented
 
+## Architecture Ownership
+
+This document is authoritative for CAD operational alert and timer records,
+acknowledgment, escalation, resolution, deduplication, and suppression semantics.
+
+The CAD user-interface architecture governs accessible presentation. The
+Operational Workstation governs workstation fault and health notifications.
+Those conditions may share an attention surface, but their source and lifecycle
+must remain distinct.
+
 ## Purpose
 
 Provide actionable, explainable attention management without creating avoidable

@@ -1,6 +1,6 @@
 # Workstation Platform Security and Data Protection Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Hardening profile and accepted hardware baseline are not yet implemented.
 
@@ -21,7 +21,7 @@ The workstation must minimize:
 - local secrets.
 - remote destinations.
 - persistence opportunities.
-- cross-module access.
+- component-to-component access.
 - data remnants.
 - administrative ambiguity.
 
@@ -39,9 +39,9 @@ The accepted hardware and release profile should support:
 - recovery-key governance.
 - boot-order governance.
 - disabled or controlled external boot.
-- integrity evidence available to the workstation trust provider.
+- integrity-verification records available to the workstation trust provider.
 
-The architecture must distinguish evidence availability from policy sufficiency. A TPM claim is evidence; the Decision Engine determines whether it is sufficient for a requested operation.
+The architecture must distinguish assertion availability from policy sufficiency. A TPM claim is a workstation trust assertion; the Decision Engine determines whether it is sufficient for a requested operation.
 
 ## Operating-system composition
 
@@ -68,7 +68,7 @@ Separate identities should exist for:
 
 - Restricted operator session.
 - console coordinator.
-- significant module services.
+- significant component services.
 - native UI hosts where isolation requires.
 - trust and health agents.
 - update and release activation.
@@ -159,9 +159,9 @@ Policies must define:
 - screen recording.
 - remote-support viewing.
 - print-screen keys.
-- module-to-module copy behavior.
+- component-to-component copy behavior.
 - classification warnings.
-- diagnostic capture approval.
+- Governed diagnostic-capture authorization and, when policy requires it, a finalized Foundation Approval Request.
 - storage and retention.
 
 Accessibility needs must be considered before disabling functions globally.
@@ -193,14 +193,14 @@ Printing and export are protected workflows.
 
 A profile defines:
 
-- Which modules may print or export.
+- Which workstation components may print or export.
 - destination restrictions.
 - classification labels.
 - spool protection.
 - job retention.
 - failure behavior.
 - operator attribution.
-- approval where required.
+- A current Authorization Decision and, when policy requires it, a finalized Foundation Approval Request.
 - local temporary-file cleanup.
 
 ## Browser-like functions
@@ -230,13 +230,13 @@ Reliable time is required for:
 - fault correlation.
 - release validation.
 
-Time health is monitored and reported as trust evidence.
+Time health is monitored and reported as workstation trust assertions.
 
 Large or unexplained time changes may restrict protected operation.
 
 ## Malware and endpoint security
 
-An endpoint security provider may contribute evidence and response capability.
+An endpoint security provider may contribute Workstation Observation Records, Workstation Trust Assertions, and response capability.
 
 It must not become the sole trust authority.
 
@@ -244,7 +244,7 @@ The architecture remains provider independent and requires:
 
 - Current provider health.
 - policy version.
-- evidence freshness.
+- assertion freshness.
 - tamper state.
 - isolation state.
 - detection references.
@@ -258,7 +258,7 @@ The workstation must support:
 - Network isolation.
 - operator-visible out-of-service state.
 - session revocation.
-- evidence preservation.
+- record and artifact preservation.
 - off-host log continuity.
 - trusted diagnostic capture.
 - credential and certificate revocation.
@@ -276,5 +276,5 @@ Decommissioning requires:
 - local key destruction.
 - approved media sanitization.
 - recovery-key disposition.
-- retention of required audit and fault evidence.
+- retention of required audit and fault diagnostic records.
 - confirmation that no operator or platform session remains active.

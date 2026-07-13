@@ -1,6 +1,6 @@
 # Remote Management and Session Recording Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: OpenSSH is the initial transport direction; bastion, certificate authority, recorder, and storage are not yet implemented.
 
@@ -20,7 +20,7 @@ All interactive administrative SSH activity must be attributable and completely 
 - Routine management should not take over the operator display.
 - Interactive sessions are tied to a support, change, incident, or emergency purpose.
 - Recordings are retained off-host.
-- Target-side evidence supplements rather than replaces independent recording.
+- Target-side audit and diagnostic records supplement rather than replace independent recording.
 - Root access on the target cannot be trusted to preserve the only authoritative recording.
 
 ## Access path
@@ -43,7 +43,7 @@ Target workstation SSH
 Target-side recorder and restricted administrative shell
 ```
 
-Direct workstation access requires explicit deployment approval.
+Direct workstation access requires an explicit governed deployment authorization and, when policy requires it, a finalized Foundation Approval Request.
 
 ## Authentication
 
@@ -111,7 +111,7 @@ The workstation records:
 - package and release operations.
 - local session end.
 
-Differences between gateway and target evidence are security relevant.
+Differences between gateway and target audit records are security relevant.
 
 ## Recording sensitivity
 
@@ -125,7 +125,7 @@ Complete terminal input and output may contain:
 - sensitive search terms.
 - accidentally pasted private keys.
 
-Recordings are therefore highly restricted security evidence.
+Recordings are therefore highly restricted security records.
 
 They must be:
 
@@ -160,8 +160,8 @@ Approved administrators may:
 
 - Inspect health and fault state.
 - retrieve approved diagnostics.
-- restart one failed module.
-- place a module or console into visible maintenance.
+- restart one failed workstation component.
+- place a workstation component or console into visible maintenance.
 - activate an approved signed release.
 - roll back to an approved prior release.
 - isolate the workstation.
@@ -177,7 +177,7 @@ They must not casually:
 - modify production binaries manually.
 - perform untracked one-off package upgrades.
 - disable logging or recording.
-- clear fault evidence.
+- clear fault diagnostic records.
 
 ## File transfer
 
@@ -200,8 +200,8 @@ The operator sees states such as:
 
 - Support connected.
 - diagnostics being collected.
-- module maintenance scheduled.
-- module restarting.
+- workstation component maintenance scheduled.
+- workstation component restarting.
 - console reboot requested.
 - console out of service.
 
@@ -216,7 +216,7 @@ Break-glass access requires:
 - strong notification.
 - short time bounds.
 - full recording.
-- off-host evidence.
+- off-host audit and diagnostic records.
 - mandatory review.
 - credential rotation or re-sealing after use.
 

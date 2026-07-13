@@ -1,8 +1,8 @@
-# Accessibility and Inclusive Interaction Model
+# CAD Accessibility and Inclusive Interaction Model
 
-> **Document status:** Normative cross-platform user-interface architecture.
+> **Document status:** Normative CAD user-interface architecture.
 >
-> **Implementation status:** Accessibility must be implemented and validated by every applicable shared component, module interface, public portal, administrative client, operational workstation, mobile application, generated-content implementation, and supported deployment.
+> **Implementation status:** Accessibility must be implemented and validated by every applicable CAD interface, shared CAD component, operational workstation surface, field or mobile client, generated-content implementation, and supported CAD deployment.
 >
 > **Conformance status:** No component, deployment, website, application, document, or product may claim accessibility conformance solely because this architecture exists or because an automated scanner reports no errors.
 
@@ -18,7 +18,7 @@ Accessibility is a functional, availability, safety, quality, and governance req
 - A final-stage compliance activity,
 - A substitute for effective user evaluation.
 
-The Platform must support people with differing:
+CAD interfaces must support people with differing:
 
 - Vision,
 - Hearing,
@@ -37,31 +37,29 @@ Accessible interaction must remain considered during ordinary, urgent, degraded,
 
 ## Scope
 
-This model applies to human-facing Platform capabilities, including:
+This model applies to human-facing CAD capabilities, including:
 
-- Public websites and applications,
-- Mobile applications,
-- Citizen and community portals,
-- Employee and administrative applications,
-- Operational workstations,
-- Field and mobile operational interfaces,
-- Kiosks and shared terminals,
-- Authentication and session interfaces,
-- Reports, forms, notices, and correspondence,
+- Call-taker and dispatcher workspaces,
+- Supervisor workspaces,
+- Field and mobile CAD clients,
+- CAD administrative and configuration applications,
+- Shared dispatch terminals,
+- Authentication, session, lock, and handoff interfaces,
+- Reports, forms, notices, messages, and correspondence,
 - Generated HTML, PDF, spreadsheets, presentations, and documents,
-- Dashboards, charts, maps, timelines, and visualizations,
+- Dashboards, charts, maps, queues, timelines, alerts, timers, and visualizations,
 - Email, text, push, and in-application notifications,
 - Embedded help, training, recovery, and support material,
-- Installation, configuration, and administrative tools,
-- Third-party components presented as part of a Platform workflow.
+- Installation, configuration, maintenance, and administrative tools,
+- Third-party components presented as part of a CAD workflow.
 
-Machine-to-machine APIs are not directly subject to visual and interactive requirements. Their documentation, error descriptions, administrative tools, developer portals, and generated outputs remain in scope when used by people.
+Machine-to-machine APIs are not directly subject to visual and interactive requirements. Their documentation, error descriptions, administrative tools, and generated outputs remain in scope when used by people.
 
 ## Standards Baseline
 
-The Platform adopts **WCAG 2.1 Level AA** as the minimum baseline for supported web and mobile interfaces.
+The CAD module adopts **WCAG 2.1 Level AA** as the minimum baseline for supported web and mobile interfaces.
 
-The substance of that baseline must also inform operational, administrative, desktop, kiosk, generated-document, and other human-facing interfaces where WCAG is not a direct technical fit.
+The substance of that baseline must also inform operational, administrative, desktop, kiosk, generated-document, and other human-facing CAD interfaces where WCAG is not a direct technical fit.
 
 A deployment may require additional or newer standards because of:
 
@@ -121,7 +119,7 @@ A workflow whose failure, delay, misunderstanding, or inaccessible operation may
 - Financial obligations,
 - Privacy,
 - Security,
-- Evidence integrity,
+- Assurance Artifact integrity,
 - Time-sensitive decisions,
 - Required reporting,
 - Employment responsibilities.
@@ -169,7 +167,7 @@ A profile may add requirements but must not weaken a binding obligation.
 
 ### Accessibility Assurance Artifact
 
-Evidence supporting an accessibility assessment, such as:
+Assurance Artifacts supporting an accessibility assessment, such as:
 
 - Automated scan output,
 - Manual evaluation results,
@@ -201,7 +199,7 @@ Domain-neutral Platform governance should provide reusable mechanisms for:
 - Remediation,
 - Exceptions,
 - Risk treatment,
-- Release evidence,
+- Release Assurance Artifacts,
 - Historical conformance records.
 
 The existence of those structures does not establish interface accessibility.
@@ -229,9 +227,9 @@ A shared component library must define and test accessible behavior for reusable
 
 A component's accessibility does not guarantee that a page or workflow using it is accessible.
 
-### Modules and Clients
+### CAD Interfaces and Clients
 
-Each module and client remains responsible for:
+Each CAD interface and client remains responsible for:
 
 - Accessible role-specific workflows,
 - Accurate labels and instructions,
@@ -240,7 +238,7 @@ Each module and client remains responsible for:
 - Equivalent representations,
 - Domain-specific alerts,
 - Accessible reports and documents,
-- Module-specific testing,
+- CAD-specific testing,
 - Degraded and recovery behavior.
 
 ### Deployment Owner
@@ -254,14 +252,14 @@ The deployment owner is responsible for:
 - Providing reporting and accommodation channels,
 - Reviewing unresolved findings,
 - Approving authorized exceptions,
-- Preserving assessment evidence,
+- Preserving assessment records and Assurance Artifacts,
 - Ensuring continuing conformance after deployment.
 
 ### Content Authors
 
 People who create or upload content must use supported accessible templates and authoring practices.
 
-The Platform should prevent, detect, or clearly warn about common inaccessible content, including:
+CAD authoring and validation tools should prevent, detect, or clearly warn about common inaccessible content, including:
 
 - Missing alternative text,
 - Improper heading structure,
@@ -549,7 +547,7 @@ Strict operational time limits must be documented and tested with supported assi
 
 ## Motion, Animation, and Flashing
 
-The Platform must not use flashing content that exceeds applicable safety thresholds.
+CAD interfaces must not use flashing content that exceeds applicable safety thresholds.
 
 Motion and animation must not be required to understand critical information.
 
@@ -762,9 +760,9 @@ Automated accessibility testing should cover applicable:
 - Generated HTML,
 - Supported viewports,
 - Supported themes,
-- Public interfaces,
-- Administrative interfaces,
-- Operational interfaces.
+- Dispatcher and call-taker interfaces,
+- Supervisor and administrative interfaces,
+- Field, mobile, support, and operational-workstation interfaces.
 
 Passing automated tests does not establish conformance.
 
@@ -804,7 +802,7 @@ The architecture must not permanently bind to one vendor or version. Profiles sh
 
 ### User Evaluation
 
-Critical public and operational workflows should be evaluated with users with disabilities.
+Critical CAD operational and support workflows should be evaluated with users with disabilities.
 
 User evaluation complements but does not replace standards-based assessment.
 
@@ -842,9 +840,9 @@ An accessibility assessment must identify applicable:
 - Retest results,
 - Final determination.
 
-Evidence must remain attributable to the tested version and configuration.
+Assurance Artifacts must remain attributable to the tested version and configuration.
 
-Stale evidence must not silently establish current conformance.
+Stale Assurance Artifacts must not silently establish current conformance.
 
 ## Findings, Remediation, and Exceptions
 
@@ -874,7 +872,7 @@ An exception must be:
 An exception must not:
 
 - Delete the finding,
-- Change failed evidence into passing evidence,
+- Alter failed assessment results into passing results,
 - Falsely create a conformance claim,
 - Rely solely on vendor assurance,
 - Remain indefinitely active without review,
@@ -901,7 +899,7 @@ Reports identifying a product or deployment defect must enter the governed findi
 
 Performance degradation can create accessibility barriers.
 
-The Platform must consider:
+CAD interfaces must consider:
 
 - Delayed focus changes,
 - Delayed or repeated announcements,
@@ -929,7 +927,7 @@ A release must not claim accessibility conformance without:
 - Recorded findings,
 - Verified remediation,
 - Governed unresolved limitations and exceptions,
-- Retained assurance evidence.
+- Retained Assurance Artifacts.
 
 The following claims are prohibited unless supported by an applicable assessment:
 
@@ -953,7 +951,7 @@ A material change affecting human interaction should update applicable:
 4. Automated tests,
 5. Manual procedures,
 6. Assistive-technology coverage,
-7. Assurance evidence,
+7. Assurance Artifacts,
 8. Findings and remediation records,
 9. User and administrator documentation,
 10. Deployment requirements.

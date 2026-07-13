@@ -4,6 +4,19 @@
 >
 > **Implementation status:** Not implemented
 
+## Architecture Ownership
+
+This document is authoritative for CAD degraded authority, canonical state,
+queue meaning, conflict handling, reconciliation, and recovery acceptance.
+
+Human-facing presentation is governed by the
+[CAD User-Interface Architecture](user-interface/README.md). Local cache, spool,
+component restart, and workstation restoration are governed by the
+[CAD Operational Workstation Architecture](operational-workstation/README.md).
+
+A locally displayed or locally persisted action does not become canonical merely
+because the workstation accepted it.
+
 ## Purpose
 
 Define explicit CAD behavior when dependencies are slow, unavailable,
@@ -70,10 +83,10 @@ For each degraded workflow, architecture must define:
 
 An action performed during degradation must be labeled as:
 
-- Locally committed.
+- Locally recorded.
 - Queued for delivery.
 - Pending central authorization.
-- Provisionally accepted.
+- Provisional local record awaiting authoritative validation.
 - Rejected.
 - Conflicted.
 - Reconciled.
@@ -110,6 +123,19 @@ handling appropriate to the operation.
 
 Tests must prove that retries do not create duplicate incidents, assignments,
 alerts, pages, messages, or timeline records where single effect is required.
+
+
+## Foundation Approval and Authorization During Degradation
+
+Degraded operation does not transfer Foundation approval or authorization authority to the workstation.
+
+A local client, cache, queue, or fallback process must not create an authoritative Approval Action Record, evaluate or finalize an Approval Request, manufacture an Authorization Decision, issue or extend an Authorization Lease, or mark a protected CAD operation committed.
+
+When service returns, the authoritative service must revalidate current Approval Request final state, stage satisfaction, Approval Action continuity, actor independence, Authority Grant continuity, withdrawal, correction, supersession, expiration, suspension, revocation, exact context, and any Authorization Lease before committing the CAD operation.
+
+Serialization failure, deadlock, or another retryable Step 7 concurrency result must remain a technical retry condition rather than being shown as a policy denial or a successful operation.
+
+See the [Foundation Approval and Protected CAD Operation Integration Model](foundation-approval-and-protected-operation-integration-model.md).
 
 ## Accessibility During Degradation
 

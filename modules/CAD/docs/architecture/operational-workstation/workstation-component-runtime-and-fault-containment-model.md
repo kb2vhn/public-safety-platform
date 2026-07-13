@@ -1,16 +1,16 @@
-# Module Runtime and Fault Containment Model
+# Workstation Component Runtime and Fault Containment Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Process boundaries and supervision contracts are not yet implemented.
 
 ## Purpose
 
-This document defines what it means for a console function to be an independently recoverable module.
+This document defines what it means for a console function to be an independently recoverable workstation component.
 
-## Module definition
+## Workstation Component Definition
 
-A console module is a versioned operational capability with a declared:
+A console workstation component is a versioned operational capability with a declared:
 
 - Purpose.
 - State ownership.
@@ -27,19 +27,19 @@ A console module is a versioned operational capability with a declared:
 - Operator-visible failure behavior.
 - Release compatibility range.
 
-A directory, Go package, JavaScript bundle, panel, or iframe is not by itself a module boundary.
+A directory, Go package, JavaScript bundle, panel, or iframe is not by itself a workstation component boundary.
 
-## Reference module structure
+## Reference Workstation Component Structure
 
 ```text
-Module UI process
+Component UI process
 ├── GTK window or controlled surface
 ├── WebKitGTK renderer
 ├── custom URI content provider
 └── narrow native message bridge
              │
              ▼
-Module service process
+Component service process
 ├── authenticated local IPC server
 ├── remote platform client
 ├── local projection/cache manager
@@ -47,23 +47,23 @@ Module service process
 └── fault-event publisher
 ```
 
-Some modules may combine the native UI host and local service when evidence shows that the combined boundary remains safe and independently recoverable. High-risk or high-resource modules should remain separated.
+Some workstation components may combine the native UI host and local service when retained validation results demonstrate that the combined boundary remains safe and independently recoverable. High-risk or high-resource workstation components should remain separated.
 
 ## Isolation goals
 
-A failed module must not automatically:
+A failed workstation component must not automatically:
 
 - Freeze the complete console.
 - Terminate the operator session.
-- corrupt another module's local state.
+- corrupt another workstation component's local state.
 - consume unbounded CPU, memory, disk, GPU, file descriptors, or sockets.
-- acquire another module's platform capability.
-- restart unrelated modules.
+- acquire another workstation component's platform capability.
+- restart unrelated workstation components.
 - suppress global alerts.
 - hide its own failed state.
 - retain stale authority after restart.
 
-## Significant modules
+## Significant workstation components
 
 At minimum, the following should be evaluated as independent boundaries:
 
@@ -80,7 +80,7 @@ The final decomposition must follow failure, resource, authority, and state boun
 
 ## Health model
 
-Every module declares health checks for:
+Every workstation component declares health checks for:
 
 - Process existence.
 - Native event-loop responsiveness.
@@ -95,7 +95,7 @@ Every module declares health checks for:
 
 Health is not a single Boolean.
 
-A module may be:
+A workstation component may be:
 
 - Starting.
 - Ready.
@@ -114,7 +114,7 @@ A module may be:
 
 A process is not ready merely because it started.
 
-A module may report ready only after:
+A workstation component may report ready only after:
 
 - Its release and configuration are verified.
 - Required local sockets are acquired.
@@ -129,7 +129,7 @@ A module may report ready only after:
 
 systemd is the initial reference supervisor.
 
-Each module service must declare:
+Each component service must declare:
 
 - `Restart=` behavior.
 - Restart delay and backoff.
@@ -156,7 +156,7 @@ A normal automatic recovery sequence is:
 ```text
 Health deadline exceeded
         ↓
-Module marked delayed or degraded
+Workstation Component marked delayed or degraded
         ↓
 Operator receives visible state
         ↓
@@ -168,7 +168,7 @@ Failed process diagnostics captured
         ↓
 Process terminated and restarted
         ↓
-New module instance identity issued
+New component instance identity issued
         ↓
 Local IPC reauthenticated
         ↓
@@ -178,14 +178,14 @@ Operator context restored
         ↓
 Functional health verified
         ↓
-Module returned to healthy
+Workstation Component returned to healthy
 ```
 
 The console must not display “restored” before functional restoration is complete.
 
-## Module instance identity
+## Workstation Component instance identity
 
-Every process start receives a new module instance identifier.
+Every process start receives a new component instance identifier.
 
 All requests, events, health records, state checkpoints, and fault records include that identifier.
 
@@ -195,7 +195,7 @@ Delayed messages from an old instance must not be accepted by a replacement inst
 
 ## Resource containment
 
-Each module profile defines:
+Each component profile defines:
 
 - Memory ceiling.
 - CPU weight and ceiling where appropriate.
@@ -209,11 +209,11 @@ Each module profile defines:
 - GPU use policy where measurable.
 - restart-rate threshold.
 
-The mapping module is expected to require a larger graphics and cache budget than text-oriented modules, but it must not be able to starve the incident or global status modules.
+The mapping workstation component is expected to require a larger graphics and cache budget than text-oriented workstation components, but it must not be able to starve the incident or global status workstation components.
 
 ## State reconstruction
 
-A module restart must reconstruct:
+A workstation component restart must reconstruct:
 
 - Current authoritative projection.
 - Current freshness state.
@@ -226,13 +226,13 @@ A module restart must reconstruct:
 
 State that cannot be safely reconstructed must be declared lost or unavailable. It must not be fabricated.
 
-## Incompatible module behavior
+## Incompatible workstation component behavior
 
-A module that does not support the active local IPC or platform protocol version must:
+A workstation component that does not support the active local IPC or platform protocol version must:
 
 - Refuse normal operation.
 - enter an explicit incompatible state.
-- provide version evidence.
+- provide version-verification records.
 - avoid repeated restart loops.
 - preserve unrelated console functions.
 - create or join an Operational Fault Episode.

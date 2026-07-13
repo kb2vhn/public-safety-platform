@@ -4,6 +4,19 @@
 >
 > **Implementation status:** Not implemented
 
+## Architecture Ownership
+
+This document is authoritative for the operational information and governed CAD
+actions that belong in the dispatcher workspace.
+
+The [CAD User-Interface Architecture](user-interface/README.md) is authoritative
+for interaction, accessibility, focus, input, presentation, and human-facing
+failure behavior.
+
+The [CAD Operational Workstation Architecture](operational-workstation/README.md)
+is authoritative for the managed appliance, local workstation components,
+renderer, IPC, cache, release, and recovery implementation.
+
 ## Purpose
 
 Define the information hierarchy and interaction rules for a dispatcher-facing

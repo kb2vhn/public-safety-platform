@@ -4,6 +4,18 @@
 >
 > **Implementation status:** Test design only
 
+## Architecture Ownership
+
+This document coordinates complete CAD phase acceptance.
+
+Detailed human-interaction and accessibility evaluation is governed by the
+[CAD User-Interface Architecture](user-interface/README.md). Detailed local
+appliance and workstation-component resource measurement is governed by the
+[CAD Operational Workstation Architecture](operational-workstation/README.md).
+
+Correctness, accessibility, and resource observations must remain separately
+reported even when one phase gate gathers all three.
+
 ## Purpose
 
 Define how CAD changes are designed, built, tested, observed, and accepted.
@@ -129,6 +141,18 @@ Use provider simulators or controlled test doubles to prove:
 - Partial failure.
 - Queue recovery.
 - Replacement-adapter compatibility.
+
+
+### Foundation Approval and Authorization Integration
+
+CAD tests that use Foundation approval or authorization must prove:
+
+- Approval Action recording, stage satisfaction, Approval Request finalization, Authorization Decision, Authorization Lease, and CAD commit remain distinct.
+- Withdrawn, corrected, superseded, expired, suspended, or revoked state fails closed at later use.
+- Authority Grant revocation invalidates the affected path.
+- Duplicate-actor, duplicate-action, finalization, withdrawal, revocation, and reciprocal-approval races preserve the Phase 4 Step 7 contract.
+- Serialization and deadlock results remain retryable technical outcomes rather than policy denials.
+- A local cache or queue cannot manufacture Approval Action Records, Approval Request finalization, Authorization Decisions, Authorization Leases, Decision Records, or committed CAD state.
 
 ### Accessibility Tests
 

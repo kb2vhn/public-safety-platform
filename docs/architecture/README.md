@@ -47,10 +47,10 @@ monitoring vendor, identity provider, or compliance framework.
 - [Resource Subscription and Live Update Model](communications/resource-subscription-and-live-update-model.md)
 - [GIS and Mapping](gis-and-mapping/README.md)
 - [Map Rendering and Data Delivery Architecture](gis-and-mapping/map-rendering-and-data-delivery-architecture.md)
-- [Operational Workstation](operational-workstation/README.md)
-- [Operational Workstation Architecture](operational-workstation/operational-workstation-architecture.md)
-- [User-Interface Architecture](user-interface/README.md)
-- [Accessibility and Inclusive Interaction](user-interface/accessibility-and-inclusive-interaction-model.md)
+- [Operational Workstation](../../modules/CAD/docs/architecture/operational-workstation/README.md)
+- [Operational Workstation Architecture](../../modules/CAD/docs/architecture/operational-workstation/operational-workstation-architecture.md)
+- [User-Interface Architecture](../../modules/CAD/docs/architecture/user-interface/README.md)
+- [Accessibility and Inclusive Interaction](../../modules/CAD/docs/architecture/user-interface/accessibility-and-inclusive-interaction-model.md)
 
 ## Accepted Implementation Status
 

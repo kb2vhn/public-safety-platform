@@ -1,6 +1,6 @@
 # Degraded Operation and Action State Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: State contracts and operator presentation are not yet implemented.
 
@@ -30,7 +30,7 @@ The relevant connection or service is unavailable.
 
 ### Resynchronizing
 
-The module is rebuilding current state from an authoritative snapshot and ordered changes.
+The workstation component is rebuilding current state from an authoritative snapshot and ordered changes.
 
 ### Restricted
 
@@ -50,7 +50,7 @@ The capability is intentionally unavailable or limited for governed maintenance.
 
 ### Incompatible
 
-The module, protocol, release, or data version cannot interoperate safely.
+The workstation component, protocol, release, or data version cannot interoperate safely.
 
 ## Action states
 
@@ -98,9 +98,9 @@ The request may have been committed, but the console cannot verify the result.
 
 Examples:
 
-- A module may be live while one action is outcome unknown.
-- A module may be offline while an operator edits a recoverable draft.
-- A module may be resynchronizing while committed records remain viewable.
+- A workstation component may be live while one action is outcome unknown.
+- A workstation component may be offline while an operator edits a recoverable draft.
+- A workstation component may be resynchronizing while committed records remain viewable.
 - A workstation may be restricted while cached read-only reference information remains available.
 - A map may be failed while incident entry and resource status remain healthy.
 
@@ -113,14 +113,14 @@ The UI must not collapse these situations into one generic offline banner.
 - Text, icon, shape, position, and accessible announcements reinforce important state.
 - Resource markers expose data age when delayed or stale.
 - Cached maps and reference data identify their age and missing live overlays.
-- A blank module surface is not an acceptable failure presentation.
+- A blank workstation component surface is not an acceptable failure presentation.
 - The operator sees what is unavailable, why if known, what remains safe, and what recovery is occurring.
 - Repeated alerts must not create unusable alert storms.
 - Restoration messages appear only after functional validation.
 
 ## Capability matrix
 
-Each module defines behavior for every relevant state.
+Each workstation component defines behavior for every relevant state.
 
 A matrix identifies whether each operation is:
 
@@ -128,7 +128,7 @@ A matrix identifies whether each operation is:
 - available read-only.
 - available with stale-data warning.
 - queued safely.
-- requires step-up or approval.
+- requires session step-up or a finalized Foundation Approval Request with current Approval Action and Authority Grant continuity.
 - blocked.
 - requires alternate procedure.
 - unavailable because the outcome cannot be determined.
@@ -142,13 +142,13 @@ Degraded availability does not automatically bypass:
 - device trust.
 - operational scope.
 - purpose.
-- approval.
+- Current finalized Approval Request and Approval Action continuity when policy requires an approval input.
 - Authorization Lease.
 - data classification.
 - audit.
 - separation of duty.
 
-Emergency or break-glass operation is a separately governed workflow with explicit authority, evidence, time bounds, alerts, and review.
+Emergency or break-glass operation is a separately governed workflow with explicit authority, correlated audit and domain records, time bounds, alerts, and review.
 
 ## Integration failure
 
@@ -204,7 +204,7 @@ Validation must include:
 - stale cache.
 - corrupted local state.
 - renderer crash.
-- module service crash.
+- component service crash.
 - repeated restart failure.
 - protocol incompatibility.
 - storage exhaustion.
@@ -214,3 +214,19 @@ Validation must include:
 - outcome-unknown action.
 - external integration failure.
 - display loss.
+
+## Approval and Authorization State
+
+The workstation must not collapse these separate states:
+
+- Approval Action Record recorded.
+- Approval stage satisfied.
+- Approval Request finalized.
+- Authorization Decision allowed or denied.
+- Authorization Lease current or invalid.
+- CAD operation committed.
+- External delivery acknowledged.
+
+A local queue may preserve the requested action and supporting context, but it cannot create or finalize Foundation Approval Action Records, stage-evaluation records, or Approval Request finalization, create an Authorization Decision, issue an Authorization Lease, or mark a protected action committed.
+
+Retryable serialization or deadlock results from the authoritative Step 7 concurrency boundary must be shown as retry or conflict states, not as policy denials.

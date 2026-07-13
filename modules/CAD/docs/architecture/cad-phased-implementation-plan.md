@@ -56,6 +56,7 @@ Define:
 - Alert acknowledgment and resolution.
 - Transfer, closure, reopening, and correction.
 - Exact governed operations and protected targets.
+- Exact Foundation Approval Request, Approval Action, stage-evaluation, Authorization Decision, Authorization Lease, and protected-operation boundaries.
 
 No migration is accepted until these invariants are sufficiently stable.
 
@@ -144,9 +145,9 @@ Establish:
 
 Historical experiments must not be promoted into production by renaming them.
 
-## Phase CAD-8 — Dispatcher Workstation
+## Phase CAD-8 — CAD User Interface and Operational Workstation
 
-Build the dispatcher interface against accepted CAD service contracts.
+Build the dispatcher interface and CAD Operational Workstation against accepted CAD service contracts and the module-owned user-interface and workstation architecture.
 
 Acceptance requires:
 
@@ -155,6 +156,7 @@ Acceptance requires:
 - Stable focus.
 - Non-color-only state.
 - Multi-monitor and supported single-monitor behavior.
+- Workstation-component isolation, restart, and context restoration.
 - Stale, queued, failed, and degraded-state visibility.
 - Representative operational testing.
 - Performance and resource observation.

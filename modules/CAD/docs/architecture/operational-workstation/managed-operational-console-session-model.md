@@ -1,6 +1,6 @@
 # Managed Operational Console Session Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Reference direction selected; window manager, display server, and production profile remain to be validated.
 
@@ -8,7 +8,7 @@
 
 This document defines the operator's controlled graphical environment.
 
-The term **Managed Operational Console Session** is used instead of kiosk mode because the console is not merely one browser window. It is a governed session that presents one operational suite composed of multiple independently supervised modules.
+The term **Managed Operational Console Session** is used instead of kiosk mode because the console is not merely one browser window. It is a governed session that presents one operational suite composed of multiple independently supervised workstation components.
 
 ## Session behavior
 
@@ -27,7 +27,7 @@ Operator authenticates to the Platform
         ↓
 Authorized workspace and accessibility profile load
         ↓
-Operational modules enter ready or explicit degraded states
+Operational workstation components enter ready or explicit degraded states
 ```
 
 The operator must not need to launch applications, manage windows, inspect the desktop, or understand underlying processes.
@@ -59,11 +59,11 @@ A small console coordinator owns:
 - Session startup and shutdown coordination.
 - Global operator and workstation status.
 - Monitor and workspace placement.
-- Module readiness and health presentation.
+- Workstation Component readiness and health presentation.
 - Global alert presentation.
 - Keyboard-command routing.
 - Operator lock and handoff initiation.
-- Controlled module restart requests.
+- Controlled workstation component restart requests.
 - Accessibility profile loading.
 - Maintenance and out-of-service presentation.
 - Correlation with Operational Fault Episodes.
@@ -74,13 +74,13 @@ It must not decide whether an incident can be closed, whether a unit may be disp
 
 ## Window and workspace behavior
 
-The console may use a controlled window manager or compositor to place borderless module windows into governed screen regions.
+The console may use a controlled window manager or compositor to place borderless workstation component windows into governed screen regions.
 
 The implementation must prevent ordinary operators from:
 
 - Moving critical windows into hidden positions.
-- Closing required module windows.
-- resizing modules into unusable layouts.
+- Closing required workstation component windows.
+- resizing workstation components into unusable layouts.
 - placing an untrusted window above a critical alert.
 - opening unmanaged windows.
 - changing the active workspace outside the approved profile.
@@ -119,7 +119,7 @@ Every critical shortcut must have:
 - A risk classification.
 - A documented focus effect.
 - A confirmation policy where appropriate.
-- An owner and approval state.
+- An owner and governed change-authorization state.
 - Automated or manual test coverage.
 
 ## Automatic startup
@@ -146,7 +146,7 @@ When operator-impacting work is necessary, the console enters an explicit state 
 
 - Maintenance scheduled.
 - Maintenance pending operator acknowledgment.
-- Module maintenance in progress.
+- Workstation Component maintenance in progress.
 - Console out of service.
 - Restart required.
 - Reboot required.
@@ -163,7 +163,7 @@ Normal session termination must:
 - Complete or safely persist permitted drafts.
 - Stop accepting new protected actions.
 - resolve or expose pending and outcome-unknown actions.
-- revoke local module capabilities.
+- revoke local workstation component capabilities.
 - clear operator-specific renderer and native state.
 - remove per-session runtime directories and sockets.
 - clear or rotate clipboard and temporary files according to policy.

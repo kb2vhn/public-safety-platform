@@ -1,6 +1,6 @@
 # Provisioning, Rebuild, Lifecycle, and Recovery Model
 
-> Status: Normative target architecture.
+> Status: Normative CAD target architecture.
 >
 > Implementation status: Provisioning transport, filesystem layout, image tooling, and recovery service are not yet selected.
 
@@ -46,7 +46,7 @@ Provisioning produces a workstation whose:
 - device identity and certificates are enrolled.
 - time and logging are healthy.
 - remote management is governed.
-- workstation trust evidence is available.
+- workstation trust assertions is available.
 - functional validation passes.
 
 ## Provisioning transport
@@ -115,11 +115,11 @@ The workstation is not the primary backup location for authoritative platform da
 
 Backups may include only approved:
 
-- Build and deployment evidence.
+- Build and deployment artifacts.
 - configuration references.
 - eligible operator drafts.
 - pending and outcome-unknown action records.
-- required fault evidence.
+- required fault diagnostic records.
 - local recovery metadata.
 - diagnostic bundles.
 
@@ -145,10 +145,10 @@ After activation, the workstation verifies:
 
 - Boot.
 - release identity.
-- module startup.
+- workstation component startup.
 - local IPC.
 - remote dependency access.
-- trust evidence.
+- workstation trust assertions.
 - renderer policy.
 - state migration.
 - operator session path.
@@ -188,7 +188,7 @@ A rebuild should:
 
 1. Place the console out of service.
 2. revoke or suspend active sessions and capabilities.
-3. preserve only approved recovery state and evidence.
+3. preserve only recovery state, audit records, and diagnostic artifacts explicitly authorized by policy.
 4. isolate the workstation where required.
 5. capture inventory and fault references.
 6. wipe or reinitialize storage according to policy.
@@ -198,7 +198,7 @@ A rebuild should:
 10. enroll new device credentials as required.
 11. restore only validated eligible local state.
 12. run complete baseline, trust, network, performance, and functional checks.
-13. return to service through approval.
+13. return to service through a controlled readiness decision and, when policy requires it, a finalized Foundation Approval Request.
 14. record the full lifecycle event.
 
 ## Replacement workstation
@@ -230,7 +230,7 @@ Operational validation includes periodic exercises for:
 - loss of provisioning service.
 - loss of internal package repository.
 - restoration of eligible pending work.
-- off-host evidence retrieval.
+- off-host audit and diagnostic records retrieval.
 
 ## Decommissioning
 
@@ -242,5 +242,5 @@ Decommissioning requires:
 - media sanitization.
 - recovery-key disposition.
 - removal from update and management systems.
-- retention of required audit and fault evidence.
+- retention of required audit and fault diagnostic records.
 - confirmation that the workstation cannot reconnect as its prior identity.
