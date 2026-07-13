@@ -334,6 +334,16 @@ The candidate gate must:
   telemetry for the pre-run, active-run, and recovery intervals.
 - Fail when mandatory telemetry is missing, uncorrelated, unreadable, or does
   not account for all completed attempts.
+- Analyze unexpected errors, resource anomalies, timing deviations,
+  telemetry gaps, retry behavior, crashes, recovery behavior, and
+  inconsistent outcomes for previously unidentified attack mechanisms.
+- Correlate related failures across Go, PostgreSQL, queues, workers,
+  adapters, workstations, retries, recovery, and external delivery.
+- Convert every confirmed attack mechanism into a stable hostile-class
+  identifier and permanent adversarial regression case.
+- Evaluate whether a discovered mechanism affects other CAD operations,
+  Foundation capabilities, workstation components, integrations,
+  deployment boundaries, or future modules.
 - Run Go tests when applicable.
 - Run resource observation when applicable.
 - Produce exact counts.
@@ -359,6 +369,13 @@ Formal acceptance requires:
 - Accepted tag or commit.
 - Retained acceptance record.
 - Next planned boundary.
+- Every discovered attack mechanism has a documented disposition.
+- Every confirmed mechanism has been added to the permanent adversarial
+  regression corpus.
+- Required prevention, detection, containment, telemetry, alerting,
+  recovery, and operational-response controls are implemented and tested.
+- No unresolved critical or high-impact mechanism remains outside an
+  accepted remediation, exception, or risk process.
 
 ## Gate Naming and Behavior
 
