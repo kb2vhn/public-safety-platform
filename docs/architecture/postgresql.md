@@ -69,6 +69,20 @@ test-framework/
 
 It creates a disposable database, applies the live Foundation manifest, runs test-only assertions, and writes reviewable logs.
 
+## Active Phase 5 Database Security Work
+
+Phase 5 Step 1 freezes the production PostgreSQL role, ownership, migration,
+runtime privilege, default-privilege, investigation, audit, validation, and
+break-glass contract.
+
+The accepted direction requires non-login ownership roles, service-specific
+login identities, controlled migration authority, no direct protected-table
+writes for ordinary runtime services, and creator-specific default privileges.
+
+See:
+
+- [Production Database Role, Ownership, and Runtime Privilege Model](foundation/production-database-role-ownership-and-runtime-privilege-model.md)
+
 ## Current Limitations
 
 The schema is still pre-alpha. Final deployment roles, ownership transfers, complete append-only enforcement, populated migration checksums, off-host integrity anchoring, production backup protection, and the production Go data-access layer remain future work.

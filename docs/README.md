@@ -105,3 +105,18 @@ Run the formal acceptance gate with:
 ```bash
 ./tools/validation/phase-gates/validate_phase4_step8.sh
 ```
+
+## Active Phase 5 Step 1
+
+Phase 5 Step 1 freezes the production PostgreSQL role, ownership, migration,
+runtime privilege, investigation, audit, validation, default-privilege, and
+break-glass contract without changing the accepted Phase 4 SQL or executable
+test tree.
+
+- [Production Database Role, Ownership, and Runtime Privilege Model](architecture/foundation/production-database-role-ownership-and-runtime-privilege-model.md)
+
+Active gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step1.sh
+```

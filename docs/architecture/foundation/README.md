@@ -280,6 +280,19 @@ The following remain incomplete until separately implemented and tested:
 - Break-glass procedures,
 - Trusted rebuild and compromise recovery.
 
+## Active Phase 5 Boundary
+
+Phase 5 Step 1 freezes the production database role, ownership, migration,
+runtime privilege, investigation, audit, validation, default-privilege, and
+break-glass contract.
+
+No production role SQL, ownership transfer, or runtime grant is introduced in
+Step 1. The accepted Phase 4 SQL and executable test tree remain unchanged.
+
+See:
+
+- [Production Database Role, Ownership, and Runtime Privilege Model](production-database-role-ownership-and-runtime-privilege-model.md)
+
 ## Foundation Migration Execution Contract
 
 Every ordinary migration listed by `sql/schema/manifests/foundation.manifest`

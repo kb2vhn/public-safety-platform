@@ -52,6 +52,20 @@ Runtime secrets are not stored in source code. Lease secrets and tokens must be 
 
 Authorization checks should use a documented statement- or transaction-consistent time source unless wall-clock variation within a statement is explicitly required.
 
+## Phase 5 Step 1 Role and Ownership Contract
+
+Phase 5 Step 1 freezes the production database role, ownership, migration,
+runtime privilege, investigation, audit, validation, default-privilege, and
+break-glass boundary.
+
+The governing contract is:
+
+- [Production Database Role, Ownership, and Runtime Privilege Model](production-database-role-ownership-and-runtime-privilege-model.md)
+
+Step 1 does not create cluster roles or transfer ownership. Those changes begin
+only after the contract is accepted and a separate deployment manifest is
+defined in the reserved `900–999` range.
+
 ## SQL Implementation Mapping
 
 Migration `000` establishes initial schema and privilege posture. Migrations `070` and `075` introduce controlled trust and authorization APIs. Migration `098` models role separation and security boundaries. Migration `099` provides validation inventories.

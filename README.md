@@ -252,6 +252,44 @@ not declare the complete Platform Foundation, Go services, deployment
 environment, operational modules, or production operating model ready for
 production use.
 
+### Active Phase 5 — Production Database Security Boundary
+
+Phase 4 approval independence and separation of duties is formally accepted at
+`phase-4-approval-independence-and-separation-of-duties-complete-v1`.
+
+Phase 5 Step 1 freezes the production database role, ownership, migration, and runtime-privilege contract.
+
+The Step 1 boundary defines separate non-login owners, controlled migration
+authority, service-specific login identities, capability-based runtime roles,
+read-only investigation, audit review, validation access, creator-specific
+default privileges, and disabled-at-rest break-glass access.
+
+Step 1 changes no accepted Foundation SQL or executable tests. The complete
+Phase 4 regression remains:
+
+```text
+34 manifest migrations
+34 registered migrations
+21 sequential test files
+16 concurrency test files
+734 PASS
+0 FAIL
+3 understood WARN
+Correctness result: PASS
+Resource observation: RECORDED
+Performance thresholds: NOT_EVALUATED
+```
+
+Governing contract:
+
+- [Production Database Role, Ownership, and Runtime Privilege Model](docs/architecture/foundation/production-database-role-ownership-and-runtime-privilege-model.md)
+
+Active gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step1.sh
+```
+
 ## Staged Development Approach
 
 ```text

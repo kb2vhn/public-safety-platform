@@ -46,3 +46,20 @@ SET LOCAL idle_in_transaction_session_timeout = '1min';
 It is a static repository-policy check and contributes no SQL PASS rows. The
 Phase 4 formal-acceptance gate invokes it automatically before database
 execution.
+
+## Phase 5 Step 1 Gate
+
+Run the production database role and ownership contract gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step1.sh
+```
+
+Static repository and contract validation only:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step1.sh --static-only
+```
+
+The complete gate re-runs the formally accepted Phase 4 gate and confirms that
+Step 1 did not alter the accepted Foundation SQL or executable test tree.

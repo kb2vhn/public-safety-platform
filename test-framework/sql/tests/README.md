@@ -118,3 +118,26 @@ Foundation migration execution standard.
 Passing tests prove only the asserted database behavior. They do not establish
 production readiness, host compromise containment, protected backups, off-host
 durability, break-glass operations, or trusted rebuild and recovery.
+
+## Phase 5 Step 1 Regression Boundary
+
+Phase 5 Step 1 changes no Foundation migration, sequential test, concurrency
+test, or accepted assertion behavior.
+
+The complete regression remains:
+
+```text
+34 manifest migrations
+21 sequential test files
+16 concurrency test files
+734 PASS
+0 FAIL
+3 understood WARN
+Correctness result: PASS
+Resource observation: RECORDED
+Performance thresholds: NOT_EVALUATED
+```
+
+Cluster-role implementation tests begin only after a disposable-cluster
+strategy is accepted. They must not silently alter shared development-cluster
+roles.

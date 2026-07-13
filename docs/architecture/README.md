@@ -118,3 +118,16 @@ and resource-observation contract with:
 The accepted Phase 4 boundary does not make downstream service, mapping,
 workstation, presentation, transport, or module-owned state part of the
 Platform Foundation.
+
+## Active Phase 5 — Production Database Security Boundary
+
+Phase 5 Step 1 freezes database ownership, role topology, migration authority,
+least-privileged runtime access, investigation, audit, validation,
+default-privilege, and break-glass boundaries.
+
+This step does not move CAD, GIS, communications, workstation, interface, or
+other module state into the Platform Foundation.
+
+See:
+
+- [Production Database Role, Ownership, and Runtime Privilege Model](foundation/production-database-role-ownership-and-runtime-privilege-model.md)

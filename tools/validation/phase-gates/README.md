@@ -49,3 +49,13 @@ The gate validates the annotated tag `phase-4-approval-independence-and-separati
 tests, 16 concurrency tests, the accepted SQL and executable test tree, the
 734 PASS result, synchronized acceptance documentation, and observation-only
 resource telemetry.
+
+## Phase 5 Step 1
+
+`validate_phase5_step1.sh` freezes the production database role, ownership,
+migration, runtime privilege, investigation, audit, validation,
+default-privilege, and break-glass contract.
+
+Step 1 is documentation and validation only. It preserves the accepted Phase 4
+implementation and uses `validate_phase4_step8.sh` as its regression
+predecessor.
