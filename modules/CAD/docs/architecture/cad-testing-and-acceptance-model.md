@@ -892,6 +892,177 @@ Real caller, patient, criminal-justice, protected-person, personnel, or premise
 data must not be copied into disposable test environments without explicit
 authorization and protection.
 
+## Failure Intelligence and Attack-Mechanism Discovery
+
+Extreme, adversarial, concurrency, retry-storm, resource-exhaustion, degraded-operation, recovery, and reconciliation testing must be used not only to verify expected rejection behavior, but also to discover previously unidentified cyberattack mechanisms and systemic weaknesses.
+
+### Failure Analysis Requirement
+
+Every unexpected error, unusual technical retry, resource spike, timing deviation, state inconsistency, telemetry gap, process restart, queue-growth event, PostgreSQL wait condition, workstation degradation, or recovery anomaly must be classified and reviewed.
+
+The review must determine whether the observation indicates:
+
+* A new attack mechanism.
+* A variation of an existing hostile behavior class.
+* A cross-layer control inconsistency.
+* A possible security-boundary bypass.
+* A denial-of-service or resource-exhaustion path.
+* A timing, response-size, status-code, logging, or telemetry side channel.
+* Information disclosure.
+* Protected-data leakage.
+* Error-oracle behavior.
+* Retry amplification.
+* Queue or cache authority promotion.
+* Duplicate or reordered side effects.
+* Incomplete rollback.
+* Hidden partial commit.
+* Improper authorization reuse.
+* Missing current-state revalidation.
+* Unsafe fail-open behavior.
+* Fault propagation into another service, workstation component, or security control.
+* Monitoring or alerting that fails to identify the actual operational consequence.
+* A weakness that may apply to another CAD operation, Platform Foundation capability, module, integration, or deployment boundary.
+
+### Cross-Mechanism Analysis
+
+A failure discovered while testing one attack class must not be treated as relevant only to that original test.
+
+The project must evaluate whether the same underlying weakness could be used through:
+
+* A different CAD operation.
+* A different Go endpoint.
+* A direct PostgreSQL path.
+* A worker or background process.
+* A local cache, queue, spool, or offline record.
+* An external adapter.
+* A workstation component.
+* A recovery or reconciliation workflow.
+* A different organization, Governed Scope, user, device, session, or service identity.
+* Another future Iron Signal Platform module.
+* A combination of individually permitted actions.
+
+### Error Classification
+
+Errors must remain separated into categories such as:
+
+* Policy denial.
+* Authorization denial.
+* Approval denial.
+* Validation rejection.
+* Concurrency retry.
+* Serialization failure.
+* Deadlock.
+* Timeout.
+* Cancellation.
+* Resource exhaustion.
+* Dependency failure.
+* Data-integrity failure.
+* Security-boundary violation.
+* Unexpected internal failure.
+* Suspected attack-mechanism discovery.
+
+A technical failure must not be counted as a successful policy denial merely because the requested action did not complete.
+
+### Failure Correlation
+
+Failure analysis must correlate applicable:
+
+* Original hostile input.
+* Generated seed.
+* Operation.
+* Enforcement point.
+* Go request and process.
+* PostgreSQL transaction, role, function, lock, and wait state.
+* Queue, worker, outbox, cache, spool, and adapter state.
+* Workstation and workstation-component state.
+* Authorization, Approval, Lease, policy, and protected-target context.
+* Resource and performance telemetry.
+* External delivery state.
+* Recovery and reconciliation result.
+* Other failures occurring during the same interval.
+
+This correlation should make it possible to determine whether several apparently unrelated errors share one root cause or attack mechanism.
+
+### Security Review Trigger
+
+The following must trigger a security review before the affected phase can be accepted:
+
+* Unexpected success.
+* Unintended side effect.
+* Manufactured authority.
+* Hidden partial commit.
+* Cross-context effect.
+* Unexplained resource exhaustion.
+* Repeatable timing or response difference that may disclose protected state.
+* Error output containing secrets or unnecessary protected information.
+* Unbounded or unexpectedly multiplied retries.
+* A required telemetry gap.
+* A crash, restart, or recovery action that changes authorization or commitment behavior.
+* A failure that appears applicable outside the originally tested operation.
+* A novel error pattern that cannot be explained by the accepted architecture.
+
+### New Attack-Class Creation
+
+When testing reveals a new malicious technique or reusable failure mechanism:
+
+1. Assign it a stable hostile-class identifier.
+2. Describe the attack preconditions and affected boundaries.
+3. Record the original seed, request, environment, and telemetry.
+4. Reduce it to the smallest reproducible case when practical.
+5. Add it to the permanent adversarial regression corpus.
+6. Add direct Go, direct PostgreSQL, full-stack, concurrency, cache, queue, recovery, and workstation variants where applicable.
+7. Evaluate whether the same mechanism affects the Platform Foundation or another module.
+8. Correct the governing architecture when the discovery changes the understood security boundary.
+9. Add detection, alerting, and operational-response requirements where prevention alone is insufficient.
+10. Re-run every affected accepted phase.
+
+### Prevention, Detection, and Containment
+
+Not every attack mechanism can be prevented at the first parsing boundary.
+
+The accepted design must determine whether each discovered mechanism is addressed through one or more of:
+
+* Prevention.
+* Early rejection.
+* Independent PostgreSQL enforcement.
+* Rate limiting.
+* Bounded retry.
+* Resource quotas.
+* Queue limits.
+* Workload isolation.
+* Circuit breaking.
+* Backpressure.
+* Fault containment.
+* Detection.
+* Alerting.
+* Quarantine.
+* Recovery.
+* Reconciliation.
+* Operational response.
+* Forensic preservation.
+
+A control must not be described as preventing an attack when it only detects or contains the result.
+
+### Regression and Acceptance
+
+Every confirmed attack mechanism becomes a permanent regression requirement.
+
+Later candidate and formal-acceptance gates must rerun the retained attack corpus against every applicable enforcement point.
+
+Formal acceptance requires:
+
+* Every discovered mechanism has a documented disposition.
+* Every affected boundary has been evaluated.
+* Required corrective controls are implemented and tested.
+* Required monitoring and alerting are implemented and tested.
+* The regression corpus contains the reproducing case.
+* No unresolved critical or high-impact attack mechanism remains outside an accepted risk, exception, or remediation process.
+
+Extreme testing provides both assurance and discovery.
+
+Its purpose is not merely to produce large PASS counts. Its purpose is to improve the architecture by understanding how the system fails, how attackers could combine those failures, and how the Platform prevents, detects, contains, and recovers from those mechanisms.
+
+
 ## Result Artifacts
 
 A CAD test run should eventually retain:
