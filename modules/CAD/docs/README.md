@@ -32,6 +32,10 @@ defines which layer owns each kind of rule.
 - [CAD User-Interface Architecture](architecture/user-interface/README.md)
 - [CAD Operational Workstation Architecture](architecture/operational-workstation/README.md)
 - [Dispatcher Capability Catalog](requirements/dispatcher-capability-catalog.md)
+- [CAD Requirements and Evidence Traceability Model](requirements/cad-requirements-traceability-model.md)
+- [CAD Operational Readiness and Production Acceptance Model](architecture/cad-operational-readiness-and-production-acceptance-model.md)
+- [CAD Standards-Conformance and Interoperability Model](architecture/cad-standards-conformance-and-interoperability-model.md)
+
 - [CAD Architecture Decisions](decisions/README.md)
 - [Acceptance Records](acceptance/README.md)
 

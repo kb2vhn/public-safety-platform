@@ -65,6 +65,14 @@ resource, fault, and recovery behavior.
 - [CAD Testing and Acceptance Model](cad-testing-and-acceptance-model.md)
 - [CAD Phased Implementation Plan](cad-phased-implementation-plan.md)
 
+- [CAD Operational Readiness and Production Acceptance Model](cad-operational-readiness-and-production-acceptance-model.md)
+- [CAD Standards-Conformance and Interoperability Model](cad-standards-conformance-and-interoperability-model.md)
+- [CAD Data-Migration, Cutover, and Transition Model](cad-data-migration-cutover-and-transition-model.md)
+- [CAD Requirements and Evidence Traceability Model](../requirements/cad-requirements-traceability-model.md)
+- [Platform Verification, Validation, and Acceptance Governance](../../../../docs/architecture/verification-validation-and-acceptance-governance-model.md)
+- [Platform Software Supply-Chain and Release Integrity](../../../../docs/architecture/software-supply-chain-and-release-integrity-model.md)
+- [Platform Host Software, Configuration, and Runtime Integrity](../../../../docs/architecture/host-software-configuration-and-runtime-integrity-model.md)
+
 ## Architecture Acceptance Rule
 
 An architecture model is not implemented merely because it exists.

@@ -105,6 +105,10 @@ future approved module-range decision.
 - [CAD User-Interface Architecture](docs/architecture/user-interface/README.md)
 - [CAD Operational Workstation Architecture](docs/architecture/operational-workstation/README.md)
 - [Dispatcher Capability Catalog](docs/requirements/dispatcher-capability-catalog.md)
+- [CAD Requirements and Evidence Traceability Model](docs/requirements/cad-requirements-traceability-model.md)
+- [CAD Operational Readiness and Production Acceptance Model](docs/architecture/cad-operational-readiness-and-production-acceptance-model.md)
+- [CAD Standards-Conformance and Interoperability Model](docs/architecture/cad-standards-conformance-and-interoperability-model.md)
+
 - [CAD Decisions](docs/decisions/README.md)
 - [CAD Acceptance Records](docs/acceptance/README.md)
 

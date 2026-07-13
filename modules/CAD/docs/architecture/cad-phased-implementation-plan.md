@@ -131,6 +131,8 @@ Production Go work requires:
 6. Reproducible builds.
 7. Unit, integration, race, and end-to-end test strategy.
 8. Resource-observation hooks from the first executable service.
+9. Accepted software-supply-chain, SBOM, provenance, signing, and promotion
+   contract for formal release artifacts.
 
 ### User-Interface and Workstation Work
 
@@ -197,6 +199,10 @@ The contract must define:
 - Accessibility requirements when human-facing.
 - Resource-observation requirements.
 - Explicitly excluded behavior.
+- Failure and attack classifications.
+- Availability and recovery consequences.
+- Standards-conformance applicability.
+- Release and supply-chain evidence when applicable.
 
 ### Step 2 — Static Gate
 
@@ -311,6 +317,9 @@ Record applicable:
 - Workstation component CPU and memory.
 - Client input, update, and render latency.
 - Environment fingerprint.
+- Availability, outage, failover, fencing, replication, recovery, and queue
+  drainage metrics when applicable.
+- Failure and attack classifications.
 
 ### Step 8 — Candidate Gate
 
@@ -348,8 +357,11 @@ The candidate gate must:
 - Run resource observation when applicable.
 - Produce exact counts.
 - Preserve failed state when needed for investigation.
-- Report correctness, resources, performance, accessibility, and deployment
-  status separately.
+- Report correctness, resources, performance, accessibility, availability,
+  HA, standards, supply-chain, and deployment status separately.
+- Run randomized mixed stress, attack, failure, and recovery qualification when
+  the phase changes an executable critical path.
+- Classify every generated failure, injected fault, attack, and unknown outcome.
 
 ### Step 9 — Formal Acceptance
 
@@ -2036,7 +2048,7 @@ Record:
 - First supported dispatcher service slice accepted.
 - No user-interface production acceptance yet.
 
-## CAD Phase 13 — External Adapters, Degraded Operation, and Reconciliation
+## CAD Phase 13 — External Adapters, Standards Conformance, Degraded Operation, and Reconciliation
 
 ### Goal
 
@@ -2213,12 +2225,222 @@ Record:
 - Accessibility status is explicit.
 - No production pilot claim yet.
 
-## CAD Phase 15 — Pilot, Operational Readiness, and Production Acceptance
+## CAD Phase 15 — Randomized Adversarial Stress, Availability, and HA Qualification
 
 ### Goal
 
-Prove the accepted CAD system can be deployed, operated, recovered, supported,
-and governed in a representative environment.
+Prove the complete accepted CAD stack remains correct, observable, recoverable,
+and stable under sustained valid workload, randomized attacks, injected failures,
+resource pressure, failover, and recovery before any production pilot begins.
+
+### Documentation
+
+Freeze and accept:
+
+- Critical service paths.
+- Availability calculation and probe design.
+- 99.99 percent pre-production availability threshold.
+- 30-day qualification window.
+- Failure and attack classification registry.
+- Randomized campaign scheduler and retained-seed contract.
+- Required hostile and failure classes.
+- Campaign stop and evidence-preservation rules.
+- HA topology, quorum, fencing, stable-primary, anti-oscillation,
+  replication, and controlled role-transition contract.
+- Failover thresholds.
+- Normal and one-failure capacity thresholds.
+- Queue drainage and workstation reconciliation thresholds.
+- Operational alert thresholds.
+- Requalification triggers.
+- Fourteen-day failure-free clock and cumulative-gate contract.
+- Campaign-validity and zero-credit invalidation rules.
+- Rolling-maintenance, mixed-version, compatibility, and rollback assurance.
+- Package, `/etc`, host-baseline, and runtime-integrity evidence.
+
+The authoritative detailed contract is the
+[CAD Operational Readiness and Production Acceptance Model](cad-operational-readiness-and-production-acceptance-model.md).
+
+### SQL and Deployment
+
+Implement only the observability, controlled failure injection, replication
+validation, reconciliation, and acceptance evidence needed for qualification.
+
+Failure injection must not create an undocumented production bypass.
+
+### Go, Worker, Adapter, and Workstation
+
+Provide accepted mechanisms to:
+
+- Generate representative valid workload.
+- Generate and replay hostile inputs.
+- Inject bounded failures.
+- Correlate every action and failure.
+- Observe retries, queues, outboxes, adapters, and reconciliation.
+- Exercise disconnect, restart, failover, and recovery.
+- Preserve exact authoritative state and side-effect evidence.
+
+### Candidate Mixed-Stress Gate
+
+Complete at least:
+
+- 8 continuous hours.
+- 50,000 total generated actions.
+- 1,000 completed attempts per required hostile or failure class.
+- Two independently seeded scheduler epochs.
+
+### Formal Mixed-Stress Gate
+
+Complete at least:
+
+- Three independently seeded 24-hour campaigns.
+- The three seeded campaigns may count toward the 180-hour minimum only when
+  they occur inside the accepted 14-day window and satisfy every validity,
+  coverage, telemetry, quiet-interval, and evidence rule; they are not an
+  additional 72 hours.
+- 1,000,000 total actions across the formal campaign set.
+- 10,000 completed attempts per required hostile class and failure class, except
+  destructive HA events governed by their event-specific minimums.
+- One 14-consecutive-day mixed endurance and attack-wave campaign with at least
+  180 credited campaign hours distributed across at least 10 days and at least
+  12 separately scheduled waves.
+- Randomized failover during valid, hostile, retrying, queued, and reconciling
+  work.
+- At least eight applicable attack or fault families, with no one family
+  contributing more than 25 percent of credited campaign hours.
+- Quiet observation intervals between selected waves for latent-failure and
+  incomplete-recovery detection.
+- A campaign-validity gate that grants zero credit to dominated, incomplete,
+  unrepeatable, idle-only, telemetry-deficient, or prematurely recovered runs.
+- A fourteen-consecutive-day failure-free clock in addition to the 180 valid
+  credited hours. Planned attacks and injected faults do not break the clock;
+  an unresolved platform `SEV_1_CRITICAL` or `SEV_2_HIGH` outcome does.
+
+All 336 hours of the 14-day window remain under availability, integrity,
+correctness, resource, and telemetry observation. Overlapping attacks do not
+multiply credited campaign hours.
+
+### Rolling Maintenance and Upgrade Gate
+
+Prove through executable tests that:
+
+- Nodes are patched one at a time and progression is health gated.
+- Active workload moves or drains before reboot.
+- Database leadership transfers safely while quorum and fencing remain healthy.
+- Recovered former primaries rejoin as secondaries without automatic failback.
+- Integrations retain redundant paths or expose accepted safe degradation.
+- Workstations reconnect, revalidate, and refresh authoritative state
+  automatically.
+- Schema changes remain backward compatible across the accepted rollout window.
+- Old and new application versions coexist safely during rollout.
+- Failed updates roll back or forward-repair without a full-system outage.
+- Package, `/etc`, host, artifact, and runtime-integrity baselines reconcile
+  before and after every node change.
+
+Include a reboot-requiring operating-system update, Windows workstation patch
+cycle, database-node cycle, Go and worker rolling replacement, integration-path
+maintenance, mixed-version schema campaign, and intentionally failed update
+followed by rollback.
+
+### Availability Gate
+
+The representative availability-qualification environment must demonstrate at
+least 99.99 percent availability for every critical service path and the
+aggregate critical CAD service over at least 30 consecutive days.
+
+Less than 99.99 percent is a gate failure and the deployment must not advance.
+
+The percentage cannot compensate for:
+
+- Lost acknowledged commits.
+- Split-brain.
+- Manufactured authority.
+- Unauthorized committed state.
+- Stale-success or false-commit outcomes.
+- Unreconciled uncertain outcomes.
+- Authoritative corruption.
+- Missing evidence required to establish actual service state.
+
+### HA and Stability Gate
+
+Prove both the default engineering goals and hard maximum acceptable thresholds:
+
+| Event | Engineering goal | Maximum acceptable |
+|---|---:|---:|
+| Failure detection | 5 seconds | 10 seconds |
+| Quorum decision and unsafe-primary fencing | 10 seconds | 20 seconds |
+| Critical reads restored | 15 seconds | 30 seconds |
+| Replacement authoritative writer ready | 30 seconds | 45 seconds |
+| Critical protected writes restored | 30 seconds | 60 seconds |
+| Uncertain transaction outcomes reconciled | 45 seconds | 60 seconds |
+| Workstations refreshed and operationally reconciled | 60 seconds | 90 seconds |
+| Nominal-load queue age restored | 2 minutes | 5 minutes |
+| Accepted-peak queue age restored | 15 minutes | 15 minutes |
+
+Every event must remain within its maximum acceptable threshold. Formal
+qualification must report goal attainment by failure class, workload, topology,
+and recovery stage. Repeated goal misses require root-cause analysis and
+remediation or a time-bounded accepted exception even when no event exceeds the
+hard maximum.
+
+One causal failure may trigger no more than one automatic database-authority
+promotion. The promoted primary remains primary while healthy. A recovered
+former primary is fenced, resynchronized, and returned only as a secondary;
+automatic failback and priority-based preemption are prohibited. Repeated
+promotion from one incident, authority oscillation, or failover/failback
+thrashing fails the phase.
+
+The complete destructive HA event campaign and the 30-day availability window
+are separate, linked gates. The availability window must still contain the
+representative failure and rolling-patch subset defined by the operational
+readiness model, and deliberate events are never silently removed from its
+outage ledger.
+
+After one protected component or failure-domain loss, the remaining system must
+sustain 125 percent of accepted peak workload for at least 60 consecutive
+minutes without authority, integrity, hard-deadline, unbounded-growth, or
+telemetry failure.
+
+### Gate
+
+Dedicated randomized stress, availability, HA, failover, and recovery
+qualification gate.
+
+### Exit
+
+Phase 15 is accepted only when:
+
+- Every generated action and fault is accounted for.
+- Every failure and attack is classified.
+- The campaign-validity gate passes; invalid runs contribute zero credit.
+- All campaign minimums and coverage requirements pass.
+- The fourteen-consecutive-day failure-free clock passes.
+- At least 180 valid credited attack-wave hours pass.
+- 99.99 percent 30-day availability passes.
+- Every HA event remains within its maximum acceptable threshold and
+  engineering-goal attainment is accepted.
+- Normal and one-failure capacity thresholds pass.
+- Zero lost acknowledged commits occur.
+- Zero split-brain events occur.
+- Zero automatic failback, authority oscillation, or repeated promotion from
+  one causal incident occurs.
+- Zero unauthorized authority or committed state occurs.
+- Zero stale-success or false-commit outcomes occur.
+- Rolling-maintenance, mixed-version coexistence, and rollback assurance pass.
+- Package, `/etc`, host-baseline, and runtime-integrity evidence reconcile.
+- Required telemetry is complete.
+- Every discovered mechanism has a disposition and permanent regression case.
+- No unresolved severity-one or severity-two failure remains.
+
+## CAD Phase 16 — Pilot, Operational Readiness, and Production Acceptance
+
+### Goal
+
+Prove the Phase 15-qualified CAD system can be deployed, operated, recovered,
+supported, governed, and accepted in a representative operational environment.
+
+### Entry
+
+Phase 16 must not begin until Phase 15 is formally accepted.
 
 ### Documentation
 
@@ -2226,25 +2448,20 @@ Complete:
 
 - Deployment profile.
 - Network and trust boundaries.
-- Secrets.
-- Certificates.
-- Database roles.
-- Service accounts.
-- Monitoring.
-- Off-host logging.
-- Backup.
-- Restore.
+- HA and failure-domain profile.
+- Secrets and certificates.
+- Database roles and service accounts.
+- Monitoring and off-host logging.
+- Backup, restore, and trusted rebuild.
 - Break-glass.
-- Trusted rebuild.
-- Incident response.
-- Continuity.
-- Manual fallback.
-- Reentry and reconciliation.
-- Training.
-- Support.
+- Incident response and continuity.
+- Manual fallback, reentry, and reconciliation.
+- Training and support.
 - Change management.
-- Retention.
-- Legal and policy review.
+- Retention and legal or policy review.
+- Standards-conformance claims.
+- Software-supply-chain and release-integrity evidence.
+- Migration and cutover plan where an existing system is replaced.
 - Known limitations.
 - Release and rollback.
 
@@ -2254,88 +2471,76 @@ Validate:
 
 - Clean deployment.
 - Upgrade.
-- Backup.
-- Restore.
-- Role topology.
-- Credential state.
+- Backup and restore.
+- Role topology and credential state.
 - Least privilege.
 - Break-glass disabled at rest.
-- Rebuild.
+- Trusted rebuild from accepted artifacts.
 - Data integrity after recovery.
+- Exact HA topology and fencing configuration.
+- Deployment verification by artifact digest.
 
 ### Go and Workstation
 
 Validate:
 
-- Signed or otherwise governed release artifacts.
+- Signed governed release artifacts.
+- SBOM and provenance.
 - Configuration separation.
 - Service supervision.
 - Upgrade and rollback.
 - Crash recovery.
 - Workstation replacement.
 - Operational telemetry.
-- Support bundle protection.
+- Support-bundle protection.
 
 ### Testing
 
 Run:
 
 - Full regression.
-- Load.
-- Endurance.
-- Failure injection.
+- Phase 15 retained hostile and failure corpus.
 - Backup and restore.
 - Rebuild.
 - Integration loss and recovery.
 - Queue drainage.
-- Security assessment.
+- Independent security assessment.
 - Accessibility acceptance.
 - Representative operational exercises.
+- Migration rehearsal and cutover exercise when applicable.
 - Pilot findings and remediation.
 
 ### Gate
 
 Production acceptance gate.
 
-The gate must not reduce production readiness to one automated script. It should
-collect and verify retained technical and operational acceptance artifacts.
-
-### Performance
-
-Performance thresholds may be enforced only where representative baselines and
-accepted budgets exist.
-
-Final acceptance should identify:
-
-- Evaluated budgets.
-- Unevaluated budgets.
-- Exceptions.
-- Capacity margin.
-- Scaling triggers.
-- Monitoring thresholds.
-- Response procedures.
+The gate must not reduce production readiness to one automated script. It must
+collect and verify retained technical, operational, standards, supply-chain,
+availability, HA, recovery, accessibility, and governance artifacts.
 
 ### Exit
 
 Production acceptance requires:
 
-- Exact accepted release.
-- Exact environment profile.
+- Exact accepted source and release.
+- Exact artifact digests, signatures, SBOM, and provenance.
+- Exact environment and HA profile.
 - Correctness PASS.
-- Required resource records.
-- Complete correlated server and workstation telemetry for all mandatory
-  adversarial campaigns.
-- Zero unexplained telemetry loss and zero unaccounted hostile attempts.
-- Zero retry attempt-budget, backoff-bound, and nested-amplification
-  violations.
-- Required performance budgets PASS or governed exception.
-- Accessibility accepted or governed exception with remediation.
+- Phase 15 availability, stress, and HA qualification still valid.
+- Complete correlated server and workstation telemetry.
+- Zero unexplained telemetry loss and zero unaccounted hostile or failure events.
+- Zero retry attempt-budget, backoff-bound, and nested-amplification violations.
+- Required performance and capacity budgets PASS.
+- Accessibility accepted or governed with no unsafe critical-path exception.
+- Standards-conformance status explicit.
 - Security and deployment controls accepted.
-- Recovery accepted.
+- Recovery, rollback, and trusted rebuild accepted.
+- Migration and cutover accepted when applicable.
 - Pilot findings resolved or governed.
+- No unresolved severity-one or severity-two failure.
 - Known limitations explicit.
-- Rollback available.
 - Operational ownership assigned.
+- Independent production acceptance authority approval.
 
 ---
 
@@ -2422,7 +2627,7 @@ If implementation exposes a contradiction in an accepted architecture model:
 
 ## Roadmap Completion
 
-This roadmap is complete only when CAD Phase 15 is formally accepted.
+This roadmap is complete only when CAD Phase 16 is formally accepted.
 
 Completion of one phase proves only its exact accepted boundary.
 

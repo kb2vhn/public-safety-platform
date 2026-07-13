@@ -40,6 +40,12 @@ monitoring vendor, identity provider, or compliance framework.
 - [Phase 3 Authorization Acceptance](foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 - [Phase 4 Approval Independence and Separation of Duties Acceptance](foundation/phase-4-approval-independence-and-separation-of-duties-acceptance.md)
 
+### Platform Assurance and Release Governance
+
+- [Verification, Validation, and Acceptance Governance](verification-validation-and-acceptance-governance-model.md)
+- [Software Supply-Chain and Release Integrity](software-supply-chain-and-release-integrity-model.md)
+- [Host Software, Configuration, and Runtime Integrity](host-software-configuration-and-runtime-integrity-model.md)
+
 ### Platform Services and Client Architecture
 
 - [Backend Services](backend-services/README.md)

@@ -13,8 +13,15 @@ Detailed human-interaction and accessibility evaluation is governed by the
 appliance and workstation-component resource measurement is governed by the
 [CAD Operational Workstation Architecture](operational-workstation/README.md).
 
-Correctness, accessibility, and resource observations must remain separately
-reported even when one phase gate gathers all three.
+Correctness, accessibility, resource observations, performance, availability,
+HA recovery, standards conformance, and release integrity must remain separately
+reported even when one phase gate gathers all dimensions.
+
+Pre-production availability, failover, capacity margin, burn-in, pilot entry,
+and production acceptance are governed by the
+[CAD Operational Readiness and Production Acceptance Model](cad-operational-readiness-and-production-acceptance-model.md).
+Standards conformance is governed by the
+[CAD Standards-Conformance and Interoperability Model](cad-standards-conformance-and-interoperability-model.md).
 
 ## Purpose
 
@@ -44,6 +51,14 @@ A material CAD change should normally include:
 15. Updated documentation and exact counts.
 16. Static and full phase-gate validation.
 17. A retained acceptance record.
+18. Requirement-to-evidence traceability.
+19. Randomized mixed stress, attack, fault, and recovery qualification when the
+    change affects an executable production path.
+20. Availability and high-availability qualification when the change affects a
+    critical service path or failure topology.
+21. Standards-conformance testing when an external standard or profile applies.
+22. Release-artifact, SBOM, provenance, and deployment identity evidence for a
+    formal release.
 
 ## Test Categories
 
@@ -158,6 +173,17 @@ assessment.
 
 Reducing an accepted count requires a documented decision. Counts must not be
 reduced merely to make a gate faster.
+
+
+#### Coverage Is Not Replaced by Volume
+
+Minimum counts are endurance floors. They do not replace semantic, state,
+boundary, enforcement-point, schedule, fault, threat, or recovery coverage.
+
+A campaign must prove that its generator reached the required states and
+conditions. Repeating one weak input, one concurrency schedule, one failure
+location, or one resource-pressure pattern does not satisfy a count merely
+because the numeric floor was reached.
 
 #### Required Hostile Classes
 
@@ -420,6 +446,29 @@ Use provider simulators or controlled test doubles to prove:
 - Queue recovery.
 - Replacement-adapter compatibility.
 
+
+
+### Standards-Conformance and Interoperability Tests
+
+When an external standard or deployment profile applies, tests must identify the
+exact edition and applicable provisions.
+
+Applicable tests include:
+
+- Official or accepted reference messages.
+- Clause-level positive and negative tests.
+- Unknown, missing, malformed, and extended content.
+- Version negotiation and transition.
+- Canonical-to-external and external-to-canonical semantic mapping.
+- Round-trip fidelity and documented loss.
+- Duplicate, replay, delay, reordering, timeout, and partial success.
+- Provider disagreement and reconciliation.
+- Cross-vendor or independently maintained fixtures where available.
+- Proof that transport success or provider acknowledgment cannot manufacture
+  CAD commitment.
+
+A broad compliance label without exact version, clause mapping, tests, and
+release-bound evidence is not acceptance.
 
 ### Foundation Approval and Authorization Integration
 
@@ -702,6 +751,244 @@ Formal acceptance requires zero:
 - Unintended side effects.
 - Manufactured authority or committed state.
 
+
+### Randomized Mixed Stress, Attack, Failure, and Recovery Campaigns
+
+Stress qualification is a hostile discovery and stability phase, not merely a
+high request-rate benchmark.
+
+The campaign controller must select from an accepted registry of valid
+workloads, hostile classes, failure classes, resource-pressure classes, HA
+events, and recovery operations.
+
+It must randomize, using retained seeds:
+
+- Event type.
+- Event count.
+- Ordering.
+- Interarrival timing.
+- Burst shape.
+- Concurrency.
+- Actor, organization, workstation, incident, unit, resource, and target.
+- Authorization and approval state.
+- Failure duration.
+- Recovery timing.
+- Retry and cancellation timing.
+- Single and combined fault selection.
+
+Randomization must not starve a required class. Each class has an accepted
+minimum coverage floor. The selected count for a class should be randomly drawn
+from its accepted range and retained with the seed and scheduler version.
+
+#### Candidate Mixed-Stress Gate
+
+A candidate mixed-stress gate must complete:
+
+- At least 8 continuous hours.
+- At least 50,000 total generated operational, hostile, failure, and recovery
+  actions.
+- At least 1,000 completed attempts for every required hostile or failure class.
+- At least two independently seeded scheduler epochs.
+
+#### Formal Mixed-Stress Qualification
+
+Formal pre-production qualification must complete:
+
+- Three independently seeded 24-hour campaigns.
+- At least 1,000,000 total actions across the formal campaign set.
+- At least 10,000 completed attempts for every required hostile class and every
+  required failure class, except physical or topology-destructive HA events
+  whose accepted event-specific minimum is governed by the operational
+  readiness model.
+- One 14-consecutive-day mixed endurance and attack-wave campaign containing at
+  least 180 credited campaign hours.
+- Randomized failover during valid, hostile, retrying, queued, and reconciling
+  work.
+
+The three independently seeded 24-hour campaigns may contribute to the 180-hour
+minimum only when they occur inside the same accepted 14-day window and satisfy
+all mixed-campaign, telemetry, coverage, quiet-interval, and evidence rules.
+They are not an additional 72-hour requirement, and time outside the accepted
+14-day window receives no credit toward the 180-hour minimum.
+
+The 180 credited hours must be distributed across at least 10 of the 14 days,
+include at least 12 separately scheduled waves, and exercise at least eight
+applicable attack or fault families. No one family may contribute more than 25
+percent of credited hours unless a stricter accepted profile applies. Generic
+denial-of-service or resource exhaustion must not dominate the campaign.
+
+The entire 336-hour observation window remains subject to availability,
+correctness, integrity, resource, delayed-effect, and telemetry evaluation.
+Overlapping attack generators count as one wall-clock campaign hour rather than
+multiplying credited time. Quiet intervals must be retained between selected
+waves to detect delayed retries, leaks, backlog residue, replication drift,
+stale state, corruption, and incomplete recovery.
+
+Counts are floors. The campaign must also satisfy state, combination, fault,
+timing, and recovery coverage.
+
+The 180-hour campaign, fourteen-consecutive-day failure-free clock, and
+thirty-day 99.99-percent semantic-availability gate are cumulative. The
+failure-free clock means that injected attacks and component failures do not
+produce an unresolved platform `SEV_1_CRITICAL` or `SEV_2_HIGH` outcome; it does
+not prohibit the planned injections themselves. None of the gates may replace,
+average with, or compensate for another. The destructive HA campaign,
+rolling-maintenance gate, and release or host-integrity gates also pass
+independently.
+
+#### Campaign Validity Gate
+
+Campaign validity is evaluated before security, stability, availability, or
+coverage outcomes. An invalid campaign receives zero formal qualification credit
+and must be rerun from an accepted baseline. No elapsed time, action count,
+failed attack, or successful failover from that run may satisfy another gate.
+
+A candidate or formal campaign is invalid when:
+
+- One attack or fault family dominates activity, credited hours, or generated
+  actions; the accepted 25-percent family ceiling is exceeded.
+- DDoS-style, volumetric, or generic resource exhaustion is the sole or dominant
+  campaign behavior.
+- Any required class, state, combination, enforcement point, topology, or
+  recovery stage is below its minimum coverage.
+- Required quiet recovery intervals or latent-effect observations are omitted.
+- Seeds, scheduler versions, generator versions, registry versions, selected
+  counts, or exact replay inputs are missing.
+- Mandatory telemetry is incomplete, uncorrelated, altered, or unable to prove
+  authoritative state and side effects.
+- Hostile traffic runs without representative normal CAD work, except for a
+  separately labeled isolated test that receives no mixed-campaign credit.
+- Failover is tested only while idle rather than during valid, hostile,
+  retrying, queued, and reconciling activity.
+- Recovery is declared merely because a process, node, or service restarted.
+- Any generated action, fault, operator intervention, evidence gap, or unknown
+  outcome is unaccounted for.
+
+Recovery is complete only after accepted proof of authority, quorum, fencing,
+replication, protected operations, uncertain-transaction disposition, queue and
+outbox reconciliation, worker and adapter state, workstation refresh,
+telemetry, resource stabilization, and delayed-effect observation.
+
+#### Required Stress Dimensions
+
+The campaign registry must include applicable:
+
+- Valid operational traffic from idle through accepted peak and 125 percent of
+  accepted peak in one-failure topology.
+- Malformed, unauthorized, stale, duplicate, replayed, and oversized requests.
+- Direct Go, direct PostgreSQL, and full-stack attacks.
+- Approval, authorization, lease, and policy changes during operations.
+- Serialization, deadlock, timeout, cancellation, and retry exhaustion.
+- Cache, queue, spool, outbox, and reconciliation misuse.
+- CPU, memory, disk, WAL, descriptor, socket, connection, worker, queue, and
+  network pressure.
+- Process crash, host loss, network partition, replication interruption,
+  quorum loss, failover, stable-primary recovery, and operator-authorized
+  planned role transition.
+- Provider delay, duplication, reordering, partial success, and outage.
+- Workstation restart, disconnect, reconnect, cache restore, and IPC failure.
+- Telemetry delay, partial loss, and recovery without permitting an unobservable
+  acceptance result.
+- Backup, restore, trusted rebuild, and rollback operations where applicable.
+
+#### Campaign Stop and Preservation Conditions
+
+The controller must stop or isolate the affected boundary and preserve evidence
+when it detects:
+
+- Unauthorized or manufactured authority.
+- Unauthorized committed state.
+- Lost acknowledged commit.
+- Split-brain.
+- Automatic failback, repeated promotion from one incident, or HA role
+  oscillation.
+- Data corruption.
+- Hidden partial commit.
+- Unbounded resource growth.
+- An unsafe fail-open condition.
+- Telemetry loss that prevents authoritative classification.
+- A failure that threatens the qualification environment itself.
+
+Stopping a campaign for safety does not turn the run into a pass.
+
+#### Complete Stress Evidence
+
+Every generated action and injected condition must be accounted for through:
+
+- Scheduler run and epoch.
+- Seed.
+- Generator and registry version.
+- Selected type and count.
+- Exact target and enforcement point.
+- Intended and observed timing.
+- Workload and concurrency state.
+- Failure and attack classification.
+- Result and side-effect verification.
+- Resource and availability telemetry.
+- Recovery and reconciliation result.
+- Minimal reproducer where needed.
+
+Unaccounted actions, unexplained telemetry gaps, or unknown outcomes are gate
+failures.
+
+### Availability and High-Availability Qualification
+
+The representative availability-qualification environment must meet or exceed
+99.99 percent measured availability for every critical service path and the
+aggregate critical CAD service over at least 30 consecutive days before pilot
+or production entry.
+
+Availability testing must treat incorrect, stale-success, unauthorized,
+uncertain, or unobservable results as unavailable.
+
+HA qualification must prove:
+
+- At most one authoritative writer.
+- No more than one automatic authoritative promotion per causal failure
+  incident.
+- The promoted primary remains authoritative while healthy.
+- A recovered former primary is fenced, fully resynchronized, and returned only
+  as a secondary.
+- Automatic failback, priority-based preemption, repeated promotion from one
+  incident, and authority oscillation do not occur.
+- Zero lost acknowledged commits.
+- Zero split-brain events.
+- Zero authority manufacture.
+- Every individual event remains within the maximum acceptable detection,
+  fencing, promotion, service-recovery, workstation-reconciliation, and
+  queue-drainage thresholds defined by the operational readiness model.
+- Engineering-goal attainment is reported separately by failure class,
+  workload, topology, and recovery stage; repeated goal misses require
+  remediation or a time-bounded accepted exception.
+- N+1 capacity sufficient to sustain 125 percent of accepted peak workload for
+  at least 60 minutes after one protected component or failure-domain loss.
+
+A favorable uptime percentage cannot override an integrity, authority, data
+loss, fencing, or unresolved severity-one or severity-two failure.
+
+### Rolling Maintenance and Upgrade Tests
+
+Testing must prove, under representative normal and hostile activity:
+
+- One-node-at-a-time patching and health-gated progression.
+- Workload drain or movement before reboot.
+- Safe database leadership transfer with quorum and fencing maintained.
+- Stable-primary behavior and no automatic failback after the former primary
+  returns.
+- Redundant integration paths or explicit safe degradation.
+- Automatic workstation reconnect, state refresh, and stale-authority rejection.
+- Backward-compatible schema expansion and mixed-version application behavior.
+- Safe coexistence of the oldest and newest versions allowed by the rollout
+  matrix.
+- Rollback or forward repair of a failed update without full-system outage.
+- Before-and-after package, `/etc`, artifact, service, and runtime-integrity
+  verification.
+
+A successful patch command, reboot, service start, or health endpoint is not
+maintenance acceptance. The test must prove current authoritative service,
+reconciled queues and integrations, stable resources, complete telemetry, and
+continued compliance with availability and failover thresholds.
+
 ### Accessibility Tests
 
 Human-facing CAD acceptance requires applicable:
@@ -965,33 +1252,141 @@ through:
 - A combination of otherwise valid requests.
 - A resource-pressure or timing condition that changes normal control behavior.
 
-### Error Classification
+### Failure and Attack Classification
 
-Errors must remain separated into categories such as:
+Every denial, error, injected fault, unexpected condition, recovery action, and
+attack observation must receive a stable classification. Classification must not
+be inferred only from an HTTP status, SQLSTATE, log level, or user-visible
+message.
 
-- Policy denial.
-- Authorization denial.
-- Approval denial.
-- Validation rejection.
-- Concurrency retry.
-- Serialization failure.
-- Deadlock.
-- Timeout.
-- Cancellation.
-- Retry exhaustion.
-- Resource exhaustion.
-- Dependency failure.
-- Data-integrity failure.
-- Security-boundary violation.
-- Unexpected internal failure.
-- Suspected attack-mechanism discovery.
+#### Outcome Class
 
-A technical failure must not be counted as a successful policy denial merely
-because the requested action did not complete.
+Use one primary outcome class:
 
-A crash, timeout, deadlock, serialization failure, or connection loss must not
-be treated as proof of secure rejection until the run also proves that no
-unauthorized or partial effect occurred.
+```text
+VALID_SUCCESS
+EXPECTED_POLICY_DENIAL
+EXPECTED_AUTHORIZATION_DENIAL
+EXPECTED_APPROVAL_DENIAL
+EXPECTED_VALIDATION_REJECTION
+EXPECTED_SECURITY_REJECTION
+CONCURRENCY_RETRY
+SERIALIZATION_FAILURE
+DEADLOCK
+TIMEOUT
+CANCELLATION
+RETRY_EXHAUSTION
+RESOURCE_EXHAUSTION
+DEPENDENCY_FAILURE
+NETWORK_FAILURE
+PROCESS_FAILURE
+HOST_FAILURE
+STORAGE_FAILURE
+REPLICATION_FAILURE
+QUORUM_FAILURE
+FAILOVER_FAILURE
+HA_OSCILLATION_FAILURE
+AVAILABILITY_FAILURE
+PERFORMANCE_BUDGET_FAILURE
+TELEMETRY_FAILURE
+DATA_INTEGRITY_FAILURE
+SECURITY_BOUNDARY_VIOLATION
+UNEXPECTED_INTERNAL_FAILURE
+SUSPECTED_ATTACK_MECHANISM_DISCOVERY
+UNKNOWN_OUTCOME
+```
+
+`UNKNOWN_OUTCOME` is a gate failure until resolved.
+
+#### Attack or Fault Family
+
+Use one or more applicable families:
+
+```text
+INPUT_ABUSE
+IDENTITY_OR_CONTEXT_FORGERY
+AUTHORITY_OR_APPROVAL_ABUSE
+PRIVILEGE_BYPASS
+STATE_TRANSITION_ABUSE
+STALE_STATE_OR_REPLAY
+CONCURRENCY_OR_ORDERING
+RETRY_OR_IDEMPOTENCY_ABUSE
+CACHE_QUEUE_OR_OUTBOX_ABUSE
+RESOURCE_EXHAUSTION
+DEPENDENCY_OR_PROVIDER_MANIPULATION
+NETWORK_OR_PARTITION
+PROCESS_OR_HOST_DISRUPTION
+REPLICATION_QUORUM_OR_FAILOVER
+HA_THRASHING_OR_ROLE_OSCILLATION
+DATA_CORRUPTION
+SIDE_CHANNEL_OR_INFORMATION_DISCLOSURE
+TELEMETRY_EVASION
+RECOVERY_OR_RECONCILIATION_ABUSE
+SOFTWARE_SUPPLY_CHAIN
+OPERATOR_OR_CONFIGURATION_ERROR
+NOVEL_OR_UNCLASSIFIED
+```
+
+#### Severity
+
+```text
+SEV_1_CRITICAL
+SEV_2_HIGH
+SEV_3_MODERATE
+SEV_4_LOW
+OBSERVATION
+```
+
+`SEV_1_CRITICAL` includes any unauthorized authority or commit, lost
+acknowledged commit, split-brain, unrecoverable authoritative corruption,
+critical protected-data disclosure, inability to establish authoritative
+state, or authority oscillation that permits conflicting writers or uncertain
+commit authority.
+
+`SEV_2_HIGH` includes material loss of a critical workflow, failover beyond a
+hard threshold, automatic failback, repeated promotion attributable to one
+causal incident, HA thrashing that remains fenced but disrupts service,
+repeatable broad denial of service, major recovery failure, or security-control
+weakness with credible high-impact exploitation.
+
+`SEV_3_MODERATE` includes bounded degradation, a recoverable budget violation,
+or a defect whose scope and effect remain contained.
+
+`SEV_4_LOW` includes limited noncritical defects with no authority, integrity,
+availability, accessibility, or protected-data consequence.
+
+`OBSERVATION` records an understood nondefect condition and must not be used to
+hide an unresolved failure.
+
+#### Control Disposition
+
+Each confirmed mechanism must state one or more:
+
+```text
+PREVENTED
+DETECTED
+CONTAINED
+RECOVERED
+COMPENSATED
+ACCEPTED_EXCEPTION
+REMEDIATION_REQUIRED
+NOT_EFFECTIVE
+NOT_EVALUATED
+```
+
+#### Classification Rules
+
+- A technical failure is not a policy denial.
+- A crash, timeout, deadlock, serialization failure, connection loss, or
+  failover does not prove secure rejection until authoritative state and side
+  effects are verified.
+- Detection without prevention must not be documented as prevention.
+- Recovery does not erase the original failure classification.
+- An availability result must retain its underlying technical and operational
+  cause.
+- A mixed event may have multiple fault families but one primary outcome and
+  one highest severity.
+- Every classification must identify evidence and reviewer.
 
 ### Failure Correlation
 
@@ -1185,6 +1580,14 @@ A CAD test run should eventually retain:
 - Environment fingerprint.
 - Failed database or service state when needed for investigation.
 - Phase-gate result.
+- Randomized stress scheduler ledger and action-accounting report.
+- Failure and attack classification ledger.
+- Availability numerator, denominator, outage ledger, and critical-path report.
+- HA failover, fencing, authority-epoch, stable-primary, anti-oscillation,
+  former-primary rejoin, recovery, and queue-drainage report.
+- Capacity-headroom and one-failure stability report.
+- Standards-conformance and interoperability evidence where applicable.
+- Release provenance, SBOM, signature, and artifact identity where applicable.
 - Acceptance record reference.
 
 ## Acceptance
@@ -1206,6 +1609,21 @@ A CAD phase is accepted only when:
   regression corpus.
 - Required prevention, detection, containment, telemetry, alerting,
   recovery, and operational-response controls are implemented and tested.
+- Every failure, attack, injected fault, and unknown outcome is classified.
+- Randomized mixed-stress requirements pass when applicable.
+- The fourteen-consecutive-day failure-free clock passes.
+- At least 180 valid credited attack-wave hours pass the campaign-validity gate.
+- Availability is at least 99.99 percent over the required qualification window
+  before pilot or production entry.
+- Every HA event remains within its maximum acceptable threshold, engineering-goal attainment is accepted, and one-failure stability thresholds pass when applicable.
+- Zero lost acknowledged commits, zero split-brain events, zero automatic
+  failback, and zero repeated promotion or authority oscillation from one causal
+  incident.
+- Standards-conformance status is explicit when applicable.
+- Rolling-maintenance and mixed-version upgrade assurance pass.
+- Release artifact, SBOM, provenance, signature, package, `/etc`, host-baseline,
+  runtime, and deployment identities are
+  exact for a formal release.
 - No unresolved critical or high-impact attack mechanism remains outside an
   accepted remediation, exception, or risk process.
 - Accessibility status is explicit.

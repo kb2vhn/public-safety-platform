@@ -9,6 +9,10 @@
 This document is authoritative for CAD external contracts, delivery intent,
 idempotency, acknowledgment, retry, replay, and canonical delivery state.
 
+External standards applicability, clause mapping, conformance claims, and
+semantic interoperability evidence are governed by the
+[CAD Standards-Conformance and Interoperability Model](cad-standards-conformance-and-interoperability-model.md).
+
 The Operational Workstation
 [Network Communication Profile](operational-workstation/network-communication-profile.md)
 is authoritative for local workstation egress, inbound paths, process ownership,
@@ -71,6 +75,25 @@ Each integration contract must define:
 - Telemetry.
 - Retention.
 - Replacement and exit.
+
+
+## Standards and Profile Binding
+
+Every integration contract must identify:
+
+- Applicable public standard, proprietary specification, or agency profile.
+- Exact edition or version.
+- Final, candidate, draft, retired, or superseded status.
+- Applicable provisions.
+- Canonical mapping.
+- Known loss, omission, or extension behavior.
+- Conformance test profile.
+- Interoperability evidence.
+- Governed deviations.
+
+A provider name, transport protocol, schema-valid message, or successful
+acknowledgment must not be presented as proof of standards conformance or
+semantic interoperability.
 
 ## Canonical Records
 
