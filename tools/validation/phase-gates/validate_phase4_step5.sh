@@ -252,9 +252,29 @@ check_contains "$migration" 'approval.enforce_approval_action_conflicts' \
     'Step 5 conflict helper exists'
 check_contains "$migration" 'INSERT INTO approval.approval_action_duties' \
     'Successful approvals record typed duties'
-check_contains "$migration" \
-    'Successful APPROVE actions receive one immutable APPROVE duty link.' \
-    'APPROVE duty is bound to the exact action and evaluation time'
+if python3 - "$migration" <<'PY_DUTY_BINDING'
+from pathlib import Path
+import re
+import sys
+
+text = Path(sys.argv[1]).read_text(encoding="utf-8")
+normalized = re.sub(r"\s+", " ", text)
+
+required = (
+    "IF p_action_type = 'APPROVE' THEN "
+    "INSERT INTO approval.approval_action_duties "
+    "( approval_action_id, duty_key, recorded_at ) "
+    "VALUES ( v_action_id, 'APPROVE', v_now ); "
+    "END IF;"
+)
+
+raise SystemExit(0 if required in normalized else 1)
+PY_DUTY_BINDING
+then
+  pass 'APPROVE duty is bound to the exact action and evaluation time'
+else
+  fail 'APPROVE duty is bound to the exact action and evaluation time'
+fi
 
 reason_codes=(
     DELEGATED_AUTHORITY_NOT_ALLOWED
