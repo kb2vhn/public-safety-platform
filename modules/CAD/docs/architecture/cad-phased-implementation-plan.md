@@ -225,7 +225,7 @@ Implement only the smallest coherent boundary needed for the phase.
 A phase must not mix unrelated features merely because they use the same table,
 service, screen, or provider.
 
-### Step 4 — Sequential Correctness Tests
+### Step 4 — Sequential Correctness and Adversarial Campaign Tests
 
 Add:
 
@@ -233,21 +233,34 @@ Add:
 - Catalog tests.
 - Ownership and privilege tests.
 - Positive behavior.
-- Negative behavior.
 - Invalid-transition behavior.
-- Hostile-condition behavior.
-- Idempotency behavior when applicable.
-- Exact side-effect checks.
+- Repeated negative and hostile behavior at every applicable enforcement point.
+- Direct Go rejection campaigns.
+- Direct PostgreSQL rejection and bypass campaigns.
+- Full-stack Go-to-PostgreSQL adversarial campaigns.
+- Idempotency and replay campaigns when applicable.
+- Exact unintended-side-effect checks.
+- Retained seeds and hostile regression corpus.
 
-### Step 5 — Independent-Connection and Race Tests
+A hostile case is not accepted as proven after one execution. Candidate gates must run at least 1,000 completed attempts per hostile class
+at every applicable enforcement point. Formal acceptance gates must run at
+least 10,000 completed attempts per high-impact operation at every applicable
+enforcement point, and every required hostile class must reach at least 10,000
+completed attempts.
 
-Use real independent database connections, service clients, or processes when
-state can race.
+### Step 5 — Independent-Connection and Hostile-Race Campaigns
+
+Use real independent database connections, service clients, workers, or
+processes when state can race.
 
 A concurrency-sensitive behavior is not accepted based only on one transaction,
-one connection, mocks, or sequential tests.
+one connection, mocks, sequential tests, or one fixed race schedule.
 
-### Step 6 — Go and End-to-End Tests
+Hostile-race campaigns must repeat timing, ordering, cancellation, retry,
+revocation, replay, winner-selection, and recovery variations while asserting
+the exact authoritative result and absence of unintended side effects.
+
+### Step 6 — Go, PostgreSQL Bypass, and End-to-End Tests
 
 When the phase includes Go:
 
@@ -255,12 +268,22 @@ When the phase includes Go:
 - Add package contract tests.
 - Run `go test`.
 - Run the race detector where applicable.
-- Add database integration tests.
-- Add service-to-database tests.
-- Add request cancellation and timeout tests.
-- Add malformed-input and authorization-denial tests.
+- Add repeated malformed-input, stale-context, replay, and authorization-denial
+  campaigns at the Go boundary.
+- Assert when a Go-owned rejection prevents database invocation.
+- Add direct PostgreSQL campaigns that bypass Go and prove the runtime role,
+  controlled APIs, privileges, current-state checks, and constraints
+  independently fail closed.
+- Add service-to-database adversarial campaigns.
+- Add request cancellation, timeout, pool-exhaustion, bounded retry, and
+  retry-storm campaigns.
+- Prove one retry owner, one end-to-end attempt budget, no nested retry
+  amplification, and a maximum of 11 total attempts including the initial
+  execution.
 - Prove no direct protected-table write path.
-- Prove exact error and retry semantics.
+- Prove exact error, technical-retry, policy-denial, and commit semantics.
+- Prove a weakness or omission in one non-authoritative layer cannot bypass the
+  remaining authoritative controls.
 
 ### Step 7 — Resource Observation
 
@@ -282,6 +305,9 @@ Record applicable:
 - Go heap, allocations, garbage collection, goroutines, and open descriptors.
 - Queue depth.
 - Retry and replay counts.
+- Retry sequence, attempt ordinal, serialization, deadlock, calculated
+  backoff, actual full-jitter sleep, cumulative wait, exhaustion, and
+  retry-amplification telemetry.
 - Workstation component CPU and memory.
 - Client input, update, and render latency.
 - Environment fingerprint.
@@ -298,6 +324,16 @@ The candidate gate must:
 - Apply manifests in dependency order.
 - Run sequential tests.
 - Run concurrency tests.
+- Run the required per-layer adversarial campaigns at the accepted minimums.
+- Run the mandatory local cache and queue authority-misuse campaign when any
+  such mechanism exists or changes.
+- Verify exact campaign counts, seeds, technical retries, unexpected
+  successes, unintended side effects, and authority-manufacture counters.
+- Capture and correlate mandatory server, PostgreSQL, Go, worker, adapter,
+  workstation, workstation-component, IPC, cache, spool, queue, and outbox
+  telemetry for the pre-run, active-run, and recovery intervals.
+- Fail when mandatory telemetry is missing, uncorrelated, unreadable, or does
+  not account for all completed attempts.
 - Run Go tests when applicable.
 - Run resource observation when applicable.
 - Produce exact counts.
@@ -487,6 +523,278 @@ degraded behavior, and representative dispatcher workflows.
 Prove workload limits, resource use, queue drainage, restart, backup, restore,
 rebuild, failover, reconciliation, and sustained operation.
 
+## Defense-in-Depth Adversarial Campaign Standard
+
+### Purpose
+
+CAD must prove sustained fail-closed behavior under deliberate abuse, not merely
+show that one hand-written negative example was rejected once.
+
+Every executable phase must identify all prevention and enforcement points for
+each high-impact operation and attack each applicable point directly.
+
+### Layer Matrix
+
+The phase traceability matrix must identify applicable campaigns for:
+
+| Layer | Required proof |
+|---|---|
+| Client and command input | Malformed or ambiguous input is contained, but the client is never treated as the security authority. |
+| Go transport boundary | Decoding, schema, size, normalization, and unsupported-version checks reject correctly. |
+| Go application boundary | Context, preconditions, state version, idempotency, timeout, cancellation, and retry rules reject correctly. |
+| Go authorization integration | Missing, forged, stale, contradictory, revoked, or out-of-scope context fails before commit. |
+| PostgreSQL role boundary | Runtime identities cannot own schemas, bypass controlled APIs, or directly write protected records. |
+| PostgreSQL controlled API | The database independently revalidates current state and exact protected-operation context. |
+| PostgreSQL structural boundary | Constraints, triggers, row-level security, ownership, and security-definer hardening prevent invalid effects. |
+| Foundation dependency | Approval, finalization, authorization, lease, Decision Record, and current-state rules cannot be fabricated or replayed. |
+| Outbox and worker boundary | Duplicate, replayed, reordered, expired, or partially failed delivery cannot create duplicate or unauthorized effect. |
+| External adapter boundary | Provider behavior cannot redefine CAD commitment or authorization. |
+| Full stack | A request traversing Go and PostgreSQL fails closed with zero unintended state. |
+| Direct bypass | Direct database and lower-layer attempts remain denied when higher layers are omitted. |
+| Concurrency and recovery | Independent actors, connections, workers, retries, restarts, and reconciliation preserve one authoritative outcome. |
+
+### Mandatory Local Cache and Queue Authority-Misuse Campaign
+
+A local cache, workstation queue, spool, offline record, server queue, outbox,
+worker backlog, replay buffer, or reconciliation item is never authority.
+
+Every applicable phase must attack those mechanisms as high-impact protected
+operations and prove they cannot manufacture, imply, promote, replay, or
+counterfeit:
+
+- Approval Action Records or stage satisfaction.
+- Approval Request finalization.
+- Authorization Decisions or Authorization Leases.
+- Decision Records or Decision Supporting Records.
+- Foundation current-state validation.
+- Committed CAD state.
+- Successful external delivery.
+- Supervisory or operator authority.
+
+The campaign must cover workstation storage, IPC, Go client and server
+boundaries, server queues and workers, PostgreSQL runtime roles and controlled
+APIs, direct database bypass, full-stack execution, restart, replay, recovery,
+and reconciliation.
+
+Required misuse variants include tampering, fabrication, cross-context copying,
+stale replay, duplication, reordering, truncation, corruption, forged
+identifiers or context, component restart, worker restart, resource exhaustion,
+and attempts to reinterpret technical failures or provider acknowledgment as
+authorization or commitment.
+
+This campaign is subject to the full candidate and formal-acceptance minimums
+below. Any manufactured Foundation record, unauthorized CAD commit, external
+delivery, or cross-context side effect is an immediate correctness failure.
+
+### Campaign Volume
+
+Unless an accepted decision requires more:
+
+- Candidate gates execute at least 1,000 completed attempts for every hostile
+  behavior class at every applicable enforcement point.
+- Formal acceptance executes at least 10,000 completed hostile attempts for
+  every high-impact protected operation at every applicable enforcement point.
+- Every required hostile behavior class executes at least 10,000 completed
+  attempts during formal acceptance.
+- Fuzz, mutation, mixed-traffic, and endurance campaigns may run tens or
+  hundreds of thousands of attempts.
+- A later phase must retain and rerun the hostile corpus from every earlier
+  accepted phase.
+
+The total campaign volume will commonly be hundreds of thousands or millions
+of attempts in one formal acceptance gate because the same operation is
+challenged at multiple independent layers and every required hostile class
+must reach its own minimum count.
+
+### Campaign Accounting
+
+Every gate must report:
+
+```text
+configured
+generated
+attempted
+completed
+expected rejection
+technical retry
+unexpected success
+unintended side effect
+seed or seed range
+generator and corpus version
+duration
+```
+
+`unexpected success` and `unintended side effect` must both equal zero.
+
+Technical retries are reported separately. Deadlocks, serialization failures,
+timeouts, and connection failures are not automatically counted as successful
+security rejections.
+
+### Exact Side-Effect Proof
+
+After each attempt or bounded reproducible batch, assert applicable:
+
+- Protected records unchanged.
+- No unauthorized current projection.
+- No timeline, audit, approval, authorization, lease, or Decision Record
+  fabricated.
+- No assignment, alert, timer, queue, or outbox effect.
+- No external delivery.
+- No privilege or ownership change.
+- No hidden partial commit.
+
+### Reproducibility
+
+Generated campaigns must use retained seeds, versioned generators, and a stable
+regression corpus.
+
+Every discovered malicious, malformed, stale, replayed, or concurrency case
+that exposes a defect becomes a permanent regression case.
+
+### Claim Boundary
+
+Successful campaigns are strong evidence of sustained adversarial resistance
+within the accepted threat model and environment.
+
+No finite test count proves prevention of every possible attack. The project
+must not describe the result as absolute or universal malice prevention.
+
+## Bounded Retry and Retry-Storm Standard
+
+### Technical Outcome Boundary
+
+Serialization and deadlock outcomes remain retryable technical outcomes.
+
+They must not be classified as policy denials, approval denials, authorization
+denials, successful approvals, successful Authorization Decisions, or committed
+CAD results.
+
+Retry exhaustion remains a technical failure.
+
+### Accepted Retry Envelope
+
+The accepted retry family is:
+
+```text
+Maximum total attempts: 11
+Accepted configured total attempts: 5 through 11
+Initial backoff interval: 50 through 100 milliseconds
+Backoff multiplier: 2.0
+Maximum backoff cap: 1 through 2 seconds
+Jitter: full randomization
+```
+
+The total attempt count includes the initial execution.
+
+A configuration of 11 therefore permits one initial execution and at most 10
+retry executions.
+
+For retry number `r`, beginning with `r = 1` after the initial attempt:
+
+```text
+calculated_cap_r =
+    min(maximum_backoff_cap,
+        initial_backoff_interval * 2^(r - 1))
+
+actual_sleep_r =
+    uniform_random_duration(0, calculated_cap_r)
+```
+
+### Retry Ownership
+
+Every operation must have exactly one end-to-end retry owner and one retry
+budget.
+
+Go, PostgreSQL wrappers, workers, adapters, and workstation components must not
+create nested independent retry loops that multiply the accepted maximum.
+
+The retry sequence must retain one correlation identity, idempotency identity,
+attempt counter, deadline, and cancellation context.
+
+### Fresh Revalidation
+
+Every retry begins a new transaction and revalidates:
+
+- Current CAD state.
+- Current Foundation Approval state.
+- Current Authorization Decision context.
+- Current Authorization Lease.
+- Current policy and authority state.
+- Exact organization, scope, purpose, operation, and protected target.
+- Operation-specific preconditions and version state.
+
+A prior allowed decision cannot be treated as permanently reusable authority for
+a later transaction.
+
+### Non-Retryable Results
+
+Authentication failure, policy denial, authorization denial, approval denial,
+revocation, withdrawal, expiry, stale state, malformed input, illegal
+transition, durable business conflict, privilege denial, cache or queue
+authority-misuse rejection, and unknown unclassified failures do not enter the
+automatic retry loop.
+
+### Mandatory Retry-Storm Campaign
+
+Every retry-enabled phase must run candidate and formal retry-storm campaigns at
+the normal CAD hostile-campaign minimums.
+
+Campaigns must sweep:
+
+- Total attempts 5 through 11.
+- Initial intervals 50 through 100 milliseconds.
+- Caps 1 through 2 seconds.
+- Full-jitter seeds.
+- Client, connection, worker, process, and workstation concurrency.
+- Serialization and deadlock mixtures.
+- Early, middle, final-attempt success, and complete exhaustion.
+- Cancellation, timeout, shutdown, restart, revocation, lease expiry, and state
+  change between attempts.
+- Direct PostgreSQL, direct Go, worker, queue, outbox, adapter, IPC,
+  workstation-originated, and full-stack paths.
+- Database, pool, CPU, memory, disk, network, socket, descriptor, queue, and
+  workstation pressure.
+
+The campaign must prove:
+
+- No sequence exceeds 11 total attempts.
+- No nested retry amplification occurs.
+- Full jitter remains within the calculated bound.
+- The cap remains within the accepted 1-to-2-second profile.
+- A new transaction and current-state validation occur on every attempt.
+- A policy denial stops retry.
+- Retry exhaustion remains technical.
+- One commit creates one effect.
+- Cancellation and deadlines stop work cleanly.
+- No approval, authorization, lease, Decision Record, external delivery, or
+  committed CAD state is manufactured.
+- Server and workstation resources remain bounded and recover.
+
+### Mandatory Retry Telemetry
+
+Every retry-storm run must correlate:
+
+- Run, campaign, operation, retry sequence, attempt, host, workstation, process,
+  worker, connection, and transaction identifiers.
+- Configured budget and retry owner.
+- Serialization, deadlock, denial, cancellation, timeout, exhaustion, and commit
+  outcomes.
+- Initial interval, multiplier, calculated cap, configured cap, actual jittered
+  sleep, cumulative sleep, and remaining deadline.
+- Current-state, Approval, authorization, Lease, policy, and idempotency safe
+  fingerprints.
+- PostgreSQL locks, waits, transactions, rollbacks, deadlocks, serialization
+  outcomes, buffers, WAL, and connections.
+- Go pool waits, goroutines, threads, heap, allocations, garbage collection,
+  descriptors, queue state, worker state, and request latency.
+- Workstation CPU, memory, disk, network, IPC, cache, queue, spool, disconnect,
+  reconnect, focus, responsiveness, and recovery impact.
+- Attempt-budget violations, backoff-bound violations, nested amplification,
+  unexpected successes, unintended side effects, and authority-manufacture
+  counters.
+
+Formal acceptance requires all violation counters to equal zero.
+
 ## Performance and Resource Governance
 
 ### Observation First
@@ -504,6 +812,47 @@ Performance thresholds: NOT_EVALUATED
 ```
 
 This is valid while representative baselines are still being collected.
+
+### Mandatory Server and Workstation Telemetry During Adversarial Campaigns
+
+Every candidate and formal-acceptance campaign must collect correlated telemetry
+from the server and workstation sides for the full pre-run, active-run, and
+post-run recovery interval.
+
+The required telemetry matrix includes:
+
+- Host CPU, memory, pressure, disk, filesystem, network, process, thread,
+  descriptor, socket, cgroup, systemd, thermal, and fault state.
+- PostgreSQL connections, transactions, statements, controlled operations,
+  denials, waits, locks, deadlocks, buffers, temporary files, WAL, checkpoints,
+  sizes, growth, plans, rows, roles, privileges, and current-state
+  revalidation.
+- Go request, authorization, denial, retry, timeout, cancellation, database-pool,
+  heap, allocation, garbage-collection, goroutine, thread, descriptor, queue,
+  outbox, adapter, health, restart, and shutdown behavior.
+- Workstation and workstation-component CPU, memory, disk, network, process,
+  thread, descriptor, Unix-domain socket, systemd, GTK, WebKitGTK, graphics,
+  display, accessibility-profile, input, focus, render, alert, cache, spool,
+  queue, replay, quarantine, restart, and recovery behavior.
+- Per-layer hostile-attempt, expected-rejection, technical-retry,
+  unexpected-success, unintended-side-effect, direct-database-invocation,
+  external-delivery, and authority-manufacture counters.
+- Retry sequence, attempt budget, attempt ordinal, retry owner,
+  serialization, deadlock, calculated cap, actual full-jitter sleep,
+  cumulative delay, exhaustion, cancellation, timeout, and nested-retry
+  amplification counters.
+
+Every metric must be correlated to the run, campaign, hostile class, operation,
+enforcement point, host, workstation, process, software revision, environment,
+seed, and time interval.
+
+Missing mandatory telemetry, missing correlation, unaccounted attempts, or lost
+server or workstation observations cause the gate to fail. Unsupported metrics
+must be explicitly identified and governed; they must not silently disappear
+from the report.
+
+Telemetry must exclude secrets and unnecessary protected content and must never
+be used as an authorization or commitment source.
 
 ### Reference Environments
 
@@ -578,7 +927,18 @@ Measure applicable:
 - Map and alternative-list update.
 - Recovery after component restart.
 - Cache and spool growth.
-- CPU and memory by workstation component.
+- CPU, memory, threads, descriptors, sockets, restarts, and faults by
+  workstation component.
+- Host CPU, memory pressure, swap, disk I/O, filesystem capacity, network
+  latency and loss, thermal state, and throttling.
+- Unix-domain socket latency, errors, rejection, queueing, and backpressure.
+- GTK and WebKitGTK process health, memory, crashes, restarts, and render
+  behavior.
+- Graphics or GPU utilization, memory, frame timing, and render stalls where
+  available.
+- Local cache, queue, spool, replay, quarantine, reconciliation, and attempted
+  authority-promotion counters.
+- systemd service, socket activation, watchdog, restart, and dependency state.
 - Operation under one, two, and representative multi-monitor layouts.
 - Accessibility-feature performance.
 - Degraded-mode operation.
@@ -886,6 +1246,9 @@ Add framework self-tests for:
 - Test-manifest registration.
 - Gate result formatting.
 - Resource artifact creation.
+- Deterministic adversarial generator and seed retention.
+- Per-layer campaign accounting.
+- Zero unexpected-success and unintended-side-effect gate behavior.
 
 ### Gate
 
@@ -1042,7 +1405,9 @@ Add:
 - Close versus new-event race.
 - Transfer acceptance race.
 - Reopen versus correction race.
-- Retryable serialization behavior.
+- Retryable serialization and deadlock behavior.
+- Retry-storm campaigns across 5-to-11 total attempts, 50-to-100-millisecond
+  initial intervals, 2.0 backoff, 1-to-2-second caps, and full jitter.
 
 ### Gate
 
@@ -1543,6 +1908,9 @@ Add:
 - Graceful shutdown.
 - Health and readiness.
 - Race detector.
+- Retry-storm campaign proving bounded attempts, full-jitter behavior,
+  current-state revalidation, technical exhaustion, and no nested retry
+  amplification.
 - Dependency and static analysis.
 - Reproducible build verification.
 
@@ -1938,6 +2306,11 @@ Production acceptance requires:
 - Exact environment profile.
 - Correctness PASS.
 - Required resource records.
+- Complete correlated server and workstation telemetry for all mandatory
+  adversarial campaigns.
+- Zero unexplained telemetry loss and zero unaccounted hostile attempts.
+- Zero retry attempt-budget, backoff-bound, and nested-amplification
+  violations.
 - Required performance budgets PASS or governed exception.
 - Accessibility accepted or governed exception with remediation.
 - Security and deployment controls accepted.
