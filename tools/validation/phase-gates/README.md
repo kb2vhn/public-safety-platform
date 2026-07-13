@@ -78,3 +78,9 @@ and isolated disposable-cluster ownership behavior.
 `validate_phase5_step4.sh` validates the deployment manifest, exact runtime
 privilege contract, controlled `SECURITY DEFINER` routines, documentation,
 the accepted Foundation regression, and disposable-cluster runtime behavior.
+
+<!-- ISSP_PHASE5_STEP5_REVIEW_AND_VALIDATION_ROLES -->
+
+## Phase 5 Step 5
+
+The Step 5 gate preserves the frozen Phase 4 tree, revalidates Step 4, validates migration `930`, and proves that investigator, audit-reader, and validation-reader roles can read only their exact approved views.

@@ -117,3 +117,9 @@ Static validation only:
 ```bash
 ./tools/validation/phase-gates/validate_phase5_step4.sh --static-only
 ```
+
+<!-- ISSP_PHASE5_STEP5_REVIEW_AND_VALIDATION_ROLES -->
+
+## Phase 5 Step 5 Gate
+
+Run `tools/validation/phase-gates/validate_phase5_step5.sh --static-only` for repository checks and `tools/validation/phase-gates/validate_phase5_step5.sh` for complete predecessor, Foundation, and disposable-cluster validation.

@@ -118,3 +118,9 @@ exposed routine is Foundation-owned, `SECURITY DEFINER`, fixed-search-path,
 and revoked from `PUBLIC`.
 
 No canonical non-owner role receives direct relation or sequence privileges.
+
+<!-- ISSP_PHASE5_STEP5_REVIEW_AND_VALIDATION_ROLES -->
+
+## Phase 5 Step 5 — Review and Validation Roles
+
+Phase 5 Step 5 implements separate `NOLOGIN` investigator, audit-reader, and validation-reader capabilities through an exact 40-row view-only privilege contract. The implementation adds two reduced-disclosure investigator views, eight audit-lineage views, and 23 validation-posture views. No review role receives direct protected base-table, sequence, mutation, routine-execution, schema-creation, or temporary-object authority. Phase 5 Step 6 may implement disabled-at-rest break-glass activation and credential lifecycle controls.

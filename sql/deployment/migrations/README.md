@@ -43,3 +43,9 @@ controlled routine execution. It also creates bounded integration and
 monitoring delivery APIs.
 
 It grants no direct protected relation or sequence privileges.
+
+<!-- ISSP_PHASE5_STEP5_REVIEW_AND_VALIDATION_ROLES -->
+
+## Phase 5 Step 5
+
+Migration `930_investigator_audit_and_validation_review_surfaces.sql` creates the `security_review` view boundary, deployment-posture views, and the exact investigator, audit-reader, and validation-reader privilege contract. Runtime grants remain those accepted in migration `920`; break-glass remains disabled at rest.

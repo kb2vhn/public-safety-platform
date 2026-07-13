@@ -175,3 +175,9 @@ migrations `900`, `910`, and `920`, then validates the exact runtime allowlist.
 It executes delivery work as the actual bounded service login roles, proves
 direct table access and cross-service execution are denied, and destroys the
 temporary cluster afterward.
+
+<!-- ISSP_PHASE5_STEP5_REVIEW_AND_VALIDATION_ROLES -->
+
+## Phase 5 Step 5 Deployment Validation
+
+The Step 5 disposable-cluster test applies all accepted Foundation and deployment migrations, proves exact reapplication, verifies the 40-row review privilege contract, exercises approved view reads, and forces denial of protected base-table reads, mutation, routine execution, temporary objects, cross-review access, and runtime-service access.

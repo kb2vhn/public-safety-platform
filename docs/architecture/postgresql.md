@@ -115,3 +115,9 @@ exact capability schema `USAGE`, and controlled routine `EXECUTE`.
 The deployment layer exposes no direct protected-table or sequence grants.
 Review roles and break-glass remain disconnected and ungranted until their
 separately governed phases.
+
+<!-- ISSP_PHASE5_STEP5_REVIEW_AND_VALIDATION_ROLES -->
+
+## Phase 5 Step 5 — PostgreSQL Review Boundary
+
+Phase 5 Step 5 implements separate `NOLOGIN` investigator, audit-reader, and validation-reader capabilities through an exact 40-row view-only privilege contract. The implementation adds two reduced-disclosure investigator views, eight audit-lineage views, and 23 validation-posture views. No review role receives direct protected base-table, sequence, mutation, routine-execution, schema-creation, or temporary-object authority. Phase 5 Step 6 may implement disabled-at-rest break-glass activation and credential lifecycle controls.
