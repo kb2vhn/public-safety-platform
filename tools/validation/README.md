@@ -103,3 +103,17 @@ Static repository and contract validation:
 
 The complete gate reruns the accepted Phase 4 regression and then validates
 ownership and default privileges in a disposable PostgreSQL cluster.
+
+## Phase 5 Step 4 Gate
+
+Run the complete least-privileged runtime grant gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step4.sh
+```
+
+Static validation only:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step4.sh --static-only
+```

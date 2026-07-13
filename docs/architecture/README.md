@@ -154,3 +154,13 @@ module-owned state into the Platform Foundation.
 See:
 
 - [Phase 5 Step 3 — Ownership and Creator-Specific Default Privileges](foundation/phase-5-step-3-ownership-and-default-privileges.md)
+
+## Active Phase 5 Step 4
+
+The active deployment-security work grants bounded database connection and
+controlled API execution without allowing workstation, interface, module, or
+service code to create database authority independently.
+
+See:
+
+- [Phase 5 Step 4 — Least-Privileged Runtime Grants and Controlled Service APIs](foundation/phase-5-step-4-least-privileged-runtime-grants.md)

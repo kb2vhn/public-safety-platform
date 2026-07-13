@@ -166,3 +166,12 @@ creator-specific default privileges.
 
 The accepted Foundation regression remains 34 migrations, 21 sequential test
 files, 16 concurrency test files, 734 PASS, 0 FAIL, and 3 understood WARN.
+
+## Phase 5 Step 4 Deployment Validation
+
+The Step 4 disposable-cluster test applies Foundation migrations and deployment
+migrations `900`, `910`, and `920`, then validates the exact runtime allowlist.
+
+It executes delivery work as the actual bounded service login roles, proves
+direct table access and cross-service execution are denied, and destroys the
+temporary cluster afterward.

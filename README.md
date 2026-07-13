@@ -979,3 +979,24 @@ Active gate:
 ```bash
 ./tools/validation/phase-gates/validate_phase5_step3.sh
 ```
+
+### Active Phase 5 Step 4 — Least-Privileged Runtime Grants
+
+Phase 5 Step 4 grants only inherited database `CONNECT`, exact capability
+schema `USAGE`, and controlled routine `EXECUTE` to the current bounded
+production service identities.
+
+No runtime or service role receives direct protected-table or sequence
+privileges. Thirty-one approved routines execute as the non-login Foundation
+owner with fixed `pg_catalog`-first search paths. Integration and monitoring
+workers use bounded claim, completion, and retry APIs.
+
+Governing implementation:
+
+- [Phase 5 Step 4 — Least-Privileged Runtime Grants and Controlled Service APIs](docs/architecture/foundation/phase-5-step-4-least-privileged-runtime-grants.md)
+
+Active gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step4.sh
+```

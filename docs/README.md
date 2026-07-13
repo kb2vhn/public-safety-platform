@@ -136,3 +136,13 @@ owners and establishes creator-specific default privileges without granting
 runtime service access.
 
 - [Phase 5 Step 3 — Ownership and Creator-Specific Default Privileges](architecture/foundation/phase-5-step-3-ownership-and-default-privileges.md)
+
+## Active Phase 5 Step 4
+
+Phase 5 Step 4 implements the least-privileged runtime database boundary for
+the authorization, integration-delivery, and monitoring-delivery service
+identities.
+
+- [Phase 5 Step 4 — Least-Privileged Runtime Grants and Controlled Service APIs](architecture/foundation/phase-5-step-4-least-privileged-runtime-grants.md)
+
+No direct protected relation grants are introduced.

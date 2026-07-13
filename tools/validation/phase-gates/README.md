@@ -72,3 +72,9 @@ Foundation regression, and isolated disposable-cluster role behavior.
 database ownership, creator-specific default privileges, documentation
 synchronization, the frozen Phase 4 tree, the accepted Foundation regression,
 and isolated disposable-cluster ownership behavior.
+
+## Phase 5 Step 4
+
+`validate_phase5_step4.sh` validates the deployment manifest, exact runtime
+privilege contract, controlled `SECURITY DEFINER` routines, documentation,
+the accepted Foundation regression, and disposable-cluster runtime behavior.

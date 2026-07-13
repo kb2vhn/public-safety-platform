@@ -379,3 +379,13 @@ and establishes creator-specific default privileges.
 Runtime service grants remain deferred to Phase 5 Step 4.
 
 - [Phase 5 Step 3 — Ownership and Creator-Specific Default Privileges](phase-5-step-3-ownership-and-default-privileges.md)
+
+## Active Phase 5 Step 4
+
+Step 4 exposes only the approved controlled Foundation routines and bounded
+delivery APIs through inherited capability roles. It grants no direct
+protected-table or sequence privileges to runtime identities.
+
+See:
+
+- [Phase 5 Step 4 — Least-Privileged Runtime Grants and Controlled Service APIs](phase-5-step-4-least-privileged-runtime-grants.md)

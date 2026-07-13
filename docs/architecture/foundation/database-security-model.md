@@ -107,3 +107,14 @@ relations, routines, and standalone types to approved non-login owners.
 It also revokes `PUBLIC` database and protected-object access and establishes
 creator-specific default privileges. Least-privileged runtime grants remain
 Phase 5 Step 4 work.
+
+## Phase 5 Step 4 Runtime Grant Implementation
+
+Deployment migration `920` implements the least-privileged runtime allowlist.
+
+The current allowlist contains one database connection privilege, eight schema
+usage privileges, and 31 controlled routine execution privileges. Every
+exposed routine is Foundation-owned, `SECURITY DEFINER`, fixed-search-path,
+and revoked from `PUBLIC`.
+
+No canonical non-owner role receives direct relation or sequence privileges.

@@ -106,3 +106,12 @@ The PostgreSQL `pgcrypto` extension catalog owner cannot be changed through a
 supported `ALTER EXTENSION ... OWNER TO` command. The extension schema and
 member objects move to `issp_extension_owner`, while the catalog-owner
 limitation is explicitly recorded for production review.
+
+## Phase 5 Step 4 Runtime Privilege Boundary
+
+Runtime service identities now receive only inherited database `CONNECT`,
+exact capability schema `USAGE`, and controlled routine `EXECUTE`.
+
+The deployment layer exposes no direct protected-table or sequence grants.
+Review roles and break-glass remain disconnected and ungranted until their
+separately governed phases.

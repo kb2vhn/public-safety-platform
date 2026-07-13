@@ -34,3 +34,12 @@ database and protected-object access, establishes creator-specific default
 privileges, and records the PostgreSQL extension catalog-owner limitation.
 
 Runtime object grants remain deferred to migration `920` and Phase 5 Step 4.
+
+## Phase 5 Step 4
+
+`920_least_privileged_runtime_grants_and_controlled_service_apis.sql` grants
+inherited runtime connection, exact capability schema visibility, and
+controlled routine execution. It also creates bounded integration and
+monitoring delivery APIs.
+
+It grants no direct protected relation or sequence privileges.

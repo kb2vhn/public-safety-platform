@@ -136,8 +136,11 @@ mapfile -t deployment_entries < <(
         sql/deployment/manifests/deployment.manifest
 )
 
-check_equal "${#deployment_entries[@]}" "2" \
-    "Deployment manifest entries"
+if (( ${#deployment_entries[@]} >= 2 )); then
+    pass "Deployment manifest contains the required Step 3 prefix"
+else
+    fail "Deployment manifest contains the required Step 3 prefix"
+fi
 
 check_equal \
     "${deployment_entries[0]:-missing}" \

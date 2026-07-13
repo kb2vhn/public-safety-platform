@@ -575,3 +575,21 @@ Still deferred:
 - approved review surfaces;
 - credential provisioning;
 - break-glass activation lifecycle.
+
+## Phase 5 Step 4 Implementation Status
+
+Phase 5 Step 4 implements the current production runtime allowlist:
+
+```text
+1  inherited database CONNECT capability
+8  exact schema USAGE privileges
+31 controlled routine EXECUTE privileges
+0  direct protected relation or sequence privileges
+```
+
+The authorization service receives only the accepted controlled Foundation
+APIs. Integration and monitoring delivery workers receive bounded
+claim/completion/retry APIs that execute as `issp_foundation_owner`.
+
+Investigator, audit-reader, validation-reader, migration, and break-glass
+access remains deferred.
