@@ -2230,14 +2230,15 @@ BEGIN
         END IF;
     END IF;
 
-    UPDATE approval.approval_stage_evaluations
+    UPDATE approval.approval_stage_evaluations AS evaluation_record
        SET result = v_result,
            reason_code = v_reason_code,
            counted_approvals = v_counted,
            distinct_effective_actors = v_distinct_actor_count,
            distinct_organizations = v_distinct_organization_count,
            blocking_deny_present = v_blocking_deny
-     WHERE approval_stage_evaluation_id = v_evaluation_id;
+     WHERE evaluation_record.approval_stage_evaluation_id =
+           v_evaluation_id;
 
     approval_stage_evaluation_id := v_evaluation_id;
     result := v_result;
@@ -2475,14 +2476,15 @@ BEGIN
                 MESSAGE = 'APPROVAL_FINAL_RESULT_MISMATCH';
     END IF;
 
-    UPDATE approval.approval_requests
+    UPDATE approval.approval_requests AS request_record
        SET status = v_computed_status,
            finalized_at = v_now,
            finalized_by_identity_id = p_finalized_by_identity_id,
            final_reason_code = v_computed_reason
-     WHERE approval_request_id = p_approval_request_id
-       AND status = 'PENDING'
-       AND finalized_at IS NULL;
+     WHERE request_record.approval_request_id =
+           p_approval_request_id
+       AND request_record.status = 'PENDING'
+       AND request_record.finalized_at IS NULL;
 
     IF NOT FOUND THEN
         RAISE EXCEPTION
