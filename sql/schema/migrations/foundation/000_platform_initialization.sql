@@ -52,9 +52,9 @@
 
 BEGIN;
 
-SET LOCAL lock_timeout = '10s';
-SET LOCAL statement_timeout = '5min';
-SET LOCAL idle_in_transaction_session_timeout = '5min';
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '1min';
+SET LOCAL idle_in_transaction_session_timeout = '1min';
 
 -- Prevent concurrent Platform Foundation migration runners.
 SELECT pg_advisory_xact_lock(

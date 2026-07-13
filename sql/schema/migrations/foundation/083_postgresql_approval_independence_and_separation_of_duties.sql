@@ -1761,7 +1761,7 @@ COMMENT ON FUNCTION approval.record_approval_action(
     text,
     uuid
 ) IS
-    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, action-lineage, independence, delegated-grant lineage, incompatible-authority, and approval-side separation-of-duties validation. Successful APPROVE actions receive one immutable APPROVE duty link. Phase 4 Step 6 adds stage satisfaction and finalization.';
+    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, and action-lineage validation. Phase 4 Step 4 enforces self-approval, affected-identity, duplicate-effective-actor, organization-independence, authority-origin, and reciprocal-chain protections. Phase 4 Step 5 additionally enforces delegated-authority lineage, incompatible-authority rules, immutable APPROVE duty recording, and prohibited-duty combinations. Phase 4 Step 6 adds stage satisfaction and finalization.';
 
 REVOKE ALL ON FUNCTION
     approval.prevent_approval_action_record_mutation()

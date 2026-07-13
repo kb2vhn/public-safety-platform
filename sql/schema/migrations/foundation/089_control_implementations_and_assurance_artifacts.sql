@@ -39,9 +39,9 @@
 
 BEGIN;
 
-SET LOCAL lock_timeout = '10s';
-SET LOCAL statement_timeout = '10min';
-SET LOCAL idle_in_transaction_session_timeout = '10min';
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '1min';
+SET LOCAL idle_in_transaction_session_timeout = '1min';
 
 SELECT pg_advisory_xact_lock(
     hashtext(current_database()),
