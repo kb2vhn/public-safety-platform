@@ -123,3 +123,13 @@ Static validation only:
 ## Phase 5 Step 5 Gate
 
 Run `tools/validation/phase-gates/validate_phase5_step5.sh --static-only` for repository checks and `tools/validation/phase-gates/validate_phase5_step5.sh` for complete predecessor, Foundation, and disposable-cluster validation.
+
+## Phase 5 Step 6 Implementation Status
+
+Phase 5 Step 6 implements disabled-at-rest `issp_break_glass` activation,
+independent approval evidence, bounded expiration, forced deactivation,
+append-only emergency evidence, off-host-export requirements, and external
+credential lifecycle policy through deployment migration
+`940_break_glass_and_credential_lifecycle.sql`. Credentials, private keys,
+tokens, and passwords remain outside the repository and database. Phase 5 Step
+7 may perform hostile-condition and role-race validation.

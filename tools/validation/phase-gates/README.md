@@ -84,3 +84,13 @@ the accepted Foundation regression, and disposable-cluster runtime behavior.
 ## Phase 5 Step 5
 
 The Step 5 gate preserves the frozen Phase 4 tree, revalidates Step 4, validates migration `930`, and proves that investigator, audit-reader, and validation-reader roles can read only their exact approved views.
+
+## Phase 5 Step 6 Implementation Status
+
+Phase 5 Step 6 implements disabled-at-rest `issp_break_glass` activation,
+independent approval evidence, bounded expiration, forced deactivation,
+append-only emergency evidence, off-host-export requirements, and external
+credential lifecycle policy through deployment migration
+`940_break_glass_and_credential_lifecycle.sql`. Credentials, private keys,
+tokens, and passwords remain outside the repository and database. Phase 5 Step
+7 may perform hostile-condition and role-race validation.

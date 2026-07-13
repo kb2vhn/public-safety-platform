@@ -599,3 +599,13 @@ access remains deferred.
 ## Phase 5 Step 5 Implementation Status
 
 Phase 5 Step 5 implements separate `NOLOGIN` investigator, audit-reader, and validation-reader capabilities through an exact 40-row view-only privilege contract. The implementation adds two reduced-disclosure investigator views, eight audit-lineage views, and 23 validation-posture views. No review role receives direct protected base-table, sequence, mutation, routine-execution, schema-creation, or temporary-object authority. Phase 5 Step 6 may implement disabled-at-rest break-glass activation and credential lifecycle controls.
+
+## Phase 5 Step 6 Implementation Status
+
+Phase 5 Step 6 implements disabled-at-rest `issp_break_glass` activation,
+independent approval evidence, bounded expiration, forced deactivation,
+append-only emergency evidence, off-host-export requirements, and external
+credential lifecycle policy through deployment migration
+`940_break_glass_and_credential_lifecycle.sql`. Credentials, private keys,
+tokens, and passwords remain outside the repository and database. Phase 5 Step
+7 may perform hostile-condition and role-race validation.

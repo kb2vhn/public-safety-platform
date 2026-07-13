@@ -134,10 +134,27 @@ else
     fail "Applied all Foundation migrations"
 fi
 
+# Preserve the exact accepted Step 5 deployment boundary. Later Phase 5
+# migrations may be appended to the authoritative deployment manifest without
+# changing this predecessor test.
+step5_deployment_root="$temp_root/step5-deployment"
+
+mkdir -p "$step5_deployment_root"
+cp -R "$repo_root/sql/deployment/." "$step5_deployment_root/"
+
+cat >"$step5_deployment_root/manifests/deployment.manifest" <<'MANIFEST'
+migrations/900_postgresql_role_topology_and_membership.sql
+migrations/910_database_schema_and_object_ownership.sql
+migrations/920_least_privileged_runtime_grants_and_controlled_service_apis.sql
+migrations/930_investigator_audit_and_validation_review_surfaces.sql
+MANIFEST
+
+chmod +x "$step5_deployment_root/scripts/apply_deployment.sh"
+
 if PGHOST="$socket_dir" \
     PGPORT="$port" \
     PGUSER=postgres \
-    "$repo_root/sql/deployment/scripts/apply_deployment.sh" \
+    "$step5_deployment_root/scripts/apply_deployment.sh" \
     "$database_name" \
     >"$deployment_log" 2>&1; then
     pass "Applied deployment migrations through Step 5"
@@ -149,7 +166,7 @@ fi
 if PGHOST="$socket_dir" \
     PGPORT="$port" \
     PGUSER=postgres \
-    "$repo_root/sql/deployment/scripts/apply_deployment.sh" \
+    "$step5_deployment_root/scripts/apply_deployment.sh" \
     "$database_name" \
     >>"$deployment_log" 2>&1; then
     pass "Deployment manifest reapplication is idempotent"

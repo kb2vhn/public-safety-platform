@@ -49,3 +49,13 @@ It grants no direct protected relation or sequence privileges.
 ## Phase 5 Step 5
 
 Migration `930_investigator_audit_and_validation_review_surfaces.sql` creates the `security_review` view boundary, deployment-posture views, and the exact investigator, audit-reader, and validation-reader privilege contract. Runtime grants remain those accepted in migration `920`; break-glass remains disabled at rest.
+
+## Phase 5 Step 6 Implementation Status
+
+Phase 5 Step 6 implements disabled-at-rest `issp_break_glass` activation,
+independent approval evidence, bounded expiration, forced deactivation,
+append-only emergency evidence, off-host-export requirements, and external
+credential lifecycle policy through deployment migration
+`940_break_glass_and_credential_lifecycle.sql`. Credentials, private keys,
+tokens, and passwords remain outside the repository and database. Phase 5 Step
+7 may perform hostile-condition and role-race validation.
