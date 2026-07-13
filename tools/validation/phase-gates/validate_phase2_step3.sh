@@ -261,7 +261,7 @@ done
 
 section "Exact accepted and Step 3 file boundaries"
 
-export PSP_REPOSITORY_ROOT="$repository_root"
+export ISSP_REPOSITORY_ROOT="$repository_root"
 
 if python3 <<'PY'
 from __future__ import annotations
@@ -271,7 +271,7 @@ import os
 import sys
 from pathlib import Path
 
-repo = Path(os.environ["PSP_REPOSITORY_ROOT"])
+repo = Path(os.environ["ISSP_REPOSITORY_ROOT"])
 
 checks = [
     (

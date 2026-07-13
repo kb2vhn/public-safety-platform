@@ -9,7 +9,7 @@ promotion:
   rebuilt_during_promotion: false
 
 source:
-  repository: "Iron-Signal-Systems/public-safety-platform"
+  repository: "Iron-Signal-Systems/iron-signal-platform"
   revision: "REPLACE_WITH_COMMIT"
   build_environment_id: "builder-arch-x86_64-example"
   build_provenance_reference: "REPLACE_WITH_REFERENCE"

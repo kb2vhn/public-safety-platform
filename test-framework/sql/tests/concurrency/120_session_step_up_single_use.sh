@@ -14,11 +14,11 @@ IFS=$'\n\t'
 umask 077
 
 test_file="120_session_step_up_single_use.sh"
-test_database="${PSP_TEST_DATABASE:-}"
-test_run_id="${PSP_TEST_RUN_ID:-concurrency_$$}"
+test_database="${ISSP_TEST_DATABASE:-}"
+test_run_id="${ISSP_TEST_RUN_ID:-concurrency_$$}"
 
 if [[ -z "$test_database" ]]; then
-    printf 'PSP_TEST_DATABASE is required\n' >&2
+    printf 'ISSP_TEST_DATABASE is required\n' >&2
     exit 64
 fi
 
@@ -488,7 +488,7 @@ run_worker() {
     local worker_name="$1"
     local output_file="$2"
 
-    PGAPPNAME="public-safety-platform-session-step-up-${worker_name}" \
+    PGAPPNAME="iron-signal-platform-session-step-up-${worker_name}" \
     psql \
         -X \
         --no-psqlrc \

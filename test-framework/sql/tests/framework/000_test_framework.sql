@@ -1,5 +1,5 @@
 -- ============================================================================
--- Public Safety Platform SQL test framework
+-- Iron Signal Platform SQL test framework
 --
 -- Test-only objects. This file must never be included in a production migration
 -- manifest. The disposable test database is dropped after a successful run.

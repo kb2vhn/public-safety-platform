@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Public Safety Platform Foundation SQL test runner
+# Iron Signal Platform Foundation SQL test runner
 #
 # Applies the live Foundation migration manifest, installs the disposable SQL
 # assertion framework, runs sequential SQL tests, and then runs manifest-driven
@@ -392,7 +392,7 @@ done <"$concurrency_manifest"
     || die 65 "Concurrency test manifest contains no test files"
 
 maintenance_db="${PGMAINTENANCE_DB:-postgres}"
-export PGAPPNAME="public-safety-platform-foundation-test"
+export PGAPPNAME="iron-signal-platform-foundation-test"
 POSTGRESQL_SERVER_VERSION_NUM=""
 POSTGRESQL_CONNECTED_ROLE=""
 preflight_postgresql "$maintenance_db"
@@ -484,7 +484,7 @@ write_summary() {
     fi
 
     {
-        printf 'Public Safety Platform - Foundation SQL Test Summary\n'
+        printf 'Iron Signal Platform - Foundation SQL Test Summary\n'
         printf '====================================================\n'
         printf 'Run ID: %s\n' "$run_id"
         printf 'Overall result: %s\n' "$overall_result"
@@ -714,8 +714,8 @@ for relative_path in "${concurrency_test_paths[@]}"; do
     concurrency_test_count=$((concurrency_test_count + 1))
 
     log "Running ${relative_path}"
-    PSP_TEST_DATABASE="$test_database" \
-    PSP_TEST_RUN_ID="$run_id" \
+    ISSP_TEST_DATABASE="$test_database" \
+    ISSP_TEST_RUN_ID="$run_id" \
     bash "$shell_file"
 done
 

@@ -48,7 +48,7 @@ if (( ${#missing_commands[@]} > 0 )); then
 fi
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  printf 'Run this validator from inside the public-safety-platform repository.\n' >&2
+  printf 'Run this validator from inside the iron-signal-platform repository.\n' >&2
   exit 66
 fi
 

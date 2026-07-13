@@ -410,43 +410,43 @@ resource_json="${results_dir}/${run_id}-resources.json"
 latest_resource_text="${results_dir}/latest-resources.txt"
 latest_resource_json="${results_dir}/latest-resources.json"
 
-export PSP_RESOURCE_RUN_ID="$run_id"
-export PSP_RESOURCE_DATABASE="$test_database"
-export PSP_RESOURCE_DATABASE_EXISTS="$database_exists"
-export PSP_RESOURCE_OVERALL_RESULT="$overall_result"
-export PSP_RESOURCE_RUNNER_STATUS="$runner_status"
-export PSP_RESOURCE_LABEL="$observation_label"
-export PSP_RESOURCE_START_NS="$start_epoch_ns"
-export PSP_RESOURCE_END_NS="$end_epoch_ns"
-export PSP_RESOURCE_COLLECTION_NS="$resource_collection_epoch_ns"
-export PSP_RESOURCE_TIME_FILE="$time_file"
-export PSP_RESOURCE_LOG_FILE="$log_file"
-export PSP_RESOURCE_TEXT_FILE="$resource_text"
-export PSP_RESOURCE_JSON_FILE="$resource_json"
-export PSP_RESOURCE_HOST="$(uname -n)"
-export PSP_RESOURCE_KERNEL="$(uname -srmo)"
-export PSP_RESOURCE_LOGICAL_CPUS="$logical_cpus"
-export PSP_RESOURCE_CPU_MODEL="$cpu_model"
-export PSP_RESOURCE_MEMORY_KIB="$installed_memory_kib"
-export PSP_RESOURCE_POSTGRES_VERSION="$postgresql_version"
-export PSP_RESOURCE_POSTGRES_VERSION_NUM="$postgresql_version_num"
-export PSP_RESOURCE_POSTGRES_ROLE="$connected_role"
-export PSP_RESOURCE_DB_SIZE_BYTES="$database_size_bytes"
-export PSP_RESOURCE_WAL_BYTES="$wal_bytes"
-export PSP_RESOURCE_WAL_START="$start_wal_lsn"
-export PSP_RESOURCE_WAL_END="$end_wal_lsn"
-export PSP_RESOURCE_XACT_COMMIT="$xact_commit"
-export PSP_RESOURCE_XACT_ROLLBACK="$xact_rollback"
-export PSP_RESOURCE_BLKS_READ="$blks_read"
-export PSP_RESOURCE_BLKS_HIT="$blks_hit"
-export PSP_RESOURCE_TEMP_FILES="$temp_files"
-export PSP_RESOURCE_TEMP_BYTES="$temp_bytes"
-export PSP_RESOURCE_DEADLOCKS="$deadlocks"
-export PSP_RESOURCE_TUP_RETURNED="$tup_returned"
-export PSP_RESOURCE_TUP_FETCHED="$tup_fetched"
-export PSP_RESOURCE_TUP_INSERTED="$tup_inserted"
-export PSP_RESOURCE_TUP_UPDATED="$tup_updated"
-export PSP_RESOURCE_TUP_DELETED="$tup_deleted"
+export ISSP_RESOURCE_RUN_ID="$run_id"
+export ISSP_RESOURCE_DATABASE="$test_database"
+export ISSP_RESOURCE_DATABASE_EXISTS="$database_exists"
+export ISSP_RESOURCE_OVERALL_RESULT="$overall_result"
+export ISSP_RESOURCE_RUNNER_STATUS="$runner_status"
+export ISSP_RESOURCE_LABEL="$observation_label"
+export ISSP_RESOURCE_START_NS="$start_epoch_ns"
+export ISSP_RESOURCE_END_NS="$end_epoch_ns"
+export ISSP_RESOURCE_COLLECTION_NS="$resource_collection_epoch_ns"
+export ISSP_RESOURCE_TIME_FILE="$time_file"
+export ISSP_RESOURCE_LOG_FILE="$log_file"
+export ISSP_RESOURCE_TEXT_FILE="$resource_text"
+export ISSP_RESOURCE_JSON_FILE="$resource_json"
+export ISSP_RESOURCE_HOST="$(uname -n)"
+export ISSP_RESOURCE_KERNEL="$(uname -srmo)"
+export ISSP_RESOURCE_LOGICAL_CPUS="$logical_cpus"
+export ISSP_RESOURCE_CPU_MODEL="$cpu_model"
+export ISSP_RESOURCE_MEMORY_KIB="$installed_memory_kib"
+export ISSP_RESOURCE_POSTGRES_VERSION="$postgresql_version"
+export ISSP_RESOURCE_POSTGRES_VERSION_NUM="$postgresql_version_num"
+export ISSP_RESOURCE_POSTGRES_ROLE="$connected_role"
+export ISSP_RESOURCE_DB_SIZE_BYTES="$database_size_bytes"
+export ISSP_RESOURCE_WAL_BYTES="$wal_bytes"
+export ISSP_RESOURCE_WAL_START="$start_wal_lsn"
+export ISSP_RESOURCE_WAL_END="$end_wal_lsn"
+export ISSP_RESOURCE_XACT_COMMIT="$xact_commit"
+export ISSP_RESOURCE_XACT_ROLLBACK="$xact_rollback"
+export ISSP_RESOURCE_BLKS_READ="$blks_read"
+export ISSP_RESOURCE_BLKS_HIT="$blks_hit"
+export ISSP_RESOURCE_TEMP_FILES="$temp_files"
+export ISSP_RESOURCE_TEMP_BYTES="$temp_bytes"
+export ISSP_RESOURCE_DEADLOCKS="$deadlocks"
+export ISSP_RESOURCE_TUP_RETURNED="$tup_returned"
+export ISSP_RESOURCE_TUP_FETCHED="$tup_fetched"
+export ISSP_RESOURCE_TUP_INSERTED="$tup_inserted"
+export ISSP_RESOURCE_TUP_UPDATED="$tup_updated"
+export ISSP_RESOURCE_TUP_DELETED="$tup_deleted"
 
 python3 <<'PY_RESOURCE_REPORT'
 from __future__ import annotations
@@ -562,12 +562,12 @@ def parse_phase_seconds(path: Path) -> dict[str, float]:
     return output
 
 
-gnu = parse_gnu_time(Path(env('PSP_RESOURCE_TIME_FILE')))
-phase = parse_phase_seconds(Path(env('PSP_RESOURCE_LOG_FILE')))
+gnu = parse_gnu_time(Path(env('ISSP_RESOURCE_TIME_FILE')))
+phase = parse_phase_seconds(Path(env('ISSP_RESOURCE_LOG_FILE')))
 
-start_ns = integer('PSP_RESOURCE_START_NS')
-end_ns = integer('PSP_RESOURCE_END_NS')
-collection_ns = integer('PSP_RESOURCE_COLLECTION_NS')
+start_ns = integer('ISSP_RESOURCE_START_NS')
+end_ns = integer('ISSP_RESOURCE_END_NS')
+collection_ns = integer('ISSP_RESOURCE_COLLECTION_NS')
 
 if (
     start_ns is None
@@ -587,8 +587,8 @@ system_cpu = float(gnu.get('System time (seconds)', '0') or 0)
 cpu_seconds = user_cpu + system_cpu
 cpu_percent = (cpu_seconds / runner_elapsed) * 100
 
-blks_read = integer('PSP_RESOURCE_BLKS_READ')
-blks_hit = integer('PSP_RESOURCE_BLKS_HIT')
+blks_read = integer('ISSP_RESOURCE_BLKS_READ')
+blks_hit = integer('ISSP_RESOURCE_BLKS_HIT')
 
 cache_denominator = (
     None
@@ -604,11 +604,11 @@ cache_hit_percent = (
 
 record = {
     'schema_version': 1,
-    'run_id': env('PSP_RESOURCE_RUN_ID'),
-    'observation_label': env('PSP_RESOURCE_LABEL') or None,
+    'run_id': env('ISSP_RESOURCE_RUN_ID'),
+    'observation_label': env('ISSP_RESOURCE_LABEL') or None,
     'correctness': {
-        'overall_result': env('PSP_RESOURCE_OVERALL_RESULT'),
-        'runner_exit_status': integer('PSP_RESOURCE_RUNNER_STATUS'),
+        'overall_result': env('ISSP_RESOURCE_OVERALL_RESULT'),
+        'runner_exit_status': integer('ISSP_RESOURCE_RUNNER_STATUS'),
     },
     'resource_observation': {
         'status': 'RECORDED',
@@ -619,16 +619,16 @@ record = {
         ),
     },
     'environment': {
-        'host': env('PSP_RESOURCE_HOST'),
-        'kernel': env('PSP_RESOURCE_KERNEL'),
-        'logical_cpus': integer('PSP_RESOURCE_LOGICAL_CPUS'),
-        'cpu_model': env('PSP_RESOURCE_CPU_MODEL'),
-        'installed_memory_kib': integer('PSP_RESOURCE_MEMORY_KIB'),
-        'postgresql_version': env('PSP_RESOURCE_POSTGRES_VERSION'),
+        'host': env('ISSP_RESOURCE_HOST'),
+        'kernel': env('ISSP_RESOURCE_KERNEL'),
+        'logical_cpus': integer('ISSP_RESOURCE_LOGICAL_CPUS'),
+        'cpu_model': env('ISSP_RESOURCE_CPU_MODEL'),
+        'installed_memory_kib': integer('ISSP_RESOURCE_MEMORY_KIB'),
+        'postgresql_version': env('ISSP_RESOURCE_POSTGRES_VERSION'),
         'postgresql_version_num': integer(
-            'PSP_RESOURCE_POSTGRES_VERSION_NUM'
+            'ISSP_RESOURCE_POSTGRES_VERSION_NUM'
         ),
-        'postgresql_role': env('PSP_RESOURCE_POSTGRES_ROLE'),
+        'postgresql_role': env('ISSP_RESOURCE_POSTGRES_ROLE'),
     },
     'timing': {
         'correctness_runner_elapsed_seconds': runner_elapsed,
@@ -674,31 +674,31 @@ record = {
         ),
     },
     'postgresql': {
-        'database': env('PSP_RESOURCE_DATABASE'),
+        'database': env('ISSP_RESOURCE_DATABASE'),
         'database_retained_during_observation': (
-            env('PSP_RESOURCE_DATABASE_EXISTS') == '1'
+            env('ISSP_RESOURCE_DATABASE_EXISTS') == '1'
         ),
         'database_size_bytes': integer(
-            'PSP_RESOURCE_DB_SIZE_BYTES'
+            'ISSP_RESOURCE_DB_SIZE_BYTES'
         ),
-        'wal_start_lsn': env('PSP_RESOURCE_WAL_START'),
-        'wal_end_lsn': env('PSP_RESOURCE_WAL_END'),
+        'wal_start_lsn': env('ISSP_RESOURCE_WAL_START'),
+        'wal_end_lsn': env('ISSP_RESOURCE_WAL_END'),
         'observed_cluster_wal_bytes': integer(
-            'PSP_RESOURCE_WAL_BYTES'
+            'ISSP_RESOURCE_WAL_BYTES'
         ),
-        'xact_commit': integer('PSP_RESOURCE_XACT_COMMIT'),
-        'xact_rollback': integer('PSP_RESOURCE_XACT_ROLLBACK'),
+        'xact_commit': integer('ISSP_RESOURCE_XACT_COMMIT'),
+        'xact_rollback': integer('ISSP_RESOURCE_XACT_ROLLBACK'),
         'blocks_read': blks_read,
         'blocks_hit': blks_hit,
         'cache_hit_percent': cache_hit_percent,
-        'temporary_files': integer('PSP_RESOURCE_TEMP_FILES'),
-        'temporary_bytes': integer('PSP_RESOURCE_TEMP_BYTES'),
-        'deadlocks': integer('PSP_RESOURCE_DEADLOCKS'),
-        'tuples_returned': integer('PSP_RESOURCE_TUP_RETURNED'),
-        'tuples_fetched': integer('PSP_RESOURCE_TUP_FETCHED'),
-        'tuples_inserted': integer('PSP_RESOURCE_TUP_INSERTED'),
-        'tuples_updated': integer('PSP_RESOURCE_TUP_UPDATED'),
-        'tuples_deleted': integer('PSP_RESOURCE_TUP_DELETED'),
+        'temporary_files': integer('ISSP_RESOURCE_TEMP_FILES'),
+        'temporary_bytes': integer('ISSP_RESOURCE_TEMP_BYTES'),
+        'deadlocks': integer('ISSP_RESOURCE_DEADLOCKS'),
+        'tuples_returned': integer('ISSP_RESOURCE_TUP_RETURNED'),
+        'tuples_fetched': integer('ISSP_RESOURCE_TUP_FETCHED'),
+        'tuples_inserted': integer('ISSP_RESOURCE_TUP_INSERTED'),
+        'tuples_updated': integer('ISSP_RESOURCE_TUP_UPDATED'),
+        'tuples_deleted': integer('ISSP_RESOURCE_TUP_DELETED'),
     },
     'limitations': [
         (
@@ -725,8 +725,8 @@ record = {
     ],
 }
 
-json_path = Path(env('PSP_RESOURCE_JSON_FILE'))
-text_path = Path(env('PSP_RESOURCE_TEXT_FILE'))
+json_path = Path(env('ISSP_RESOURCE_JSON_FILE'))
+text_path = Path(env('ISSP_RESOURCE_TEXT_FILE'))
 
 json_path.write_text(
     json.dumps(record, indent=2, sort_keys=True) + '\n',

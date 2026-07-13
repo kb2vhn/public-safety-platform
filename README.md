@@ -1,4 +1,4 @@
-# Public Safety Platform
+# Iron Signal Platform
 
 > An Iron Signal Systems project
 >
@@ -15,7 +15,7 @@
 Canonical repository:
 
 ```text
-https://github.com/Iron-Signal-Systems/public-safety-platform
+https://github.com/Iron-Signal-Systems/iron-signal-platform
 ```
 
 ## Project Mission

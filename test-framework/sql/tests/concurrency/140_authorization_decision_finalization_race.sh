@@ -4,13 +4,13 @@ IFS=$'\n\t'
 umask 077
 
 test_file="140_authorization_decision_finalization_race.sh"
-test_database="${PSP_TEST_DATABASE:-}"
-test_run_id="${PSP_TEST_RUN_ID:-concurrency_$$}"
+test_database="${ISSP_TEST_DATABASE:-}"
+test_run_id="${ISSP_TEST_RUN_ID:-concurrency_$$}"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 support_sql="${script_dir}/support/phase3_authorization_concurrency_fixture.sql"
 
 if [[ -z "$test_database" ]]; then
-    printf 'PSP_TEST_DATABASE is required\n' >&2
+    printf 'ISSP_TEST_DATABASE is required\n' >&2
     exit 64
 fi
 

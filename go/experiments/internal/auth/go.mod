@@ -1,4 +1,4 @@
-module public-safety-platform/core
+module iron-signal-platform/core
 
 go 1.26.3
 

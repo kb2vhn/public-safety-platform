@@ -279,7 +279,7 @@ for path in [
     for marker in retired_markers:
         if marker in text:
             failures.append(f"{path} retains stale marker: {marker}")
-    if "github.com/kb2vhn/public-safety-platform" in text:
+    if "github.com/kb2vhn/iron-signal-platform" in text:
         failures.append(f"{path} contains retired personal repository URL")
 
 if failures:

@@ -1,6 +1,6 @@
 # Go Experiments
 
-This directory contains exploratory Go code created while evaluating possible implementation approaches for the Public Safety Platform.
+This directory contains exploratory Go code created while evaluating possible implementation approaches for the Iron Signal Platform.
 
 The code in this directory is **not production code** and does not represent the current Platform Foundation architecture, security model, database contract, or planned backend design.
 
@@ -56,5 +56,5 @@ Code in this directory may be rewritten completely or removed without notice.
 
 **Status: Historical prototype and experimentation only**
 
-Nothing under `go/experiments` should be considered part of the supported Public Safety Platform runtime.
+Nothing under `go/experiments` should be considered part of the supported Iron Signal Platform runtime.
 

@@ -1,4 +1,4 @@
-Public Safety Platform Foundation SQL Test Framework
+Iron Signal Platform Foundation SQL Test Framework
 =====================================================
 
 Purpose

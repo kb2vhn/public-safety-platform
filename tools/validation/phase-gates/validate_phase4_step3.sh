@@ -625,7 +625,7 @@ for path in active_paths:
     for marker in ['Current checkpoint:** Phase 4 Step 2', 'Run the active Phase 4 Step 2 gate:', 'Active Phase 4 Step 2']:
         if marker in text:
             failures.append(f'{path} retains stale active marker: {marker}')
-    if 'github.com/kb2vhn/public-safety-platform' in text:
+    if 'github.com/kb2vhn/iron-signal-platform' in text:
         failures.append(f'{path} contains retired personal repository URL')
 
 if failures:

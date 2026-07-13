@@ -339,7 +339,7 @@ for path, marker in checks:
         failures.append(f"{path} missing marker: {marker}")
 for path in Path('.').rglob('*.md'):
     body = path.read_text(encoding='utf-8')
-    if 'github.com/kb2vhn/public-safety-platform' in body:
+    if 'github.com/kb2vhn/iron-signal-platform' in body:
         failures.append(f"{path} contains retired personal repository URL")
     if re.search(r'(?m)^\s*\./validate_phase[0-9_]', body):
         failures.append(f"{path} contains obsolete root-level gate command")

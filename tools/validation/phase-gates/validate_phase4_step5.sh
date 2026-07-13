@@ -191,7 +191,7 @@ current_branch="$(git branch --show-current 2>/dev/null || true)"
 check_equal "$current_branch" 'dev' 'Current branch'
 
 remote_url="$(git remote get-url origin 2>/dev/null || true)"
-if [[ "$remote_url" == *'Iron-Signal-Systems/public-safety-platform'* ]]; then
+if [[ "$remote_url" == *'Iron-Signal-Systems/iron-signal-platform'* ]]; then
     pass 'Canonical Iron Signal Systems origin is configured'
 else
     fail "Canonical origin not detected: ${remote_url:-}"
