@@ -4,8 +4,8 @@
 >
 > **Status:** Normative architecture under active refinement
 >
-> **Current status:** Phase 4 Step 4 accepted; Phase 4 Step 5 incompatible-authority
-> and duty-conflict enforcement candidate with observation-only resource telemetry
+> **Current status:** Phase 4 Step 6 accepted; Phase 4 Step 7
+> independent-connection approval concurrency candidate
 
 ## Dependency Direction
 
@@ -26,6 +26,8 @@ monitoring vendor, identity provider, or compliance framework.
 
 ## Current Architecture
 
+### Platform Foundation
+
 - [Platform Foundation Documentation](foundation/README.md)
 - [Approval Independence and Separation of Duties](foundation/approval-independence-and-separation-of-duties-model.md)
 - [Resource Telemetry and Performance-Regression Testing](foundation/resource-telemetry-and-performance-regression-testing-model.md)
@@ -37,34 +39,48 @@ monitoring vendor, identity provider, or compliance framework.
 - [Authorization Evaluation Contract](foundation/authorization-evaluation-contract.md)
 - [Phase 3 Authorization Acceptance](foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 
+### Platform Services and Client Architecture
+
+- [Backend Services](backend-services/README.md)
+- [Location Service Architecture](backend-services/location-service-architecture.md)
+- [Communications](communications/README.md)
+- [Resource Subscription and Live Update Model](communications/resource-subscription-and-live-update-model.md)
+- [GIS and Mapping](gis-and-mapping/README.md)
+- [Map Rendering and Data Delivery Architecture](gis-and-mapping/map-rendering-and-data-delivery-architecture.md)
+- [Operational Workstation](operational-workstation/README.md)
+- [Operational Workstation Architecture](operational-workstation/operational-workstation-architecture.md)
+- [User-Interface Architecture](user-interface/README.md)
+- [Accessibility and Inclusive Interaction](user-interface/accessibility-and-inclusive-interaction-model.md)
+
 ## Accepted Implementation Status
 
-Phases 1, 2, and 3 are formally accepted. Phase 4 Step 4 is the current
+Phases 1, 2, and 3 are formally accepted. Phase 4 Step 6 is the current
 accepted implementation boundary:
 
 ```text
 34 migrations
-19 sequential tests
+21 sequential tests
 9 concurrency tests
-540 PASS
+650 PASS
 0 FAIL
 3 understood WARN
+Correctness result: PASS
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
 ```
 
 ## Active Architecture Boundary
 
-Phase 4 Step 5 extends the accepted controlled Approval Action and independence
-boundary with explicit delegation lineage, bounded delegated-authority use,
-`JOINT_EXERCISE`, `CONCURRENT_HOLDING`, and `CHAIN_PARTICIPATION` enforcement,
-immutable `APPROVE` duties, and policy-defined prohibited-duty combinations.
-It uses persisted identities, Authority Grants, request dependencies, and
-approval-chain identifiers; it does not infer conflicts from titles, groups,
-time proximity, or free-form text.
+Phase 4 Step 7 adds database-owned independent-connection concurrency proofs
+without changing dependency direction. The Foundation serializes only the
+governed approval records needed to close explicit request, chain, authority,
+withdrawal, stage-evaluation, and finalization races.
 
-Step 6 stage satisfaction and finalization and Step 7 independent-connection
-approval races remain future work.
+Backend services may consume Foundation decisions; communications may deliver
+governed state; GIS clients may render published facts; operational
+workstations may present module capabilities; and user interfaces may support
+authorized work. None of those downstream areas becomes an independent source
+of identity, authority, approval, commitment, or truth.
 
 ## Migration Execution Boundary
 
@@ -75,28 +91,26 @@ even while broader performance budgets remain observation-only. The active
 phase gate executes the static migration-timeout validator before database
 execution.
 
-## Phase 4 Step 6 Candidate
+## Phase 4 Step 7 Candidate
 
-Phase 4 Step 5 is accepted at 590 PASS, 0 FAIL, 3 understood WARN results.
-Phase 4 Step 6 implements current Approval Action derivation,
-persisted policy-stage satisfaction, blocking-denial outcomes,
-finalization-once Approval Requests, exact Decision Record stage links, and
-later-use continuity for approval-backed Authorization Leases.
-
-The Step 6 candidate target is:
+Seven new concurrency files add 84 assertions and increase the candidate
+inventory to:
 
 ```text
 34 manifest migrations
 34 registered migrations
 21 sequential test files
-9 concurrency test files
-650 PASS
+16 concurrency test files
+734 PASS
 0 FAIL
 3 understood WARN
+Correctness result: PASS
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
 ```
 
-The active gate is
-`tools/validation/phase-gates/validate_phase4_step6.sh`. Independent-
-connection finalization races remain Phase 4 Step 7.
+The active gate is:
+
+```bash
+./tools/validation/phase-gates/validate_phase4_step7.sh
+```

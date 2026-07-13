@@ -7,9 +7,9 @@
 >
 > **Phase:** 4 — Approval Independence and Separation of Duties
 >
-> **Step:** 5 — Incompatible Authority and Separation of Duties
+> **Step:** 7 — Independent-Connection Concurrency Proof
 >
-> **Status:** Normative Phase 4 contract; Step 5 accepted and Step 6 enforcement candidate
+> **Status:** Normative Phase 4 contract; Step 6 accepted and Step 7 concurrency candidate
 >
 > **Accepted prerequisite:** `phase-3-authorization-control-complete-v1`
 >
@@ -857,12 +857,17 @@ Approval Action Record or duty link.
 
 ### Step 7 — Independent-Connection Concurrency Proof
 
-- Duplicate actor race
-- Finalization race
-- Last approval race
-- Withdrawal race
-- Authority revocation race
-- Reciprocal approval race
+- Duplicate effective-actor approval race
+- Finalized stage-evaluation race
+- Approval Request finalization race
+- Last approval versus finalization race
+- Withdrawal versus finalization race
+- Authority Grant revocation versus approval recording race
+- Reciprocal approval race across explicit request linkage
+
+The six normative race families use seven test files because finalization is
+proved independently at both the stage-evaluation and Approval Request
+boundaries.
 
 ### Step 8 — Formal Acceptance
 
@@ -998,50 +1003,86 @@ Step 5 is complete only when:
   synchronized before acceptance.
 - No Step 6 or Step 7 behavior is claimed by Step 5.
 
-## Phase 4 Step 6 Candidate Implementation Boundary
+## Phase 4 Step 6 Accepted Implementation Boundary
 
-The Step 5 enforcement boundary is accepted. Phase 4 Step 6 is the active
-candidate for current-action derivation, persisted stage satisfaction,
-finalization-once Approval Requests, exact Decision Record stage linkage, and
-later-use continuity for approval-backed Authorization Leases. Independent-
-connection finalization races remain Phase 4 Step 7.
+The Step 5 enforcement boundary remains accepted. Phase 4 Step 6 is accepted
+for current-action derivation, persisted stage satisfaction, finalization-once
+Approval Requests, exact Decision Record stage linkage, and later-use
+continuity for approval-backed Authorization Leases.
 
 ## 31. Step 6 Acceptance Criteria
 
-Step 6 is complete only when:
+Step 6 is accepted with:
 
-- The manifest remains at 34 ordered migrations.
-- The sequential manifest contains 21 tests.
-- Test `210` contributes exactly 60 functional assertions.
-- Current-action derivation excludes withdrawn, corrected, superseded, stale,
-  or otherwise inapplicable Approval Action Records.
-- Every stage evaluation uses one authoritative PostgreSQL time and persists
-  the exact considered actions, Authority Grants, counts, exclusions, and
-  outcome.
-- Stage satisfaction is based on current policy, distinct effective actors,
-  required organization independence, exact current Authority Grants,
-  incompatible-authority rules, prohibited duties, and blocking denials
-  rather than raw row count.
-- Controlled finalization locks one PENDING Approval Request, evaluates every
-  policy stage at the same time, rejects caller-result mismatch, writes one
-  terminal status, and prevents re-finalization.
-- `APPROVED`, `DENIED`, `CANCELLED`, `EXPIRED`, and `ESCALATED` results are
-  derived from PostgreSQL-owned state and stable reason codes.
-- Decision Record approval evaluations link to the exact finalized SATISFIED
-  stage-evaluation records and matching protected context.
-- Approval-backed Authorization Leases fail closed at issuance and later use
-  after required approval continuity is lost.
-- Approval-unrelated Decision Records and leases remain outside this new
-  continuity binding.
-- The accepted nine concurrency tests remain unchanged.
-- The complete candidate result is 650 PASS, 0 FAIL, and the same three
+- 34 ordered Foundation migrations.
+- 21 sequential tests.
+- Test `210` contributing exactly 60 functional assertions.
+- Current-action derivation excluding withdrawn, corrected, superseded, stale,
+  and otherwise inapplicable Approval Action Records.
+- One authoritative PostgreSQL evaluation time for each persisted stage result.
+- Stage satisfaction based on current policy, distinct effective actors,
+  organization independence, exact Authority Grants, incompatible authority,
+  prohibited duties, and blocking denials.
+- Controlled finalization that locks one PENDING Approval Request, evaluates
+  every policy stage, rejects caller-result mismatch, writes one terminal
+  status, and prevents re-finalization.
+- Exact Decision Record links to finalized SATISFIED stage evaluations.
+- Fail-closed approval continuity for approval-backed Authorization Leases.
+- Preservation of approval-unrelated Decision Records and leases.
+- 650 PASS, 0 FAIL, and the same three understood WARN results.
+- Correctness `PASS`, resource observation `RECORDED`, and performance
+  thresholds `NOT_EVALUATED`.
+
+## Phase 4 Step 7 Candidate Implementation Boundary
+
+Step 7 preserves every accepted Step 6 invariant and adds only the
+serialization and independent-connection proofs needed to close simultaneous
+approval-state transitions.
+
+The database acquires transaction advisory locks in stable UUID order for the
+current Approval Request, every request in its explicit chain, and directly
+linked reciprocal or shared-chain requests. This closes cross-request
+check-then-insert races without one global approval lock.
+
+The exact Authority Grant read used by controlled Approval Action recording is
+protected with a row-level `FOR SHARE` lock so concurrent revocation or
+suspension has one valid serial order.
+
+## 32. Step 7 Acceptance Criteria
+
+Step 7 is complete only when:
+
+- The Foundation manifest remains at 34 ordered migrations.
+- The sequential manifest remains at 21 tests.
+- The concurrency manifest contains 16 tests.
+- The accepted Step 6 test remains at exactly 60 assertions.
+- Seven new independent-connection files contribute exactly 12 assertions
+  each, for 84 new assertions.
+- Duplicate effective-actor races permit exactly one successful current
+  approval.
+- Concurrent finalized stage evaluations persist exactly one finalized result.
+- Concurrent Approval Request finalization succeeds exactly once.
+- Last approval versus finalization produces only a valid serial outcome.
+- Withdrawal versus finalization produces only a valid serial outcome.
+- Authority Grant revocation versus approval recording produces only a valid
+  serial outcome, and a revoked grant contributes no later counted approval.
+- Reciprocal approvals across explicitly linked requests permit at most one
+  successful side.
+- Request-chain locks are acquired in stable UUID order and are limited to the
+  current request, its explicit chain, and directly linked reciprocal or
+  shared-chain requests.
+- The controlled Authority Grant read excludes concurrent status mutation.
+- The complete candidate result is 734 PASS, 0 FAIL, and the same three
   understood WARN results.
-- Resource observation is `RECORDED` and thresholds remain `NOT_EVALUATED`.
-- Root, architecture, test, validation, and phase-status documentation are
-  synchronized before acceptance.
-- No Phase 4 Step 7 concurrency behavior is claimed by Step 6.
+- Correctness is `PASS`.
+- Resource observation is `RECORDED`.
+- Performance thresholds remain `NOT_EVALUATED`.
+- Root, architecture, test, validation, phase-gate, and module-boundary
+  documentation are synchronized.
+- No module-specific record or workflow is moved into the Platform Foundation.
+- Formal Phase 4 acceptance and the annotated release tag remain Step 8 work.
 
-## 32. Revalidation Triggers
+## 33. Revalidation Triggers
 
 
 Phase 4 must be revalidated after any change to:
@@ -1065,7 +1106,7 @@ Phase 4 must be revalidated after any change to:
 - The accepted Phase 3 tag or acceptance record
 - This normative contract
 
-## 33. Related Documents
+## 34. Related Documents
 
 - [Approval Framework](approval-framework.md)
 - [Authority and Authorization Model](authority-and-authorization-model.md)

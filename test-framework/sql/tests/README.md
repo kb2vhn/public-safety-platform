@@ -2,8 +2,8 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current checkpoint:** Phase 4 Step 4 accepted; Phase 4 Step 5
-> incompatible-authority and duty-conflict enforcement candidate
+> **Current checkpoint:** Phase 4 Step 6 accepted; Phase 4 Step 7
+> independent-connection approval concurrency candidate
 >
 > **Scope:** Test-only PostgreSQL, `psql`, Bash, and resource-observation
 > infrastructure for the active Platform Foundation SQL.
@@ -27,10 +27,6 @@ Migration timeout contract only:
 ./tools/validation/validate_foundation_migration_timeouts.sh
 ```
 
-This is a repository-policy check. The active Step 5 gate invokes it before
-database execution. It contributes no SQL PASS rows and does not change the
-Step 5 target.
-
 Correctness only:
 
 ```bash
@@ -43,39 +39,57 @@ Correctness plus observation-only resource telemetry:
 ./test-framework/sql/schema/scripts/test_foundation_with_resources.sh
 ```
 
+The active Step 7 gate invokes the timeout validator before database
+execution. The timeout check contributes no SQL PASS rows.
+
 ## Sequential Tests
 
-The Step 5 candidate contains 20 sequential test files. The Phase 4 files are:
+The accepted Step 6 boundary contains 21 sequential tests. The Phase 4 files
+are:
 
 ```text
 foundation/170_approval_independence_and_separation_of_duties_structure.sql
 foundation/180_controlled_approval_action_recording.sql
 foundation/190_approval_independence_enforcement.sql
 foundation/200_incompatible_authority_and_duty_conflict_enforcement.sql
+foundation/210_approval_stage_satisfaction_and_finalization.sql
 ```
 
 - Test `170`: 37 structural assertions.
 - Test `180`: 55 controlled-action assertions.
 - Test `190`: 40 independence-enforcement assertions.
 - Test `200`: 50 incompatible-authority and duty-conflict assertions.
+- Test `210`: 60 stage-satisfaction and finalization assertions.
 
-Step 5 target:
+## Phase 4 Step 7 Concurrency Tests
+
+```text
+concurrency/190_approval_duplicate_actor_race.sh
+concurrency/200_approval_stage_finalized_evaluation_race.sh
+concurrency/210_approval_request_finalization_race.sh
+concurrency/220_approval_last_approval_finalization_race.sh
+concurrency/230_approval_withdrawal_finalization_race.sh
+concurrency/240_approval_authority_revocation_race.sh
+concurrency/250_approval_reciprocal_approval_race.sh
+```
+
+Each file contributes exactly 12 assertions. The seven files contribute
+84 assertions and increase the concurrency inventory from 9 to 16.
+
+Step 7 target:
 
 ```text
 34 manifest migrations
 34 registered migrations
-20 sequential test files
-9 concurrency test files
-590 PASS
+21 sequential test files
+16 concurrency test files
+734 PASS
 0 FAIL
 3 understood WARN
 Correctness result: PASS
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
 ```
-
-The nine accepted concurrency tests remain unchanged in Step 5. Approval race
-proofs are intentionally reserved for Phase 4 Step 7.
 
 ## Understood Warnings
 
@@ -98,11 +112,3 @@ Foundation migration execution standard.
 Passing tests prove only the asserted database behavior. They do not establish
 production readiness, host compromise containment, protected backups, off-host
 durability, break-glass operations, or trusted rebuild and recovery.
-
-## Phase 4 Step 6
-
-- Test `210`: 60 stage-satisfaction and finalization assertions.
-- Sequential inventory: 21 files.
-- Concurrency inventory: 9 files.
-- Candidate total: 650 PASS, 0 FAIL, and 3 understood WARN results.
-- Finalization races remain Phase 4 Step 7.

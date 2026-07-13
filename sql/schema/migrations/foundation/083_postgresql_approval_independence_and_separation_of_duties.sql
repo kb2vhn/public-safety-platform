@@ -2,7 +2,7 @@
 -- Migration: 083_postgresql_approval_independence_and_separation_of_duties.sql
 -- Title: PostgreSQL approval independence and separation of duties structure
 -- Layer: Platform Foundation
--- Status: PHASE 4 STEP 6 STAGE-SATISFACTION AND FINALIZATION CANDIDATE
+-- Status: PHASE 4 STEP 7 INDEPENDENT-CONNECTION CONCURRENCY CANDIDATE
 -- Target: PostgreSQL 18
 -- Compatibility policy: prefer mature features supported before PostgreSQL 18.
 -- ============================================================================
@@ -1113,6 +1113,7 @@ DECLARE
     v_environment_key text;
     v_action_id uuid := gen_random_uuid();
     v_requires_prior boolean;
+    v_lock_request_id uuid;
 BEGIN
     IF p_approval_request_id IS NULL
        OR p_approval_policy_stage_id IS NULL
@@ -1164,6 +1165,65 @@ BEGIN
                 ERRCODE = 'invalid_parameter_value',
                 MESSAGE = 'APPROVAL_ACTION_REASON_REQUIRED';
     END IF;
+
+    -- ------------------------------------------------------------------
+    -- Phase 4 Step 7 cross-request concurrency serialization
+    -- ------------------------------------------------------------------
+    -- Acquire transaction advisory locks in stable UUID order for the
+    -- request, every request in its explicit chain, and directly linked
+    -- reciprocal/shared-chain requests. This closes the check-then-insert
+    -- race without imposing one global approval lock.
+    FOR v_lock_request_id IN
+        SELECT related_request.approval_request_id
+        FROM (
+            SELECT seed_request.approval_request_id
+            FROM approval.approval_requests AS seed_request
+            WHERE seed_request.approval_request_id =
+                  p_approval_request_id
+
+            UNION
+
+            SELECT chain_request.approval_request_id
+            FROM approval.approval_requests AS seed_request
+            JOIN approval.approval_requests AS chain_request
+              ON seed_request.approval_chain_id IS NOT NULL
+             AND chain_request.approval_chain_id =
+                 seed_request.approval_chain_id
+            WHERE seed_request.approval_request_id =
+                  p_approval_request_id
+
+            UNION
+
+            SELECT dependency_record.depends_on_approval_request_id
+            FROM approval.approval_request_dependencies AS dependency_record
+            WHERE dependency_record.approval_request_id =
+                  p_approval_request_id
+              AND dependency_record.dependency_type IN (
+                    'RECIPROCAL_REVIEW',
+                    'SHARED_APPROVAL_CHAIN'
+                  )
+
+            UNION
+
+            SELECT dependency_record.approval_request_id
+            FROM approval.approval_request_dependencies AS dependency_record
+            WHERE dependency_record.depends_on_approval_request_id =
+                  p_approval_request_id
+              AND dependency_record.dependency_type IN (
+                    'RECIPROCAL_REVIEW',
+                    'SHARED_APPROVAL_CHAIN'
+                  )
+        ) AS related_request
+        ORDER BY related_request.approval_request_id
+    LOOP
+        PERFORM pg_catalog.pg_advisory_xact_lock(
+            pg_catalog.hashtextextended(
+                'approval.request.' ||
+                v_lock_request_id::text,
+                0
+            )
+        );
+    END LOOP;
 
     SELECT request_record.*
     INTO v_request
@@ -1324,7 +1384,7 @@ BEGIN
     INTO v_authority_grant
     FROM access_control.authority_grants AS grant_record
     WHERE grant_record.authority_grant_id = p_authority_grant_id
-    FOR KEY SHARE;
+    FOR SHARE;
 
     IF NOT FOUND
        OR v_authority_grant.identity_id <> p_acting_identity_id
@@ -1761,7 +1821,7 @@ COMMENT ON FUNCTION approval.record_approval_action(
     text,
     uuid
 ) IS
-    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, and action-lineage validation. Phase 4 Step 4 enforces self-approval, affected-identity, duplicate-effective-actor, organization-independence, authority-origin, and reciprocal-chain protections. Phase 4 Step 5 additionally enforces delegated-authority lineage, incompatible-authority rules, immutable APPROVE duty recording, and prohibited-duty combinations. Phase 4 Step 6 derives current actions, persists exact stage outcomes, finalizes Approval Requests exactly once, links satisfied stages to Decision Records, and revalidates approval continuity for approval-backed Authorization Leases.';
+    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, and action-lineage validation. Phase 4 Step 4 enforces self-approval, affected-identity, duplicate-effective-actor, organization-independence, authority-origin, and reciprocal-chain protections. Phase 4 Step 5 additionally enforces delegated-authority lineage, incompatible-authority rules, immutable APPROVE duty recording, and prohibited-duty combinations. Phase 4 Step 6 derives current actions, persists exact stage outcomes, finalizes Approval Requests exactly once, links satisfied stages to Decision Records, and revalidates approval continuity for approval-backed Authorization Leases. Phase 4 Step 7 serializes explicit reciprocal chains, protects Authority Grant current-state reads against concurrent revocation, and proves six independent-connection approval races.';
 
 -- --------------------------------------------------------------------------
 -- Phase 4 Step 6 current stage satisfaction and finalization
@@ -2963,7 +3023,7 @@ SELECT foundation_meta.register_migration(
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
     p_notes =>
-        'Added Phase 4 structural context, controlled Approval Action recording, exact actor/session/organization/Authority Grant validation, typed action-lineage rules, append-only mutation guards, Step 4 independence enforcement, Step 5 delegation and incompatible-authority enforcement, and Step 6 current-action derivation, persisted stage satisfaction, finalization-once Approval Requests, exact Decision Record stage links, and later-use approval continuity for approval-backed leases. Independent-connection finalization races remain Phase 4 Step 7.'
+        'Added Phase 4 structural context, controlled Approval Action recording, exact actor/session/organization/Authority Grant validation, typed action-lineage rules, append-only mutation guards, Step 4 independence enforcement, Step 5 delegation and incompatible-authority enforcement, Step 6 current-action derivation, persisted stage satisfaction, finalization-once Approval Requests, exact Decision Record stage links, and later-use approval continuity for approval-backed leases, plus Step 7 deterministic request-chain serialization, Authority Grant revocation exclusion, and independent-connection race proofs.'
 );
 
 COMMIT;

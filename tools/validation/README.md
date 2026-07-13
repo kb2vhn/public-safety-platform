@@ -4,25 +4,27 @@
 
 Phase gates are retained under `tools/validation/phase-gates/`.
 
-Active Phase 4 Step 5 gate:
+## Active Phase 4 Step 7 Gate
+
+Complete validation:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step5.sh
+./tools/validation/phase-gates/validate_phase4_step7.sh
 ```
 
 Static repository and documentation validation only:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step5.sh --static-only
+./tools/validation/phase-gates/validate_phase4_step7.sh --static-only
 ```
 
-The gate verifies the accepted Step 4 baseline, migration `083`, tests `170`
-through `200`, authoritative manifests, exact Step 5 delegation, incompatible-
-authority, and duty-conflict reason codes, 50 new assertions, synchronized
-status documentation, correctness totals, and the resource-observation contract.
+The gate verifies the accepted Step 6 boundary, migration `083`, 21 sequential
+tests, 16 concurrency tests, seven new approval-race files, 84 new assertions,
+request-chain serialization, Authority Grant revocation exclusion,
+synchronized documentation, correctness totals, and the resource-observation
+contract.
 
 Historical gates remain available for their own checkpoint trees.
-
 
 ## Cross-Phase Foundation Migration Timeout Contract
 
@@ -41,12 +43,4 @@ SET LOCAL idle_in_transaction_session_timeout = '1min';
 ```
 
 It is a static repository-policy check and contributes no SQL PASS rows. The
-active Phase 4 Step 5 gate invokes it automatically before database execution;
-it remains independently runnable for focused migration review.
-
-## Phase 4 Step 6
-
-Use `tools/validation/phase-gates/validate_phase4_step6.sh` for the active
-stage-satisfaction and Approval Request finalization candidate. The gate
-preserves the Foundation migration timeout contract and runs the complete
-correctness and resource-observation workflow unless `--static-only` is used.
+active Phase 4 Step 7 gate invokes it automatically before database execution.
