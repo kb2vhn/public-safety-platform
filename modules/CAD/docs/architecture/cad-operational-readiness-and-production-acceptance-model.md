@@ -162,9 +162,13 @@ for every unavailable interval.
 - Planned rolling maintenance remains inside the measurement window and must
   preserve service. Maintenance that interrupts a critical path counts as
   unavailability.
-- A test-environment reset, topology change, or evidence gap restarts the
-  30-day qualification window unless the acceptance authority determines that
-  the prior evidence remains valid and records why.
+- Any material topology, trust-boundary, critical-service-path, HA-control, or
+  measurement-method change restarts the 30-day qualification window.
+- Missing evidence counts as unavailability and restarts the window when
+  authoritative continuity cannot be independently established. Only
+  maintenance of measurement infrastructure itself may avoid restart, and only
+  when two independent observers preserve complete continuity evidence and the
+  acceptance authority records the decision.
 - Each critical path must pass individually. A high aggregate result must not
   conceal failure of one essential operation.
 
@@ -316,15 +320,19 @@ Availability impact continues to accrue independently.
 
 The engineering goal is the normal design and operating target. Formal
 qualification must report goal attainment separately for every failure class,
-topology, workload band, and recovery stage. For each class with enough events
-to support percentile reporting, the 95th percentile must meet the engineering
-goal. A class that remains within the maximum acceptable limit but misses its
-goal requires documented root-cause analysis, trend review, and remediation or
-a time-bounded acceptance exception before production recommendation.
+topology, workload band, and recovery stage. The median is reported for every completed class. The 95th percentile is
+reported and must meet the engineering goal when the class contains at least 20
+completed events. The 99th percentile is reported when the class contains at
+least 100 completed events. Classes below those sample counts must report every
+individual result and the maximum. The hard maximum applies to every event
+regardless of sample size. A class that remains within the maximum acceptable
+limit but misses its goal requires documented root-cause analysis, trend review,
+and remediation or a time-bounded acceptance exception before production
+recommendation.
 
 Averages must not hide individual near-limit or maximum-limit events. Reports
-must retain the minimum, median, 95th percentile, 99th percentile where the
-sample size supports it, maximum, and complete event distribution.
+must retain the minimum, median, applicable percentiles, maximum, sample count,
+and complete event distribution.
 
 The timer begins at the first independently observable loss or unsafe condition,
 not when an operator notices it or when automation chooses to start a timer.
@@ -451,6 +459,25 @@ This separation prevents an artificial contradiction in which hundreds of
 intentional destructive injections consume the entire availability budget while
 still requiring the platform to prove that representative failures, routine
 patching, and normal operations preserve semantic availability.
+
+## Backward-Compatible Schema Rollout Contract
+
+Rolling upgrades must use an expand–migrate–validate–retire–contract sequence:
+
+1. **Expand:** Add backward-compatible schema objects and controlled APIs.
+2. **Migrate:** Populate or transform data while accepted old and new
+   application versions can operate concurrently.
+3. **Validate:** Prove both versions preserve authorization, correctness,
+   idempotency, audit, availability, and performance contracts.
+4. **Retire old application versions:** Verify no older process or worker remains
+   active or eligible for restart.
+5. **Close the rollback window:** Record the release and acceptance authority
+   decision that rollback to the older application is no longer required.
+6. **Contract:** Remove obsolete schema only in a later accepted release.
+
+Destructive rename, type change, column removal, semantic repurposing, or
+controlled-API removal is prohibited while any accepted older application,
+worker, adapter, or workstation component can still run.
 
 ## Rolling Maintenance and Upgrade Assurance Gate
 
@@ -631,8 +658,12 @@ The 180 credited hours must:
 - Include quiet observation intervals between selected waves to expose delayed
   retries, leaks, backlog residue, replication drift, stale state, corruption,
   and incomplete recovery.
-- Prevent any one attack or fault family from contributing more than 25 percent
-  of the credited campaign hours unless a stricter accepted profile applies.
+- Assign every credited interval one primary attack or fault family and any
+  number of secondary tags. The same wall-clock interval must not receive full
+  credit in multiple families.
+- Prevent any one primary attack or fault family from contributing more than 25
+  percent of the credited campaign hours unless a stricter accepted profile
+  applies.
 - Prevent denial-of-service or generic resource exhaustion from serving as the
   sole or dominant campaign type.
 
@@ -708,6 +739,15 @@ model works.
 
 Production acceptance requires completion of pilot remediation and repetition
 of every affected qualification gate.
+
+Final production acceptance also requires at least 90 consecutive operational
+days in the accepted pilot deployment without an unresolved `SEV_1_CRITICAL` or
+`SEV_2_HIGH` result. A deployment contract may require a longer period,
+including 120 days. A qualifying critical or high-severity failure restarts the
+pilot acceptance clock after remediation and affected regression acceptance.
+Planned exercises and controlled fault injection do not restart the clock when
+the platform behaves within the accepted contract and produces complete
+evidence.
 
 The production acceptance record must state:
 

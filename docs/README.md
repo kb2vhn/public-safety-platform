@@ -28,6 +28,12 @@
 - [Compliance Profiles](compliance-profiles/README.md)
 - [Validation Tools](../tools/validation/README.md)
 
+## Assurance Architecture
+
+- [Verification, Validation, and Acceptance Governance](architecture/verification-validation-and-acceptance-governance-model.md)
+- [Software Supply-Chain and Release Integrity](architecture/software-supply-chain-and-release-integrity-model.md)
+- [Host Software, Configuration, and Runtime Integrity](architecture/host-software-configuration-and-runtime-integrity-model.md)
+
 ## Accepted Boundaries
 
 - Phase 1 Authentication Assertions:

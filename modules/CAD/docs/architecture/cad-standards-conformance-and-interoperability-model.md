@@ -22,6 +22,10 @@ The [CAD Testing and Acceptance Model](cad-testing-and-acceptance-model.md) is
 authoritative for campaign execution, hostile testing, telemetry, and acceptance
 evidence.
 
+The [Verification, Validation, and Acceptance-Governance Model](../../../../docs/architecture/verification-validation-and-acceptance-governance-model.md)
+defines the Standards-Conformance Authority and separation-of-duty rules for
+conformance claims.
+
 ## Purpose
 
 Prevent vague or unsupported statements such as:

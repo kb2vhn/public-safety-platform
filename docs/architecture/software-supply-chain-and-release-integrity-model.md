@@ -84,9 +84,12 @@ Production builds must not use floating tags or unconstrained versions.
 
 For operating-system and deployment packages, the accepted record must also
 bind the exact package artifact SHA-256 digest, repository and signing identity,
-package transaction, package-manager identity, and installed-file manifest. A
-package name and version without artifact and installation evidence is not a
-complete supply-chain record.
+package transaction, package-manager identity, and installed-file manifest. The
+exact package artifact must be staged in an accepted controlled cache or
+immutable repository snapshot before installation, signature-verified, hashed,
+and retained or independently retrievable by immutable identity. A package name
+and version without artifact and installation evidence is not a complete
+supply-chain record.
 
 A dependency addition requires review. A dependency must not be added for
 trivial functionality when a simple maintained implementation is safer and more
@@ -283,9 +286,11 @@ A production release fails when:
 - The release cannot generate a signed initial package and host-configuration baseline.
 - The installed package, `/etc`, and runtime state cannot be reconciled to the
   release manifest.
-- Required package, executable, library, and `/etc` hash-reputation dispositions
-  are absent, associated with the wrong digest, or unresolved without an
-  accepted policy reason.
+- Required package, executable, library, and configuration reputation-policy
+  dispositions are absent, associated with the wrong digest, or unresolved
+  without an accepted policy reason.
+- Sensitive configuration hashes or content were disclosed to an external
+  reputation provider without explicit authorization.
 
 ## External Baselines
 

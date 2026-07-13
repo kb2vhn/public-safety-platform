@@ -811,6 +811,11 @@ all mixed-campaign, telemetry, coverage, quiet-interval, and evidence rules.
 They are not an additional 72-hour requirement, and time outside the accepted
 14-day window receives no credit toward the 180-hour minimum.
 
+Every credited campaign interval must have one primary attack or fault family
+and may have secondary family tags. The same wall-clock interval must not be
+credited in full to multiple families. The 25 percent family ceiling is
+calculated using primary attribution.
+
 The 180 credited hours must be distributed across at least 10 of the 14 days,
 include at least 12 separately scheduled waves, and exercise at least eight
 applicable attack or fault families. No one family may contribute more than 25
@@ -958,13 +963,26 @@ HA qualification must prove:
   fencing, promotion, service-recovery, workstation-reconciliation, and
   queue-drainage thresholds defined by the operational readiness model.
 - Engineering-goal attainment is reported separately by failure class,
-  workload, topology, and recovery stage; repeated goal misses require
+  workload, topology, and recovery stage. Report the median for every class,
+  the 95th percentile for classes with at least 20 completed events, and the
+  99th percentile for classes with at least 100 completed events. Smaller
+  classes report every result and the maximum. Repeated goal misses require
   remediation or a time-bounded accepted exception.
 - N+1 capacity sufficient to sustain 125 percent of accepted peak workload for
   at least 60 minutes after one protected component or failure-domain loss.
 
 A favorable uptime percentage cannot override an integrity, authority, data
 loss, fencing, or unresolved severity-one or severity-two failure.
+
+### Backward-Compatible Schema Rollout Tests
+
+Mixed-version qualification must prove the expand–migrate–validate–retire–
+contract sequence. Tests must verify that old and new application, worker,
+adapter, and workstation versions can coexist during the accepted rollout
+window; that data migration is repeatable and observable; that rollback remains
+possible until the rollback window is explicitly closed; and that destructive
+schema contraction occurs only after older versions are absent and ineligible
+for restart.
 
 ### Rolling Maintenance and Upgrade Tests
 
@@ -1615,7 +1633,9 @@ A CAD phase is accepted only when:
 - At least 180 valid credited attack-wave hours pass the campaign-validity gate.
 - Availability is at least 99.99 percent over the required qualification window
   before pilot or production entry.
-- Every HA event remains within its maximum acceptable threshold, engineering-goal attainment is accepted, and one-failure stability thresholds pass when applicable.
+- Every HA event remains within its maximum acceptable threshold,
+  engineering-goal attainment is accepted, and one-failure stability thresholds
+  pass when applicable.
 - Zero lost acknowledged commits, zero split-brain events, zero automatic
   failback, and zero repeated promotion or authority oscillation from one causal
   incident.
@@ -1630,4 +1650,6 @@ A CAD phase is accepted only when:
 - Unimplemented controls are listed.
 - Counts are synchronized.
 - The next boundary is stated.
+- When final production acceptance is in scope, the required operational pilot
+  clock passes.
 - The acceptance record is retained.

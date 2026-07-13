@@ -38,10 +38,13 @@ re-baselining.
    removing the comparable SHA-256 value.
 6. Directories, symbolic links, devices, sockets, and other non-regular objects
    are recorded by type and security-relevant metadata.
-7. External reputation checks submit hashes only by default.
+7. External reputation checks submit only approved non-secret hashes by
+   default. Hash lookup is never a reason to disclose host content or sensitive
+   configuration identity.
 8. Configuration files, credentials, keys, certificates, internal identifiers,
    and other host content are never uploaded automatically to an external
-   service.
+   service. Secret-bearing, authentication-related, private-key, certificate,
+   and host-specific configuration hashes are not submitted externally.
 9. A missing reputation result is `UNKNOWN`, not trusted and not malicious.
 10. Integrity alerts do not authorize automated destructive remediation of an
     operational CAD host.
@@ -102,14 +105,20 @@ package database record digest
 vulnerability and reputation disposition
 ```
 
-The package artifact SHA-256 digest must be calculated from the exact package
-archive or transport artifact used for installation when it is retained or can
-be deterministically retrieved from the accepted repository snapshot.
+Formal deployment packages must be staged in an accepted controlled cache or
+immutable repository snapshot before installation. The exact package archive or
+transport artifact must be signature-verified, SHA-256 hashed, and retained or
+independently retrievable by immutable repository identity.
 
-When the package artifact is not available after installation, the baseline must
-record that limitation and retain the repository metadata, signature evidence,
-transaction record, installed-file hashes, and other evidence needed to
-reconstruct package identity. A package name and version alone are insufficient.
+The package artifact SHA-256 digest must be calculated from the exact package
+archive or transport artifact used for installation. A package name and version
+alone are insufficient.
+
+An installation that cannot identify and verify the exact source package
+artifact fails host admission, except for a separately governed bootstrap
+boundary. A bootstrap exception must identify the minimal bootstrap artifacts,
+trusted acquisition path, verification evidence, time-bounded remediation, and
+the later accepted baseline that replaces the exception.
 
 ### Installed-File Records
 
@@ -172,13 +181,57 @@ contract. They must not be silently excluded merely because they change often.
 The contract must define the authorized writer, allowed fields or generation
 pattern, comparison method, retention, and alert threshold.
 
+
+## Windows Operational Workstation and Server Integrity Inventory
+
+Windows hosts require an equivalent integrity baseline rather than a reduced
+Linux-only profile. The accepted Windows baseline must record, where applicable:
+
+- Installed MSI, MSIX, AppX, Windows Update, driver, optional-feature, and
+  application-package identities.
+- Exact package, catalog, signer, certificate-chain, and SHA-256 evidence.
+- Windows component-store and servicing-stack identity.
+- Package-manager and update-client executables, configuration, policy, cache,
+  databases, trust roots, and transaction records.
+- Selected registry keys and values defined by the accepted workstation or
+  server profile, including owner, ACL, value type, comparable digest, expected
+  mutability, and governing policy source.
+- Local Security Policy and applied Group Policy result identity.
+- Windows services, service accounts, service binaries, recovery actions, and
+  dependencies.
+- Scheduled tasks, startup entries, drivers, kernel components, and loaded
+  modules.
+- Windows Defender or accepted EDR configuration, engine, platform, signature,
+  exclusion, tamper-protection, and health state.
+- AppLocker or Windows Defender Application Control policy identity and
+  enforcement state.
+- Windows Firewall profiles, rules, and IPsec policy identity.
+- Certificate stores and trusted-root changes without retaining private-key
+  material.
+- Local users, groups, privileged memberships, and rights assignments.
+- PowerShell execution policy, language mode, trusted repositories, and governed
+  module inventory.
+- Critical files under accepted application, ProgramData, system, and
+  configuration roots.
+- Running executables, loaded modules, signer state, service identity, and
+  correlation to accepted release and package artifacts.
+
+The Windows baseline must distinguish package-managed state, Group
+Policy-managed state, locally managed state, expected machine-generated state,
+and unauthorized drift. Applied policy evidence must identify the policy source
+and must not treat a locally altered result as though it remained domain
+controlled.
+
 ## External Reputation and Malware Intelligence
 
 Every eligible package artifact, package-owned executable or library, and
-regular file under `/etc` must receive a reputation-check disposition. The
-disposition records whether its SHA-256 digest was queried against VirusTotal or
-another accepted reputable multi-engine or software-reputation service, or why
-an external query was not performed.
+approved non-secret object must receive a reputation-check disposition. Every
+regular file under `/etc` still receives an internal SHA-256 integrity record
+and a reputation-policy disposition, but sensitive configuration hashes are
+recorded as externally prohibited rather than submitted. The disposition records
+whether an approved SHA-256 digest was queried against VirusTotal or another
+accepted reputable multi-engine or software-reputation service, or why an
+external query was not performed.
 
 Controlled disposition values include:
 
@@ -239,9 +292,19 @@ external reputation service:
 - Proprietary Iron Signal artifacts unless a separately approved release and
   disclosure decision permits it.
 
-Hashes of `/etc` regular files may be submitted for hash-only lookup. Because
-most local configuration files are unique, `NOT_FOUND` is expected and does not
-change the local comparison requirement.
+Hashes of secret-bearing, authentication-related, private-key, certificate,
+trust-store, account-database, network-topology, environment, or host-specific
+configuration files must not be submitted to an external reputation provider.
+This prohibition includes files such as `/etc/shadow`, `/etc/gshadow`, private
+keys, credential-bearing service configuration, internal certificate material,
+and deployment-specific network or identity configuration.
+
+External hash lookup for a non-secret `/etc` object is permitted only when a
+recorded disclosure review determines that the digest does not expose sensitive
+host identity or low-entropy known content. The default for locally generated
+configuration is `QUERY_PROHIBITED_BY_POLICY`. Package-owned executables,
+libraries, drivers, and retained package artifacts are the preferred external
+reputation subjects.
 
 Any upload of an unknown sample requires separate human authorization,
 classification review, legal and disclosure review, secret scanning, and an
@@ -355,9 +418,17 @@ A host fails admission, patch acceptance, or continued qualification when:
 - An installed package lacks required identity or transaction evidence.
 - The package manager, package database, trust store, or verifier cannot be
   validated.
+- A formal deployment package was installed without retained or immutably
+  retrievable exact artifact, signature, and SHA-256 evidence outside an
+  accepted bootstrap exception.
 - A required package artifact or installed file differs without authorization.
 - A regular file under `/etc` lacks the required comparable SHA-256 digest
   without an accepted technical limitation.
+- A sensitive configuration hash was submitted externally without the required
+  disclosure authorization.
+- A Windows host lacks the accepted package, policy, registry, service, driver,
+  firewall, application-control, EDR, certificate-store, or runtime-integrity
+  evidence required by its deployment profile.
 - An unexpected privileged executable, startup entry, service, timer, account,
   or network listener exists.
 - External or local malware evidence lacks disposition.

@@ -47,6 +47,13 @@ revalidation, transaction behavior, and direct bypass resistance.
 
 Reviews automated and manual accessibility evidence and operational impact.
 
+### Standards-Conformance Authority
+
+Approves exact standards applicability, clause mappings, deviations, evidence,
+and release-bound conformance claims. This role does not independently authorize
+production deployment unless the same person also holds the separately recorded
+Production Acceptance Authority role.
+
 ### Release Authority
 
 Authorizes the exact release bundle and artifact digests for promotion.
@@ -78,6 +85,7 @@ At minimum, high-impact acceptance requires:
 - Security or database-boundary review where applicable.
 - Operational validation where human or mission workflow is affected.
 - Release authority approval.
+- Standards-conformance authority approval when a conformance claim is made.
 - Production acceptance authority approval before production use.
 
 During early project development, one person may perform several activities, but
@@ -109,7 +117,7 @@ Acceptance applies only to the recorded:
 - Environment profile.
 - Configuration profile.
 - Deployment topology.
-- Standards-conformance state.
+- Standards-conformance state and conformance-authority decision.
 - Open exceptions and limitations.
 
 A materially different artifact, migration, configuration, topology, or trust

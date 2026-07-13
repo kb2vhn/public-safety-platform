@@ -2305,8 +2305,10 @@ Complete at least:
   12 separately scheduled waves.
 - Randomized failover during valid, hostile, retrying, queued, and reconciling
   work.
-- At least eight applicable attack or fault families, with no one family
-  contributing more than 25 percent of credited campaign hours.
+- At least eight applicable attack or fault families. Every credited interval
+  has one primary family and optional secondary tags; no interval receives full
+  credit more than once, and no primary family contributes more than 25 percent
+  of credited campaign hours.
 - Quiet observation intervals between selected waves for latent-failure and
   incomplete-recovery detection.
 - A campaign-validity gate that grants zero credit to dominated, incomplete,
@@ -2331,6 +2333,9 @@ Prove through executable tests that:
 - Workstations reconnect, revalidate, and refresh authoritative state
   automatically.
 - Schema changes remain backward compatible across the accepted rollout window.
+- Schema rollout follows expand–migrate–validate–retire–contract; destructive
+  contraction occurs only after accepted old versions are absent and the
+  rollback window is formally closed.
 - Old and new application versions coexist safely during rollout.
 - Failed updates roll back or forward-repair without a full-system outage.
 - Package, `/etc`, host, artifact, and runtime-integrity baselines reconcile
@@ -2378,9 +2383,11 @@ Prove both the default engineering goals and hard maximum acceptable thresholds:
 
 Every event must remain within its maximum acceptable threshold. Formal
 qualification must report goal attainment by failure class, workload, topology,
-and recovery stage. Repeated goal misses require root-cause analysis and
-remediation or a time-bounded accepted exception even when no event exceeds the
-hard maximum.
+and recovery stage. Report the median for every class, the 95th percentile for
+classes with at least 20 events, and the 99th percentile for classes with at
+least 100 events. Classes below those counts report every result and the
+maximum. Repeated goal misses require root-cause analysis and remediation or a
+time-bounded accepted exception even when no event exceeds the hard maximum.
 
 One causal failure may trigger no more than one automatic database-authority
 promotion. The promoted primary remains primary while healthy. A recovered
@@ -2509,6 +2516,9 @@ Run:
 - Representative operational exercises.
 - Migration rehearsal and cutover exercise when applicable.
 - Pilot findings and remediation.
+- At least 90 consecutive operational pilot days without an unresolved
+  `SEV_1_CRITICAL` or `SEV_2_HIGH` result; a deployment contract may require
+  120 days.
 
 ### Gate
 
@@ -2537,6 +2547,8 @@ Production acceptance requires:
 - Recovery, rollback, and trusted rebuild accepted.
 - Migration and cutover accepted when applicable.
 - Pilot findings resolved or governed.
+- Required pilot-duration clock completed and not invalidated by an unresolved
+  critical or high-severity result.
 - No unresolved severity-one or severity-two failure.
 - Known limitations explicit.
 - Operational ownership assigned.
