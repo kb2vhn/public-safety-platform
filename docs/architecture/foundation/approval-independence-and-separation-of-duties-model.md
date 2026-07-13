@@ -7,13 +7,17 @@
 >
 > **Phase:** 4 — Approval Independence and Separation of Duties
 >
-> **Step:** 7 — Independent-Connection Concurrency Proof
+> **Step:** 8 — Formal Acceptance
 >
-> **Status:** Normative Phase 4 contract; Step 6 accepted and Step 7 concurrency candidate
+> **Status:** Phase 4 formally accepted at `phase-4-approval-independence-and-separation-of-duties-complete-v1`
 >
 > **Accepted prerequisite:** `phase-3-authorization-control-complete-v1`
 >
 > **Accepted prerequisite commit:** `853d26e37f1471aeeaeea4e7690e1a0605a22870`
+>
+> **Accepted Phase 4 tag:** `phase-4-approval-independence-and-separation-of-duties-complete-v1`
+>
+> **Accepted Phase 4 implementation commit:** `bd7eb3a8ae8180283cd6ba0ca2a07e07912ae1b5`
 
 ## 1. Purpose
 
@@ -871,11 +875,17 @@ boundaries.
 
 ### Step 8 — Formal Acceptance
 
-- Clean manifest installation
-- Complete sequential and concurrency suite
-- Zero failed assertions
+Step 8 is complete.
+
+- Clean installation of all 34 Foundation migrations
+- Complete 21-file sequential suite
+- Complete 16-file independent-connection concurrency suite
+- 734 PASS, 0 FAIL, and the same three understood WARN results
+- Correctness `PASS`
+- Resource observation `RECORDED`
+- Performance thresholds `NOT_EVALUATED`
 - Formal Phase 4 acceptance record
-- Annotated Phase 4 release tag
+- Annotated release tag `phase-4-approval-independence-and-separation-of-duties-complete-v1`
 
 ## 26. Step 1 Acceptance Criteria
 
@@ -1033,7 +1043,7 @@ Step 6 is accepted with:
 - Correctness `PASS`, resource observation `RECORDED`, and performance
   thresholds `NOT_EVALUATED`.
 
-## Phase 4 Step 7 Candidate Implementation Boundary
+## Phase 4 Step 7 Accepted Implementation Boundary
 
 Step 7 preserves every accepted Step 6 invariant and adds only the
 serialization and independent-connection proofs needed to close simultaneous
@@ -1072,7 +1082,7 @@ Step 7 is complete only when:
   current request, its explicit chain, and directly linked reciprocal or
   shared-chain requests.
 - The controlled Authority Grant read excludes concurrent status mutation.
-- The complete candidate result is 734 PASS, 0 FAIL, and the same three
+- The complete accepted result is 734 PASS, 0 FAIL, and the same three
   understood WARN results.
 - Correctness is `PASS`.
 - Resource observation is `RECORDED`.
@@ -1080,9 +1090,35 @@ Step 7 is complete only when:
 - Root, architecture, test, validation, phase-gate, and module-boundary
   documentation are synchronized.
 - No module-specific record or workflow is moved into the Platform Foundation.
-- Formal Phase 4 acceptance and the annotated release tag remain Step 8 work.
+- Formal Phase 4 acceptance is recorded and the annotated tag is `phase-4-approval-independence-and-separation-of-duties-complete-v1`.
 
-## 33. Revalidation Triggers
+## 33. Step 8 Acceptance Criteria and Decision
+
+Phase 4 is formally accepted because:
+
+- The authoritative Foundation manifest contains 34 ordered migrations.
+- The complete Foundation installs into an empty PostgreSQL 18 database.
+- The sequential manifest contains 21 tests.
+- The concurrency manifest contains 16 independent-connection tests.
+- The seven Phase 4 concurrency files contribute exactly 84 assertions.
+- The complete result is 734 PASS, 0 FAIL, and the same three understood WARN
+  results.
+- Correctness is `PASS`.
+- Resource observation is `RECORDED`.
+- Performance thresholds remain `NOT_EVALUATED`.
+- The final Step 7 gate completed with 159 PASS checks and 0 FAIL checks.
+- The accepted SQL and executable test tree is identified by the annotated tag
+  `phase-4-approval-independence-and-separation-of-duties-complete-v1`.
+- The tag dereferences to `bd7eb3a8ae8180283cd6ba0ca2a07e07912ae1b5`.
+- The formal acceptance record is
+  [Phase 4 Approval Independence and Separation of Duties Acceptance](phase-4-approval-independence-and-separation-of-duties-acceptance.md).
+- Root, architecture, Foundation, test, validation, and phase-gate
+  documentation describe the same accepted boundary.
+- No downstream service, workstation, interface, mapping, transport, or
+  module-owned state becomes a Foundation authority source.
+- The acceptance remains pre-alpha and does not claim production readiness.
+
+## 34. Revalidation Triggers
 
 
 Phase 4 must be revalidated after any change to:
@@ -1100,13 +1136,13 @@ Phase 4 must be revalidated after any change to:
 - Withdrawal, correction, or supersession semantics
 - Decision Record approval or separation-of-duties stages
 - Authorization Decision or lease reliance on approvals
-- Migrations `050`, `055`, `080`, `081`, or planned `083`
+- Migrations `050`, `055`, `080`, `081`, or `083`
 - Foundation test manifests
 - Approval-related concurrency barriers
 - The accepted Phase 3 tag or acceptance record
 - This normative contract
 
-## 34. Related Documents
+## 35. Related Documents
 
 - [Approval Framework](approval-framework.md)
 - [Authority and Authorization Model](authority-and-authorization-model.md)
@@ -1116,3 +1152,4 @@ Phase 4 must be revalidated after any change to:
 - [Lifecycle Versioning and Historical Lineage](lifecycle-versioning-and-historical-lineage-model.md)
 - [Two-Person Concept](../../goals/two-person-concept.md)
 - [Phase 3 Authorization Decision and Controlled Lease Acceptance](phase-3-authorization-decision-and-controlled-lease-acceptance.md)
+- [Phase 4 Approval Independence and Separation of Duties Acceptance](phase-4-approval-independence-and-separation-of-duties-acceptance.md)

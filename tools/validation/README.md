@@ -4,27 +4,28 @@
 
 Phase gates are retained under `tools/validation/phase-gates/`.
 
-## Active Phase 4 Step 7 Gate
+## Phase 4 Formal-Acceptance Gate
 
 Complete validation:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step7.sh
+./tools/validation/phase-gates/validate_phase4_step8.sh
 ```
 
-Static repository and documentation validation only:
+Static repository, tag, implementation-tree, and documentation validation:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step7.sh --static-only
+./tools/validation/phase-gates/validate_phase4_step8.sh --static-only
 ```
 
-The gate verifies the accepted Step 6 boundary, migration `083`, 21 sequential
-tests, 16 concurrency tests, seven new approval-race files, 84 new assertions,
-request-chain serialization, Authority Grant revocation exclusion,
-synchronized documentation, correctness totals, and the resource-observation
+The gate verifies the annotated Phase 4 tag, the accepted implementation
+commit, unchanged SQL and executable test trees, 34 migrations, 21 sequential
+tests, 16 concurrency tests, 734 PASS, zero failed assertions, three understood
+warnings, synchronized acceptance documentation, and the resource-observation
 contract.
 
-Historical gates remain available for their own checkpoint trees.
+Historical gates remain available for their own checkpoint trees. The Step 7
+gate is the implementation gate for the tagged Phase 4 tree.
 
 ## Cross-Phase Foundation Migration Timeout Contract
 
@@ -43,4 +44,5 @@ SET LOCAL idle_in_transaction_session_timeout = '1min';
 ```
 
 It is a static repository-policy check and contributes no SQL PASS rows. The
-active Phase 4 Step 7 gate invokes it automatically before database execution.
+Phase 4 formal-acceptance gate invokes it automatically before database
+execution.

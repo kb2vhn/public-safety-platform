@@ -4,8 +4,8 @@
 >
 > **Status:** Normative architecture under active refinement
 >
-> **Current status:** Phase 4 Step 6 accepted; Phase 4 Step 7
-> independent-connection approval concurrency candidate
+> **Current status:** Phase 4 approval independence and separation of duties
+> formally accepted at `phase-4-approval-independence-and-separation-of-duties-complete-v1`
 
 ## Dependency Direction
 
@@ -38,6 +38,7 @@ monitoring vendor, identity provider, or compliance framework.
 - [Authority and Authorization](foundation/authority-and-authorization-model.md)
 - [Authorization Evaluation Contract](foundation/authorization-evaluation-contract.md)
 - [Phase 3 Authorization Acceptance](foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
+- [Phase 4 Approval Independence and Separation of Duties Acceptance](foundation/phase-4-approval-independence-and-separation-of-duties-acceptance.md)
 
 ### Platform Services and Client Architecture
 
@@ -54,47 +55,14 @@ monitoring vendor, identity provider, or compliance framework.
 
 ## Accepted Implementation Status
 
-Phases 1, 2, and 3 are formally accepted. Phase 4 Step 6 is the current
-accepted implementation boundary:
+Phases 1, 2, 3, and 4 are formally accepted. The accepted Phase 4 boundary is
+identified by:
 
 ```text
-34 migrations
-21 sequential tests
-9 concurrency tests
-650 PASS
-0 FAIL
-3 understood WARN
-Correctness result: PASS
-Resource observation: RECORDED
-Performance thresholds: NOT_EVALUATED
+phase-4-approval-independence-and-separation-of-duties-complete-v1
 ```
 
-## Active Architecture Boundary
-
-Phase 4 Step 7 adds database-owned independent-connection concurrency proofs
-without changing dependency direction. The Foundation serializes only the
-governed approval records needed to close explicit request, chain, authority,
-withdrawal, stage-evaluation, and finalization races.
-
-Backend services may consume Foundation decisions; communications may deliver
-governed state; GIS clients may render published facts; operational
-workstations may present module capabilities; and user interfaces may support
-authorized work. None of those downstream areas becomes an independent source
-of identity, authority, approval, commitment, or truth.
-
-## Migration Execution Boundary
-
-The current clean-install Foundation migration contract is `5s` lock wait,
-`1min` statement execution, and `1min` idle-in-transaction, all established
-with `SET LOCAL`. A statement observed above ten seconds requires investigation
-even while broader performance budgets remain observation-only. The active
-phase gate executes the static migration-timeout validator before database
-execution.
-
-## Phase 4 Step 7 Candidate
-
-Seven new concurrency files add 84 assertions and increase the candidate
-inventory to:
+Accepted result:
 
 ```text
 34 manifest migrations
@@ -107,10 +75,46 @@ inventory to:
 Correctness result: PASS
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
+159 phase-gate PASS checks
+0 phase-gate FAIL checks
 ```
 
-The active gate is:
+## Accepted Architecture Boundary
+
+Phase 4 closes the domain-neutral approval-independence and
+separation-of-duties database boundary: controlled action recording,
+independence enforcement, delegated-grant lineage, incompatible-authority and
+prohibited-duty enforcement, stage satisfaction, finalization, later-use
+approval continuity, and independent-connection concurrency proofs.
+
+Backend services may consume Foundation decisions; communications may deliver
+governed state; GIS clients may render published facts; operational
+workstations may present module capabilities; and user interfaces may support
+authorized work. None of those downstream areas becomes an independent source
+of identity, authority, approval, commitment, or canonical truth.
+
+## Migration Execution Boundary
+
+The current clean-install Foundation migration contract is `5s` lock wait,
+`1min` statement execution, and `1min` idle-in-transaction, all established
+with `SET LOCAL`. A statement observed above ten seconds requires investigation
+even while broader performance budgets remain observation-only. The active
+phase gate executes the static migration-timeout validator before database
+execution.
+
+## Phase 4 Formal Acceptance
+
+The formal acceptance record is:
+
+- [Phase 4 Approval Independence and Separation of Duties Acceptance](foundation/phase-4-approval-independence-and-separation-of-duties-acceptance.md)
+
+Revalidate the accepted tag, implementation tree, documentation, correctness,
+and resource-observation contract with:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step7.sh
+./tools/validation/phase-gates/validate_phase4_step8.sh
 ```
+
+The accepted Phase 4 boundary does not make downstream service, mapping,
+workstation, presentation, transport, or module-owned state part of the
+Platform Foundation.

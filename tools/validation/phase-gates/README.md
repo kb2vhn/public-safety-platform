@@ -8,7 +8,7 @@ Foundation phases. Historical gates validate their own checkpoint trees.
 Newest gate:
 
 ```text
-validate_phase4_step7.sh
+validate_phase4_step8.sh
 ```
 
 Phase 4 progression:
@@ -25,9 +25,10 @@ Phase 4 progression:
 - Step 6 added current-action derivation, stage satisfaction, finalization,
   Decision Record stage links, and approval continuity; accepted at
   650 PASS, 0 FAIL, and 3 understood WARN.
-- Step 7 adds seven independent-connection approval concurrency files and
-  84 assertions; its candidate target is 734 PASS, 0 FAIL, and
-  3 understood WARN.
+- Step 7 added seven independent-connection approval concurrency files and
+  84 assertions; accepted at 734 PASS, 0 FAIL, and 3 understood WARN.
+- Step 8 records formal Phase 4 acceptance and verifies the annotated tag,
+  accepted tree, documentation, correctness result, and resource observation.
 
 ## Cross-Phase Static Standard
 
@@ -38,13 +39,13 @@ standard before database execution:
 ./tools/validation/validate_foundation_migration_timeouts.sh
 ```
 
-## Active Gate: Phase 4 Step 7
+## Active Gate: Phase 4 Step 8
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step7.sh
+./tools/validation/phase-gates/validate_phase4_step8.sh
 ```
 
-The gate validates 34 migrations, 21 sequential tests, 16 concurrency tests,
-the accepted Step 6 behavior, deterministic request-chain serialization,
-Authority Grant revocation exclusion, seven new concurrency files, the
-734 PASS target, and observation-only resource telemetry.
+The gate validates the annotated tag `phase-4-approval-independence-and-separation-of-duties-complete-v1`, 34 migrations, 21 sequential
+tests, 16 concurrency tests, the accepted SQL and executable test tree, the
+734 PASS result, synchronized acceptance documentation, and observation-only
+resource telemetry.

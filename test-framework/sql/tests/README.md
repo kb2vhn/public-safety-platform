@@ -2,8 +2,8 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current checkpoint:** Phase 4 Step 6 accepted; Phase 4 Step 7
-> independent-connection approval concurrency candidate
+> **Current checkpoint:** Phase 4 approval independence and separation of
+> duties formally accepted at `phase-4-approval-independence-and-separation-of-duties-complete-v1`
 >
 > **Scope:** Test-only PostgreSQL, `psql`, Bash, and resource-observation
 > infrastructure for the active Platform Foundation SQL.
@@ -39,12 +39,12 @@ Correctness plus observation-only resource telemetry:
 ./test-framework/sql/schema/scripts/test_foundation_with_resources.sh
 ```
 
-The active Step 7 gate invokes the timeout validator before database
+The Phase 4 formal-acceptance gate invokes the timeout validator before
 execution. The timeout check contributes no SQL PASS rows.
 
 ## Sequential Tests
 
-The accepted Step 6 boundary contains 21 sequential tests. The Phase 4 files
+The accepted Phase 4 boundary contains 21 sequential tests. The Phase 4 files
 are:
 
 ```text
@@ -61,7 +61,7 @@ foundation/210_approval_stage_satisfaction_and_finalization.sql
 - Test `200`: 50 incompatible-authority and duty-conflict assertions.
 - Test `210`: 60 stage-satisfaction and finalization assertions.
 
-## Phase 4 Step 7 Concurrency Tests
+## Accepted Phase 4 Concurrency Tests
 
 ```text
 concurrency/190_approval_duplicate_actor_race.sh
@@ -76,7 +76,7 @@ concurrency/250_approval_reciprocal_approval_race.sh
 Each file contributes exactly 12 assertions. The seven files contribute
 84 assertions and increase the concurrency inventory from 9 to 16.
 
-Step 7 target:
+Accepted Phase 4 result:
 
 ```text
 34 manifest migrations
@@ -90,6 +90,12 @@ Correctness result: PASS
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
 ```
+
+Accepted tag: `phase-4-approval-independence-and-separation-of-duties-complete-v1`
+
+Formal acceptance record:
+
+- [Phase 4 Approval Independence and Separation of Duties Acceptance](../../../docs/architecture/foundation/phase-4-approval-independence-and-separation-of-duties-acceptance.md)
 
 ## Understood Warnings
 

@@ -202,45 +202,22 @@ Formal acceptance record:
 
 - [Phase 3 Authorization Decision and Controlled Lease Acceptance](docs/architecture/foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
 
-### Active Phase 4 — Approval Independence and Separation of Duties
+### Accepted Phase 4 — Approval Independence and Separation of Duties
 
-Phase 4 Steps 1 through 6 are accepted. Phase 4 Step 6 is accepted with the following boundary:
+Phase 4 is formally accepted for the scope defined by the normative approval
+independence and separation-of-duties contract.
+
+Accepted tag:
 
 ```text
-34 manifest migrations
-34 registered migrations
-21 sequential test files
-9 concurrency test files
-650 PASS
-0 FAIL
-3 understood WARN
-Correctness result: PASS
-Resource observation: RECORDED
-Performance thresholds: NOT_EVALUATED
+phase-4-approval-independence-and-separation-of-duties-complete-v1
 ```
 
-That accepted boundary includes controlled Approval Action recording,
-independence enforcement, delegated Authority Grant lineage,
-incompatible-authority and prohibited-duty enforcement, current Approval
-Action derivation, persisted stage satisfaction, finalization-once Approval
-Requests, exact Decision Record stage links, and later-use approval continuity.
+Formal acceptance record:
 
-Phase 4 Step 7 is the current candidate. It adds independent-connection proofs
-for:
+- [Phase 4 Approval Independence and Separation of Duties Acceptance](docs/architecture/foundation/phase-4-approval-independence-and-separation-of-duties-acceptance.md)
 
-- Duplicate effective-actor approval
-- Finalized stage-evaluation uniqueness
-- Approval Request finalization
-- Last approval versus finalization
-- Withdrawal versus finalization
-- Authority Grant revocation versus approval recording
-- Reciprocal approval across explicitly linked requests
-
-The seven concurrency files cover the six normative race families, with
-finalization split into stage-evaluation and Approval Request finalization
-proofs.
-
-The Step 7 target is:
+Accepted boundary:
 
 ```text
 34 manifest migrations
@@ -253,16 +230,27 @@ The Step 7 target is:
 Correctness result: PASS
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
+159 phase-gate PASS checks
+0 phase-gate FAIL checks
 ```
 
-Run the active gate with:
+The accepted Phase 4 boundary includes controlled Approval Action recording,
+requester and directly affected identity independence, effective-actor
+uniqueness, organization and Authority Grant origin independence, explicit
+reciprocal-request protection, delegated-grant lineage, incompatible-authority
+and prohibited-duty enforcement, current stage satisfaction, finalization-once
+Approval Requests, Decision Record stage linkage, approval continuity, and
+independent-connection concurrency proofs.
 
-```bash
-./tools/validation/phase-gates/validate_phase4_step7.sh
-```
+The seven Phase 4 concurrency files prove duplicate-actor serialization,
+finalized stage-evaluation uniqueness, Approval Request finalization,
+last-approval and withdrawal races, Authority Grant revocation exclusion, and
+reciprocal approval protection across explicitly linked requests.
 
 These results prove only the properties covered by the accepted tests. They do
-not mean every documented Foundation control is already fully enforced.
+not declare the complete Platform Foundation, Go services, deployment
+environment, operational modules, or production operating model ready for
+production use.
 
 ## Staged Development Approach
 
@@ -513,32 +501,33 @@ Accepted behavior now includes:
 - Manifest-driven clean installation
 - Structural, catalog, privilege, behavioral, negative, and concurrency tests
 
-### Current Phase 4 Step 7 Candidate
+### Accepted Phase 4 Boundary
 
-The accepted Step 6 stage-satisfaction and finalization boundary remains in
-place. Step 7 adds deterministic database serialization and seven
-independent-connection proofs:
+Phase 4 approval independence and separation of duties is formally accepted.
+The tagged implementation provides:
 
-- Request and explicit approval-chain advisory locking in stable UUID order
-- Authority Grant current-state reads protected against concurrent revocation
-- Duplicate effective-actor race
-- Finalized stage-evaluation race
-- Approval Request finalization race
-- Last approval versus finalization race
-- Withdrawal versus finalization race
-- Authority Grant revocation versus approval race
-- Reciprocal approval race across explicit request linkage
+- Exact Approval Request, policy-stage, actor, organization, session, and
+  Authority Grant binding
+- Requester, directly affected identity, duplicate effective actor, distinct
+  organization, Authority Grant origin, and reciprocal-chain independence
+- Delegated Authority Grant lineage and bounded delegation
+- `JOINT_EXERCISE`, `CONCURRENT_HOLDING`, and `CHAIN_PARTICIPATION`
+  incompatible-authority enforcement
+- Immutable `APPROVE` duty recording and prohibited-duty evaluation
+- Current Approval Action derivation, stage satisfaction, blocking denial, and
+  finalization-once Approval Requests
+- Exact Decision Record stage linkage and approval-backed lease continuity
+- Independent-connection concurrency proofs without one global approval lock
 
-The Step 7 candidate does not move module-specific state into the Platform
-Foundation. Backend services, communications, GIS and mapping, operational
-workstations, user interfaces, and future operational modules remain
-downstream consumers of governed Foundation decisions.
+Backend services, communications, GIS and mapping, operational workstations,
+user interfaces, and operational modules remain downstream consumers of
+governed Foundation decisions. No module-specific record or workflow is part of
+the accepted Phase 4 Foundation boundary.
 
 ### Remaining Foundation Work
 
 The following remain active Foundation work:
 
-- Formal Phase 4 acceptance record and annotated release tag
 - Decision Record cryptographic integrity anchoring
 - Stronger append-only mutation protection where required
 - Migration-checksum population and enforcement
@@ -621,6 +610,7 @@ Start with:
 - [Session Establishment, Step-Up, and Lifecycle Model](docs/architecture/foundation/session-establishment-step-up-and-lifecycle-model.md)
 - [Authorization Decision and Lease Issuance Model](docs/architecture/foundation/authorization-decision-and-lease-issuance-model.md)
 - [Phase 3 Authorization Acceptance](docs/architecture/foundation/phase-3-authorization-decision-and-controlled-lease-acceptance.md)
+- [Phase 4 Approval Independence and Separation of Duties Acceptance](docs/architecture/foundation/phase-4-approval-independence-and-separation-of-duties-acceptance.md)
 - [PostgreSQL Architecture](docs/architecture/postgresql.md)
 - [External-System-Independent Observability](docs/architecture/external-system-independent-observability.md)
 - [User-Interface Architecture](modules/CAD/docs/architecture/user-interface/README.md)
@@ -763,25 +753,30 @@ See:
 
 ## Current Phase Gate
 
-Run the active Phase 4 Step 7 gate from the repository root:
+Phase 4 is formally accepted. Revalidate the accepted boundary from the
+repository root with:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step7.sh
+./tools/validation/phase-gates/validate_phase4_step8.sh
 ```
 
-Static repository and documentation validation only:
+Static repository, tag, tree-integrity, and documentation validation only:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step7.sh --static-only
+./tools/validation/phase-gates/validate_phase4_step8.sh --static-only
 ```
 
-The gate validates the accepted Step 6 boundary, 34 Foundation migrations,
-21 sequential tests, 16 concurrency tests, seven new independent-connection
-approval-race proofs, 84 new assertions, synchronized status documentation,
-correctness totals, and observation-only resource telemetry.
+The gate validates the annotated Phase 4 tag, the accepted implementation
+commit, unchanged SQL and executable test trees, 34 Foundation migrations,
+21 sequential tests, 16 concurrency tests, the 734 PASS result, the three
+understood warnings, synchronized acceptance documentation, and
+observation-only resource telemetry.
 
-The active gate invokes the cross-phase migration timeout validator before
-PostgreSQL execution. The validator can also be run independently with:
+Historical phase gates remain available and validate their own checkpoint
+trees. The Step 7 gate is the implementation gate for the tagged Phase 4 tree.
+
+The active acceptance gate invokes the cross-phase migration timeout validator
+before PostgreSQL execution. The validator can also be run independently with:
 
 ```bash
 ./tools/validation/validate_foundation_migration_timeouts.sh

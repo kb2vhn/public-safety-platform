@@ -6,8 +6,8 @@
 > controls are database-enforced and tested; structural presence does not imply
 > complete runtime, deployment, or operational enforcement.
 >
-> **Current status:** Phase 4 Step 4 accepted; Phase 4 Step 5 incompatible-authority
-> and duty-conflict enforcement candidate with observation-only resource telemetry.
+> **Current status:** Phase 4 approval independence and separation of duties
+> formally accepted at `phase-4-approval-independence-and-separation-of-duties-complete-v1`.
 
 ## Purpose
 
@@ -154,45 +154,15 @@ identifies the exact accepted SQL and test tree; later documentation commits
 must not alter that accepted implementation without Phase 3 revalidation.
 
 
-## Current Phase 4 Boundary
+## Accepted Phase 4 Boundary
 
-Phase 4 Steps 1 through 6 are accepted. Step 6 established current Approval
-Action derivation, persisted stage satisfaction, finalization-once Approval
-Requests, exact Decision Record stage linkage, and later-use continuity for
-approval-backed Authorization Leases.
-
-Accepted Step 6 boundary:
+Phase 4 approval independence and separation of duties is formally accepted at:
 
 ```text
-34 manifest migrations
-34 registered migrations
-21 sequential test files
-9 concurrency test files
-650 PASS
-0 FAIL
-3 understood WARN
-Correctness result: PASS
-Resource observation: RECORDED
-Performance thresholds: NOT_EVALUATED
+phase-4-approval-independence-and-separation-of-duties-complete-v1
 ```
 
-Phase 4 Step 7 is the active candidate. It preserves migration `083` and the
-accepted sequential model while adding stable request-chain serialization,
-Authority Grant revocation exclusion, and seven independent-connection
-concurrency files:
-
-```text
-test-framework/sql/tests/concurrency/
-├── 190_approval_duplicate_actor_race.sh
-├── 200_approval_stage_finalized_evaluation_race.sh
-├── 210_approval_request_finalization_race.sh
-├── 220_approval_last_approval_finalization_race.sh
-├── 230_approval_withdrawal_finalization_race.sh
-├── 240_approval_authority_revocation_race.sh
-└── 250_approval_reciprocal_approval_race.sh
-```
-
-Step 7 target:
+Accepted result:
 
 ```text
 34 manifest migrations
@@ -205,7 +175,17 @@ Step 7 target:
 Correctness result: PASS
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
+159 phase-gate PASS checks
+0 phase-gate FAIL checks
 ```
+
+The accepted scope includes controlled Approval Action recording, requester and
+directly affected identity independence, effective-actor uniqueness,
+organization and Authority Grant origin independence, reciprocal-request
+protection, delegated-grant lineage, incompatible-authority and prohibited-duty
+enforcement, current stage satisfaction, finalization-once Approval Requests,
+Decision Record stage linkage, later-use approval continuity, and seven
+independent-connection concurrency proofs.
 
 The Platform Foundation remains domain-neutral. Location services,
 communications, GIS rendering, operational workstations, user interfaces, and
@@ -214,6 +194,7 @@ module-specific workflows remain downstream architecture areas.
 See:
 
 - [Approval Independence and Separation of Duties](approval-independence-and-separation-of-duties-model.md)
+- [Phase 4 Approval Independence and Separation of Duties Acceptance](phase-4-approval-independence-and-separation-of-duties-acceptance.md)
 - [Resource Telemetry and Performance-Regression Testing](resource-telemetry-and-performance-regression-testing-model.md)
 - [Foundation Migration Timeout and Execution Performance Standard](foundation-migration-timeout-and-execution-performance-standard.md)
 
@@ -276,16 +257,16 @@ See:
 ## Current Implementation Boundaries
 
 The `000–099` migrations establish the initial Foundation data model,
-controlled APIs, security inventories, validation views, and the accepted
-Phase 4 Step 6 approval behavior.
+controlled APIs, security inventories, validation views, and the formally
+accepted Phase 4 approval-independence and separation-of-duties behavior.
 
-The Step 7 candidate adds concurrency enforcement only for governed approval
+The accepted Phase 4 concurrency enforcement applies only to governed approval
 state. It does not add CAD records, mapping state, workstation state,
-presentation state, or module-owned workflows to the Foundation.
+presentation state, transport state, or module-owned workflows to the
+Foundation.
 
 The following remain incomplete until separately implemented and tested:
 
-- Formal Phase 4 acceptance record and annotated release tag,
 - Complete Decision Record cryptographic integrity and later
   review/supersession controls,
 - Final production ownership and login-role topology,
@@ -321,7 +302,7 @@ The static contract validator is:
 ./tools/validation/validate_foundation_migration_timeouts.sh
 ```
 
-The active Phase 4 Step 7 gate invokes the validator before database execution.
+The Phase 4 formal-acceptance gate invokes the validator before database execution.
 It remains independently runnable for focused migration review.
 
 See [Foundation Migration Timeout and Execution Performance Standard](foundation-migration-timeout-and-execution-performance-standard.md).
@@ -350,31 +331,18 @@ The Step 3 regression target is 33 migrations, 14 sequential tests, 4
 concurrency tests, 297 passes, zero failures, and the same three understood
 warnings. Authorization Lease issuance remains Step 4.
 
-## Phase 4 Step 7 Candidate
+## Accepted Phase 4 Approval Boundary
 
-Phase 4 Step 6 is accepted at 650 PASS, 0 FAIL, and 3 understood WARN results.
-Phase 4 Step 7 adds stable explicit request-chain locking, Authority Grant
-revocation exclusion, and independent-connection proofs for duplicate actors,
-stage-evaluation finalization, Approval Request finalization, last approval,
-withdrawal, authority revocation, and reciprocal approval.
+Phase 4 is formally accepted at `phase-4-approval-independence-and-separation-of-duties-complete-v1` with 34 manifest migrations,
+21 sequential tests, 16 concurrency tests, 734 PASS, 0 FAIL, and the same
+three understood WARN results.
 
-The Step 7 candidate target is:
-
-```text
-34 manifest migrations
-34 registered migrations
-21 sequential test files
-16 concurrency test files
-734 PASS
-0 FAIL
-3 understood WARN
-Correctness result: PASS
-Resource observation: RECORDED
-Performance thresholds: NOT_EVALUATED
-```
-
-The active gate is:
+The active revalidation gate is:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step7.sh
+./tools/validation/phase-gates/validate_phase4_step8.sh
 ```
+
+The annotated tag identifies the exact accepted SQL and executable test tree.
+The formal acceptance record is an administrative documentation change that
+must descend from the tag without changing the accepted implementation.
