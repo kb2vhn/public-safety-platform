@@ -331,3 +331,29 @@ behavior, and rejection of caller-supplied result mismatches.
 The Step 3 regression target is 33 migrations, 14 sequential tests, 4
 concurrency tests, 297 passes, zero failures, and the same three understood
 warnings. Authorization Lease issuance remains Step 4.
+
+## Phase 4 Step 6 Candidate
+
+Phase 4 Step 5 is accepted at 590 PASS, 0 FAIL, 3 understood WARN results.
+Phase 4 Step 6 implements current Approval Action derivation,
+persisted policy-stage satisfaction, blocking-denial outcomes,
+finalization-once Approval Requests, exact Decision Record stage links, and
+later-use continuity for approval-backed Authorization Leases.
+
+The Step 6 candidate target is:
+
+```text
+34 manifest migrations
+34 registered migrations
+21 sequential test files
+9 concurrency test files
+650 PASS
+0 FAIL
+3 understood WARN
+Resource observation: RECORDED
+Performance thresholds: NOT_EVALUATED
+```
+
+The active gate is
+`tools/validation/phase-gates/validate_phase4_step6.sh`. Independent-
+connection finalization races remain Phase 4 Step 7.

@@ -233,24 +233,35 @@ duplicate effective-actor prevention, distinct-organization enforcement,
 Authority Grant origin independence, and explicit circular or reciprocal
 approval prevention.
 
-Phase 4 Step 5 is the current candidate. It adds explicit direct and delegated
+Phase 4 Step 5 is accepted at 590 PASS, 0 FAIL, and 3
+understood WARN results. It established explicit direct and delegated
 Authority Grant lineage, incompatible-authority enforcement for
 `JOINT_EXERCISE`, `CONCURRENT_HOLDING`, and `CHAIN_PARTICIPATION`, immutable
-`APPROVE` duty recording, prohibited-duty evaluation, and fail-closed handling
-when a configured duty scope cannot yet be evaluated.
+`APPROVE` duty recording, and prohibited-duty evaluation.
 
-The Step 5 target is:
+Phase 4 Step 6 is the current candidate. It adds current Approval Action
+derivation, persisted stage satisfaction, blocking-denial outcomes,
+finalization-once Approval Requests, exact Decision Record stage links, and
+later-use continuity for approval-backed Authorization Leases.
+
+The Step 6 target is:
 
 ```text
 34 manifest migrations
 34 registered migrations
-20 sequential test files
+21 sequential test files
 9 concurrency test files
-590 PASS
+650 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
 Performance thresholds: NOT_EVALUATED
+```
+
+Run the active gate with:
+
+```bash
+./tools/validation/phase-gates/validate_phase4_step6.sh
 ```
 
 These results prove only the properties covered by the accepted tests. They do

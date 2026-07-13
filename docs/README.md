@@ -84,3 +84,29 @@ Static validation:
 The active Phase 4 Step 5 gate invokes this validator automatically. It can
 also be run independently. The repository-policy check does not add SQL PASS
 rows or activate a general performance-regression threshold.
+
+## Phase 4 Step 6 Candidate
+
+Phase 4 Step 5 is accepted at 590 PASS, 0 FAIL, 3 understood WARN results.
+Phase 4 Step 6 implements current Approval Action derivation,
+persisted policy-stage satisfaction, blocking-denial outcomes,
+finalization-once Approval Requests, exact Decision Record stage links, and
+later-use continuity for approval-backed Authorization Leases.
+
+The Step 6 candidate target is:
+
+```text
+34 manifest migrations
+34 registered migrations
+21 sequential test files
+9 concurrency test files
+650 PASS
+0 FAIL
+3 understood WARN
+Resource observation: RECORDED
+Performance thresholds: NOT_EVALUATED
+```
+
+The active gate is
+`tools/validation/phase-gates/validate_phase4_step6.sh`. Independent-
+connection finalization races remain Phase 4 Step 7.

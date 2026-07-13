@@ -9,7 +9,7 @@
 >
 > **Step:** 5 — Incompatible Authority and Separation of Duties
 >
-> **Status:** Normative Phase 4 contract; Step 4 accepted and Step 5 enforcement candidate
+> **Status:** Normative Phase 4 contract; Step 5 accepted and Step 6 enforcement candidate
 >
 > **Accepted prerequisite:** `phase-3-authorization-control-complete-v1`
 >
@@ -998,7 +998,50 @@ Step 5 is complete only when:
   synchronized before acceptance.
 - No Step 6 or Step 7 behavior is claimed by Step 5.
 
-## 31. Revalidation Triggers
+## Phase 4 Step 6 Candidate Implementation Boundary
+
+The Step 5 enforcement boundary is accepted. Phase 4 Step 6 is the active
+candidate for current-action derivation, persisted stage satisfaction,
+finalization-once Approval Requests, exact Decision Record stage linkage, and
+later-use continuity for approval-backed Authorization Leases. Independent-
+connection finalization races remain Phase 4 Step 7.
+
+## 31. Step 6 Acceptance Criteria
+
+Step 6 is complete only when:
+
+- The manifest remains at 34 ordered migrations.
+- The sequential manifest contains 21 tests.
+- Test `210` contributes exactly 60 functional assertions.
+- Current-action derivation excludes withdrawn, corrected, superseded, stale,
+  or otherwise inapplicable Approval Action Records.
+- Every stage evaluation uses one authoritative PostgreSQL time and persists
+  the exact considered actions, Authority Grants, counts, exclusions, and
+  outcome.
+- Stage satisfaction is based on current policy, distinct effective actors,
+  required organization independence, exact current Authority Grants,
+  incompatible-authority rules, prohibited duties, and blocking denials
+  rather than raw row count.
+- Controlled finalization locks one PENDING Approval Request, evaluates every
+  policy stage at the same time, rejects caller-result mismatch, writes one
+  terminal status, and prevents re-finalization.
+- `APPROVED`, `DENIED`, `CANCELLED`, `EXPIRED`, and `ESCALATED` results are
+  derived from PostgreSQL-owned state and stable reason codes.
+- Decision Record approval evaluations link to the exact finalized SATISFIED
+  stage-evaluation records and matching protected context.
+- Approval-backed Authorization Leases fail closed at issuance and later use
+  after required approval continuity is lost.
+- Approval-unrelated Decision Records and leases remain outside this new
+  continuity binding.
+- The accepted nine concurrency tests remain unchanged.
+- The complete candidate result is 650 PASS, 0 FAIL, and the same three
+  understood WARN results.
+- Resource observation is `RECORDED` and thresholds remain `NOT_EVALUATED`.
+- Root, architecture, test, validation, and phase-status documentation are
+  synchronized before acceptance.
+- No Phase 4 Step 7 concurrency behavior is claimed by Step 6.
+
+## 32. Revalidation Triggers
 
 
 Phase 4 must be revalidated after any change to:
@@ -1022,7 +1065,7 @@ Phase 4 must be revalidated after any change to:
 - The accepted Phase 3 tag or acceptance record
 - This normative contract
 
-## 32. Related Documents
+## 33. Related Documents
 
 - [Approval Framework](approval-framework.md)
 - [Authority and Authorization Model](authority-and-authorization-model.md)

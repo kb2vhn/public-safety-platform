@@ -38,3 +38,13 @@ execution. The validator can also be run independently:
 
 Run the independent command for focused review. Future phase gates must continue
 to invoke or reproduce this static contract before database execution.
+
+## Active Gate: Phase 4 Step 6
+
+```bash
+./tools/validation/phase-gates/validate_phase4_step6.sh
+```
+
+This gate validates 34 migrations, 21 sequential tests, 9 concurrency tests,
+60 Step 6 assertions, the 650 PASS target, resource telemetry, exact
+Decision Record approval-stage linkage, and later-use approval continuity.

@@ -2,7 +2,7 @@
 -- Migration: 083_postgresql_approval_independence_and_separation_of_duties.sql
 -- Title: PostgreSQL approval independence and separation of duties structure
 -- Layer: Platform Foundation
--- Status: PHASE 4 STEP 5 INCOMPATIBLE-AUTHORITY AND DUTY-CONFLICT CANDIDATE
+-- Status: PHASE 4 STEP 6 STAGE-SATISFACTION AND FINALIZATION CANDIDATE
 -- Target: PostgreSQL 18
 -- Compatibility policy: prefer mature features supported before PostgreSQL 18.
 -- ============================================================================
@@ -1761,7 +1761,1154 @@ COMMENT ON FUNCTION approval.record_approval_action(
     text,
     uuid
 ) IS
-    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, and action-lineage validation. Phase 4 Step 4 enforces self-approval, affected-identity, duplicate-effective-actor, organization-independence, authority-origin, and reciprocal-chain protections. Phase 4 Step 5 additionally enforces delegated-authority lineage, incompatible-authority rules, immutable APPROVE duty recording, and prohibited-duty combinations. Phase 4 Step 6 adds stage satisfaction and finalization.';
+    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, and action-lineage validation. Phase 4 Step 4 enforces self-approval, affected-identity, duplicate-effective-actor, organization-independence, authority-origin, and reciprocal-chain protections. Phase 4 Step 5 additionally enforces delegated-authority lineage, incompatible-authority rules, immutable APPROVE duty recording, and prohibited-duty combinations. Phase 4 Step 6 derives current actions, persists exact stage outcomes, finalizes Approval Requests exactly once, links satisfied stages to Decision Records, and revalidates approval continuity for approval-backed Authorization Leases.';
+
+-- --------------------------------------------------------------------------
+-- Phase 4 Step 6 current stage satisfaction and finalization
+-- --------------------------------------------------------------------------
+
+CREATE UNIQUE INDEX approval_stage_evaluations_one_finalized_stage_idx
+    ON approval.approval_stage_evaluations (
+        approval_request_id,
+        approval_policy_stage_id
+    )
+    WHERE finalized_evaluation;
+
+ALTER TABLE decision.decision_records
+    ADD CONSTRAINT decision_records_approval_request_context_uq
+        UNIQUE (decision_id, approval_request_id);
+
+CREATE TABLE decision.approval_stage_evaluation_links (
+    decision_id uuid NOT NULL,
+    evaluation_id uuid NOT NULL,
+    approval_request_id uuid NOT NULL,
+    approval_stage_evaluation_id uuid NOT NULL,
+    approval_policy_stage_id uuid NOT NULL,
+    linked_at timestamptz NOT NULL DEFAULT statement_timestamp(),
+    PRIMARY KEY (evaluation_id, approval_stage_evaluation_id),
+    CONSTRAINT approval_stage_evaluation_links_evaluation_fk
+        FOREIGN KEY (evaluation_id, decision_id)
+        REFERENCES decision.evaluation_records(evaluation_id, decision_id),
+    CONSTRAINT approval_stage_evaluation_links_decision_request_fk
+        FOREIGN KEY (decision_id, approval_request_id)
+        REFERENCES decision.decision_records(decision_id, approval_request_id),
+    CONSTRAINT approval_stage_evaluation_links_stage_fk
+        FOREIGN KEY (
+            approval_stage_evaluation_id,
+            approval_request_id,
+            approval_policy_stage_id
+        )
+        REFERENCES approval.approval_stage_evaluations (
+            approval_stage_evaluation_id,
+            approval_request_id,
+            approval_policy_stage_id
+        )
+);
+
+COMMENT ON TABLE decision.approval_stage_evaluation_links IS
+    'Exact finalized Approval Request stage-evaluation records cited by an '
+    'APPROVAL or SEPARATION_OF_DUTIES Decision Record evaluation.';
+
+CREATE INDEX approval_stage_evaluation_links_request_idx
+    ON decision.approval_stage_evaluation_links (
+        approval_request_id,
+        approval_policy_stage_id,
+        decision_id
+    );
+
+CREATE FUNCTION approval.approval_action_is_current(
+    p_approval_action_id uuid,
+    p_evaluated_at timestamptz
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SET search_path = pg_catalog, approval
+AS $function$
+    SELECT EXISTS (
+        SELECT 1
+        FROM approval.approval_actions AS action_record
+        JOIN approval.approval_policy_stages AS stage_record
+          ON stage_record.approval_policy_stage_id =
+             action_record.approval_policy_stage_id
+        WHERE action_record.approval_action_id = p_approval_action_id
+          AND p_evaluated_at IS NOT NULL
+          AND action_record.action_at <= p_evaluated_at
+          AND (
+                stage_record.action_validity IS NULL
+                OR p_evaluated_at <
+                   action_record.action_at + stage_record.action_validity
+              )
+          AND NOT EXISTS (
+                SELECT 1
+                FROM approval.approval_actions AS later_action
+                WHERE later_action.prior_approval_action_id =
+                      action_record.approval_action_id
+                  AND later_action.action_type IN (
+                        'WITHDRAW_APPROVAL',
+                        'CORRECT',
+                        'SUPERSEDE'
+                      )
+                  AND later_action.action_at <= p_evaluated_at
+          )
+    );
+$function$;
+
+COMMENT ON FUNCTION approval.approval_action_is_current(uuid, timestamptz) IS
+    'Returns true only when one Approval Action Record existed at the '
+    'captured evaluation time, remained within stage action validity, and '
+    'had not been withdrawn, corrected, or superseded by that time.';
+
+CREATE FUNCTION approval.evaluate_approval_stage(
+    p_approval_request_id uuid,
+    p_approval_policy_stage_id uuid,
+    p_evaluated_at timestamptz DEFAULT statement_timestamp(),
+    p_finalized_evaluation boolean DEFAULT false
+)
+RETURNS TABLE (
+    approval_stage_evaluation_id uuid,
+    result text,
+    reason_code text,
+    required_approvals integer,
+    counted_approvals integer,
+    distinct_effective_actors integer,
+    distinct_organizations integer,
+    blocking_deny_present boolean,
+    evaluated_at timestamptz
+)
+LANGUAGE plpgsql
+SET search_path = pg_catalog, approval, access_control
+AS $function$
+DECLARE
+    v_request approval.approval_requests%ROWTYPE;
+    v_policy approval.approval_policies%ROWTYPE;
+    v_stage approval.approval_policy_stages%ROWTYPE;
+    v_action approval.approval_actions%ROWTYPE;
+    v_identity identity.identities%ROWTYPE;
+    v_session access_control.sessions%ROWTYPE;
+    v_grant access_control.authority_grants%ROWTYPE;
+    v_environment_key text;
+    v_evaluation_id uuid := gen_random_uuid();
+    v_result text;
+    v_reason_code text;
+    v_exclusion_reason text;
+    v_counted integer := 0;
+    v_distinct_actor_count integer := 0;
+    v_distinct_organization_count integer := 0;
+    v_actor_ids uuid[] := ARRAY[]::uuid[];
+    v_organization_ids uuid[] := ARRAY[]::uuid[];
+    v_blocking_deny boolean := false;
+    v_not_evaluated boolean := false;
+BEGIN
+    IF p_approval_request_id IS NULL
+       OR p_approval_policy_stage_id IS NULL
+       OR p_evaluated_at IS NULL
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'APPROVAL_STAGE_EVALUATION_PARAMETERS_REQUIRED';
+    END IF;
+
+    SELECT request_record.*
+      INTO v_request
+      FROM approval.approval_requests AS request_record
+     WHERE request_record.approval_request_id = p_approval_request_id
+     FOR SHARE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'no_data_found',
+                MESSAGE = 'APPROVAL_REQUEST_NOT_FOUND';
+    END IF;
+
+    SELECT policy_record.*
+      INTO STRICT v_policy
+      FROM approval.approval_policies AS policy_record
+     WHERE policy_record.approval_policy_id = v_request.approval_policy_id;
+
+    SELECT stage_record.*
+      INTO v_stage
+      FROM approval.approval_policy_stages AS stage_record
+     WHERE stage_record.approval_policy_stage_id =
+           p_approval_policy_stage_id
+       AND stage_record.approval_policy_id = v_request.approval_policy_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'no_data_found',
+                MESSAGE = 'APPROVAL_STAGE_NOT_FOUND';
+    END IF;
+
+    INSERT INTO approval.approval_stage_evaluations (
+        approval_stage_evaluation_id,
+        approval_request_id,
+        approval_policy_stage_id,
+        evaluated_at,
+        result,
+        reason_code,
+        required_approvals,
+        counted_approvals,
+        distinct_effective_actors,
+        distinct_organizations,
+        blocking_deny_present,
+        finalized_evaluation
+    )
+    VALUES (
+        v_evaluation_id,
+        p_approval_request_id,
+        p_approval_policy_stage_id,
+        p_evaluated_at,
+        'NOT_EVALUATED',
+        'APPROVAL_STAGE_EVALUATION_PENDING',
+        v_stage.minimum_approvals,
+        0,
+        0,
+        0,
+        false,
+        p_finalized_evaluation
+    );
+
+    IF v_request.status <> 'PENDING' THEN
+        v_result := 'NOT_EVALUATED';
+        v_reason_code := 'APPROVAL_REQUEST_NOT_PENDING';
+    ELSIF v_policy.status <> 'ACTIVE'
+       OR v_policy.valid_from > p_evaluated_at
+       OR (
+            v_policy.valid_until IS NOT NULL
+            AND p_evaluated_at >= v_policy.valid_until
+          )
+    THEN
+        v_result := 'NOT_EVALUATED';
+        v_reason_code := 'APPROVAL_POLICY_NOT_ACTIVE';
+    ELSIF v_request.expires_at IS NOT NULL
+       AND p_evaluated_at >= v_request.expires_at
+    THEN
+        v_result := 'UNSATISFIED';
+        v_reason_code := 'APPROVAL_REQUEST_EXPIRED';
+    ELSIF v_stage.required_authority_definition_id IS NULL THEN
+        v_result := 'NOT_EVALUATED';
+        v_reason_code := 'APPROVER_AUTHORITY_REQUIRED';
+    ELSE
+        FOR v_action IN
+            SELECT action_record.*
+              FROM approval.approval_actions AS action_record
+             WHERE action_record.approval_request_id =
+                   p_approval_request_id
+               AND action_record.approval_policy_stage_id =
+                   p_approval_policy_stage_id
+               AND action_record.action_at <= p_evaluated_at
+             ORDER BY
+                   action_record.action_at,
+                   action_record.approval_action_id
+        LOOP
+            v_exclusion_reason := NULL;
+
+            IF NOT approval.approval_action_is_current(
+                v_action.approval_action_id,
+                p_evaluated_at
+            ) THEN
+                v_exclusion_reason := 'APPROVAL_ACTION_NOT_CURRENT';
+
+            ELSIF v_action.action_type = 'DENY' THEN
+                IF v_stage.blocking_deny THEN
+                    v_blocking_deny := true;
+                    v_exclusion_reason := 'BLOCKING_DENY_PRESENT';
+                ELSE
+                    v_exclusion_reason := 'ACTION_TYPE_NOT_COUNTED';
+                END IF;
+
+            ELSIF v_action.action_type <> 'APPROVE' THEN
+                v_exclusion_reason := 'ACTION_TYPE_NOT_COUNTED';
+
+            ELSE
+                SELECT identity_record.*
+                  INTO v_identity
+                  FROM identity.identities AS identity_record
+                 WHERE identity_record.identity_id =
+                       v_action.effective_actor_identity_id;
+
+                IF NOT FOUND
+                   OR v_identity.status <> 'ACTIVE'
+                   OR v_identity.valid_from > p_evaluated_at
+                   OR (
+                        v_identity.valid_until IS NOT NULL
+                        AND p_evaluated_at >= v_identity.valid_until
+                      )
+                THEN
+                    v_exclusion_reason := 'APPROVER_NOT_ELIGIBLE';
+                END IF;
+
+                IF v_exclusion_reason IS NULL THEN
+                    SELECT session_record.*
+                      INTO v_session
+                      FROM access_control.sessions AS session_record
+                     WHERE session_record.session_id =
+                           v_action.acting_session_id;
+
+                    IF NOT FOUND
+                       OR v_session.status <> 'ACTIVE'
+                       OR v_session.identity_id <>
+                          v_action.effective_actor_identity_id
+                       OR v_session.organization_id IS DISTINCT FROM
+                          v_action.acting_organization_id
+                       OR v_session.service_id IS DISTINCT FROM
+                          v_request.service_id
+                       OR v_session.authenticated_at > p_evaluated_at
+                       OR p_evaluated_at >= v_session.expires_at
+                       OR (
+                            v_session.inactivity_timeout IS NOT NULL
+                            AND p_evaluated_at >=
+                                COALESCE(
+                                    v_session.last_activity_at,
+                                    v_session.authenticated_at
+                                ) + v_session.inactivity_timeout
+                          )
+                    THEN
+                        v_exclusion_reason :=
+                            'APPROVER_SESSION_NOT_CURRENT';
+                    ELSE
+                        SELECT provider_record.environment_key
+                          INTO v_environment_key
+                          FROM trust.trust_providers AS provider_record
+                         WHERE provider_record.trust_provider_id =
+                               v_session.trust_provider_id;
+
+                        IF v_environment_key IS NULL
+                           OR NOT access_control.
+                                  session_context_is_locally_usable(
+                                      v_session.identity_id,
+                                      v_session.device_id,
+                                      v_session.trust_provider_id,
+                                      v_session.service_id,
+                                      v_session.organization_id,
+                                      v_environment_key,
+                                      p_evaluated_at
+                                  )
+                        THEN
+                            v_exclusion_reason :=
+                                'APPROVER_SESSION_NOT_CURRENT';
+                        END IF;
+                    END IF;
+                END IF;
+
+                IF v_exclusion_reason IS NULL THEN
+                    SELECT grant_record.*
+                      INTO v_grant
+                      FROM access_control.authority_grants AS grant_record
+                     WHERE grant_record.authority_grant_id =
+                           v_action.authority_grant_id;
+
+                    IF NOT FOUND
+                       OR v_grant.identity_id <>
+                          v_action.effective_actor_identity_id
+                       OR v_grant.authority_definition_id <>
+                          v_stage.required_authority_definition_id
+                       OR NOT approval.
+                              authority_grant_is_current_for_approval(
+                                  v_action.authority_grant_id,
+                                  p_approval_request_id,
+                                  v_action.acting_organization_id,
+                                  p_evaluated_at
+                              )
+                    THEN
+                        v_exclusion_reason :=
+                            'APPROVER_AUTHORITY_NOT_CURRENT';
+                    END IF;
+                END IF;
+
+                IF v_exclusion_reason IS NULL THEN
+                    BEGIN
+                        PERFORM approval.enforce_approval_action_conflicts(
+                            p_approval_request_id,
+                            p_approval_policy_stage_id,
+                            v_action.effective_actor_identity_id,
+                            v_action.acting_organization_id,
+                            v_action.authority_grant_id,
+                            p_evaluated_at
+                        );
+                    EXCEPTION
+                        WHEN invalid_authorization_specification THEN
+                            v_exclusion_reason := SQLERRM;
+                            IF SQLERRM = 'DUTY_SCOPE_NOT_EVALUATED' THEN
+                                v_not_evaluated := true;
+                            END IF;
+                    END;
+                END IF;
+
+                IF v_exclusion_reason IS NULL
+                   AND v_stage.independent_identity_required
+                   AND v_action.effective_actor_identity_id =
+                       ANY(v_actor_ids)
+                THEN
+                    v_exclusion_reason := 'DUPLICATE_EFFECTIVE_ACTOR';
+                END IF;
+
+                IF v_exclusion_reason IS NULL
+                   AND v_stage.independent_organization_required
+                   AND (
+                        v_action.acting_organization_id IS NULL
+                        OR v_action.acting_organization_id =
+                           ANY(v_organization_ids)
+                       )
+                THEN
+                    v_exclusion_reason :=
+                        'INDEPENDENT_ORGANIZATION_REQUIRED';
+                END IF;
+
+                IF v_exclusion_reason IS NULL THEN
+                    v_counted := v_counted + 1;
+
+                    IF NOT (
+                        v_action.effective_actor_identity_id =
+                        ANY(v_actor_ids)
+                    ) THEN
+                        v_actor_ids := array_append(
+                            v_actor_ids,
+                            v_action.effective_actor_identity_id
+                        );
+                    END IF;
+
+                    IF v_action.acting_organization_id IS NOT NULL
+                       AND NOT (
+                            v_action.acting_organization_id =
+                            ANY(v_organization_ids)
+                       )
+                    THEN
+                        v_organization_ids := array_append(
+                            v_organization_ids,
+                            v_action.acting_organization_id
+                        );
+                    END IF;
+                END IF;
+            END IF;
+
+            INSERT INTO approval.approval_stage_evaluation_actions (
+                approval_stage_evaluation_id,
+                approval_action_id,
+                authority_grant_id,
+                counted,
+                exclusion_reason_code
+            )
+            VALUES (
+                v_evaluation_id,
+                v_action.approval_action_id,
+                v_action.authority_grant_id,
+                v_exclusion_reason IS NULL,
+                v_exclusion_reason
+            );
+        END LOOP;
+
+        v_distinct_actor_count := cardinality(v_actor_ids);
+        v_distinct_organization_count :=
+            cardinality(v_organization_ids);
+
+        IF v_not_evaluated THEN
+            v_result := 'NOT_EVALUATED';
+            v_reason_code := 'DUTY_SCOPE_NOT_EVALUATED';
+        ELSIF v_blocking_deny THEN
+            v_result := 'DENIED';
+            v_reason_code := 'BLOCKING_DENY_PRESENT';
+        ELSIF v_counted >= v_stage.minimum_approvals
+          AND (
+                NOT v_stage.independent_identity_required
+                OR v_distinct_actor_count >= v_stage.minimum_approvals
+              )
+          AND (
+                NOT v_stage.independent_organization_required
+                OR v_distinct_organization_count >=
+                   v_stage.minimum_approvals
+              )
+        THEN
+            v_result := 'SATISFIED';
+            v_reason_code := 'APPROVAL_STAGE_SATISFIED';
+        ELSE
+            v_result := 'UNSATISFIED';
+            v_reason_code := 'APPROVAL_STAGE_UNSATISFIED';
+        END IF;
+    END IF;
+
+    UPDATE approval.approval_stage_evaluations
+       SET result = v_result,
+           reason_code = v_reason_code,
+           counted_approvals = v_counted,
+           distinct_effective_actors = v_distinct_actor_count,
+           distinct_organizations = v_distinct_organization_count,
+           blocking_deny_present = v_blocking_deny
+     WHERE approval_stage_evaluation_id = v_evaluation_id;
+
+    approval_stage_evaluation_id := v_evaluation_id;
+    result := v_result;
+    reason_code := v_reason_code;
+    required_approvals := v_stage.minimum_approvals;
+    counted_approvals := v_counted;
+    distinct_effective_actors := v_distinct_actor_count;
+    distinct_organizations := v_distinct_organization_count;
+    blocking_deny_present := v_blocking_deny;
+    evaluated_at := p_evaluated_at;
+    RETURN NEXT;
+END;
+$function$;
+
+COMMENT ON FUNCTION approval.evaluate_approval_stage(
+    uuid,
+    uuid,
+    timestamptz,
+    boolean
+) IS
+    'Persist one approval-stage outcome using one authoritative time, the '
+    'current action lineage, current actor/session/Authority Grant state, '
+    'independence, incompatible-authority, prohibited-duty, and blocking '
+    'denial evaluation.';
+
+CREATE FUNCTION approval.finalize_approval_request(
+    p_approval_request_id uuid,
+    p_expected_final_status text,
+    p_finalized_by_identity_id uuid
+)
+RETURNS TABLE (
+    final_status text,
+    final_reason_code text,
+    finalized_at timestamptz
+)
+LANGUAGE plpgsql
+SET search_path = pg_catalog, approval
+AS $function$
+DECLARE
+    v_now timestamptz := statement_timestamp();
+    v_request approval.approval_requests%ROWTYPE;
+    v_policy approval.approval_policies%ROWTYPE;
+    v_finalizer identity.identities%ROWTYPE;
+    v_stage approval.approval_policy_stages%ROWTYPE;
+    v_evaluation record;
+    v_stage_count integer := 0;
+    v_unsatisfied boolean := false;
+    v_denied boolean := false;
+    v_not_evaluated boolean := false;
+    v_cancelled boolean := false;
+    v_escalated boolean := false;
+    v_computed_status text;
+    v_computed_reason text;
+BEGIN
+    IF p_approval_request_id IS NULL
+       OR p_expected_final_status IS NULL
+       OR p_finalized_by_identity_id IS NULL
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'APPROVAL_FINALIZATION_PARAMETERS_REQUIRED';
+    END IF;
+
+    IF p_expected_final_status NOT IN (
+        'APPROVED',
+        'DENIED',
+        'CANCELLED',
+        'EXPIRED',
+        'ESCALATED'
+    ) THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_parameter_value',
+                MESSAGE = 'APPROVAL_FINAL_STATUS_INVALID';
+    END IF;
+
+    SELECT request_record.*
+      INTO v_request
+      FROM approval.approval_requests AS request_record
+     WHERE request_record.approval_request_id = p_approval_request_id
+     FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'no_data_found',
+                MESSAGE = 'APPROVAL_REQUEST_NOT_FOUND';
+    END IF;
+
+    IF v_request.finalized_at IS NOT NULL
+       OR v_request.status <> 'PENDING'
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'object_not_in_prerequisite_state',
+                MESSAGE = 'APPROVAL_REQUEST_FINALIZED';
+    END IF;
+
+    SELECT policy_record.*
+      INTO STRICT v_policy
+      FROM approval.approval_policies AS policy_record
+     WHERE policy_record.approval_policy_id = v_request.approval_policy_id;
+
+    SELECT identity_record.*
+      INTO v_finalizer
+      FROM identity.identities AS identity_record
+     WHERE identity_record.identity_id = p_finalized_by_identity_id;
+
+    IF NOT FOUND
+       OR v_finalizer.status <> 'ACTIVE'
+       OR v_finalizer.valid_from > v_now
+       OR (
+            v_finalizer.valid_until IS NOT NULL
+            AND v_now >= v_finalizer.valid_until
+          )
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'APPROVAL_FINALIZER_NOT_ELIGIBLE';
+    END IF;
+
+    IF v_policy.status <> 'ACTIVE'
+       OR v_policy.valid_from > v_now
+       OR (
+            v_policy.valid_until IS NOT NULL
+            AND v_now >= v_policy.valid_until
+          )
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'APPROVAL_POLICY_NOT_ACTIVE';
+    END IF;
+
+    SELECT EXISTS (
+        SELECT 1
+        FROM approval.approval_actions AS action_record
+        WHERE action_record.approval_request_id = p_approval_request_id
+          AND action_record.action_type = 'CANCEL_REQUEST'
+          AND approval.approval_action_is_current(
+                action_record.approval_action_id,
+                v_now
+              )
+    )
+    INTO v_cancelled;
+
+    SELECT EXISTS (
+        SELECT 1
+        FROM approval.approval_actions AS action_record
+        WHERE action_record.approval_request_id = p_approval_request_id
+          AND action_record.action_type = 'ESCALATE'
+          AND approval.approval_action_is_current(
+                action_record.approval_action_id,
+                v_now
+              )
+    )
+    INTO v_escalated;
+
+    IF v_cancelled AND v_escalated THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'APPROVAL_TERMINAL_ACTION_AMBIGUOUS';
+    END IF;
+
+    FOR v_stage IN
+        SELECT stage_record.*
+        FROM approval.approval_policy_stages AS stage_record
+        WHERE stage_record.approval_policy_id =
+              v_request.approval_policy_id
+        ORDER BY stage_record.stage_order
+    LOOP
+        v_stage_count := v_stage_count + 1;
+
+        SELECT *
+          INTO STRICT v_evaluation
+          FROM approval.evaluate_approval_stage(
+              p_approval_request_id,
+              v_stage.approval_policy_stage_id,
+              v_now,
+              true
+          );
+
+        IF v_evaluation.result = 'DENIED' THEN
+            v_denied := true;
+        ELSIF v_evaluation.result = 'NOT_EVALUATED' THEN
+            v_not_evaluated := true;
+        ELSIF v_evaluation.result <> 'SATISFIED' THEN
+            v_unsatisfied := true;
+        END IF;
+    END LOOP;
+
+    IF v_stage_count = 0 THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'APPROVAL_STAGE_NOT_FOUND';
+    END IF;
+
+    IF v_request.expires_at IS NOT NULL
+       AND v_now >= v_request.expires_at
+    THEN
+        v_computed_status := 'EXPIRED';
+        v_computed_reason := 'APPROVAL_REQUEST_EXPIRED';
+    ELSIF v_cancelled THEN
+        v_computed_status := 'CANCELLED';
+        v_computed_reason := 'APPROVAL_REQUEST_CANCELLED';
+    ELSIF v_escalated THEN
+        v_computed_status := 'ESCALATED';
+        v_computed_reason := 'APPROVAL_REQUEST_ESCALATED';
+    ELSIF v_denied THEN
+        v_computed_status := 'DENIED';
+        v_computed_reason := 'APPROVAL_REQUEST_DENIED';
+    ELSIF v_not_evaluated THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'object_not_in_prerequisite_state',
+                MESSAGE = 'APPROVAL_STAGE_NOT_EVALUATED';
+    ELSIF v_unsatisfied THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'object_not_in_prerequisite_state',
+                MESSAGE = 'APPROVAL_STAGE_UNSATISFIED';
+    ELSE
+        v_computed_status := 'APPROVED';
+        v_computed_reason := 'APPROVAL_REQUEST_APPROVED';
+    END IF;
+
+    IF p_expected_final_status <> v_computed_status THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'check_violation',
+                MESSAGE = 'APPROVAL_FINAL_RESULT_MISMATCH';
+    END IF;
+
+    UPDATE approval.approval_requests
+       SET status = v_computed_status,
+           finalized_at = v_now,
+           finalized_by_identity_id = p_finalized_by_identity_id,
+           final_reason_code = v_computed_reason
+     WHERE approval_request_id = p_approval_request_id
+       AND status = 'PENDING'
+       AND finalized_at IS NULL;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'object_not_in_prerequisite_state',
+                MESSAGE = 'APPROVAL_REQUEST_FINALIZED';
+    END IF;
+
+    final_status := v_computed_status;
+    final_reason_code := v_computed_reason;
+    finalized_at := v_now;
+    RETURN NEXT;
+END;
+$function$;
+
+COMMENT ON FUNCTION approval.finalize_approval_request(uuid, text, uuid) IS
+    'Lock and finalize one PENDING Approval Request exactly once after '
+    'persisting every required stage evaluation at one authoritative time. '
+    'The caller may state an expected terminal result but cannot select a '
+    'result that differs from PostgreSQL computed state.';
+
+CREATE FUNCTION approval.approval_request_is_current_for_authorization(
+    p_approval_request_id uuid,
+    p_evaluated_at timestamptz DEFAULT statement_timestamp()
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SET search_path = pg_catalog, approval, access_control
+AS $function$
+    SELECT EXISTS (
+        SELECT 1
+        FROM approval.approval_requests AS request_record
+        JOIN approval.approval_policies AS policy_record
+          ON policy_record.approval_policy_id =
+             request_record.approval_policy_id
+        WHERE request_record.approval_request_id =
+              p_approval_request_id
+          AND p_evaluated_at IS NOT NULL
+          AND request_record.status = 'APPROVED'
+          AND request_record.finalized_at IS NOT NULL
+          AND request_record.finalized_at <= p_evaluated_at
+          AND request_record.final_reason_code =
+              'APPROVAL_REQUEST_APPROVED'
+          AND (
+                request_record.expires_at IS NULL
+                OR p_evaluated_at < request_record.expires_at
+              )
+          AND policy_record.status = 'ACTIVE'
+          AND policy_record.valid_from <= p_evaluated_at
+          AND (
+                policy_record.valid_until IS NULL
+                OR p_evaluated_at < policy_record.valid_until
+              )
+          AND NOT EXISTS (
+                SELECT 1
+                FROM approval.approval_policy_stages AS stage_record
+                WHERE stage_record.approval_policy_id =
+                      request_record.approval_policy_id
+                  AND NOT EXISTS (
+                        SELECT 1
+                        FROM approval.approval_stage_evaluations AS evaluation
+                        WHERE evaluation.approval_request_id =
+                              request_record.approval_request_id
+                          AND evaluation.approval_policy_stage_id =
+                              stage_record.approval_policy_stage_id
+                          AND evaluation.finalized_evaluation
+                          AND evaluation.result = 'SATISFIED'
+                          AND evaluation.counted_approvals >=
+                              stage_record.minimum_approvals
+                  )
+          )
+          AND NOT EXISTS (
+                SELECT 1
+                FROM approval.approval_stage_evaluations AS evaluation
+                WHERE evaluation.approval_request_id =
+                      request_record.approval_request_id
+                  AND evaluation.finalized_evaluation
+                  AND evaluation.result <> 'SATISFIED'
+          )
+          AND NOT EXISTS (
+                SELECT 1
+                FROM approval.approval_stage_evaluations AS evaluation
+                JOIN approval.approval_stage_evaluation_actions AS link
+                  ON link.approval_stage_evaluation_id =
+                     evaluation.approval_stage_evaluation_id
+                 AND link.counted
+                JOIN approval.approval_actions AS action_record
+                  ON action_record.approval_action_id =
+                     link.approval_action_id
+                JOIN approval.approval_policy_stages AS stage_record
+                  ON stage_record.approval_policy_stage_id =
+                     evaluation.approval_policy_stage_id
+                JOIN identity.identities AS identity_record
+                  ON identity_record.identity_id =
+                     action_record.effective_actor_identity_id
+                WHERE evaluation.approval_request_id =
+                      request_record.approval_request_id
+                  AND evaluation.finalized_evaluation
+                  AND (
+                        action_record.action_type <> 'APPROVE'
+                        OR NOT approval.approval_action_is_current(
+                            action_record.approval_action_id,
+                            p_evaluated_at
+                        )
+                        OR identity_record.status <> 'ACTIVE'
+                        OR identity_record.valid_from > p_evaluated_at
+                        OR (
+                            identity_record.valid_until IS NOT NULL
+                            AND p_evaluated_at >=
+                                identity_record.valid_until
+                           )
+                        OR link.authority_grant_id IS NULL
+                        OR NOT approval.
+                               authority_grant_is_current_for_approval(
+                                   link.authority_grant_id,
+                                   request_record.approval_request_id,
+                                   action_record.acting_organization_id,
+                                   p_evaluated_at
+                               )
+                        OR NOT EXISTS (
+                            SELECT 1
+                            FROM access_control.authority_grants AS grant_record
+                            WHERE grant_record.authority_grant_id =
+                                  link.authority_grant_id
+                              AND grant_record.identity_id =
+                                  action_record.effective_actor_identity_id
+                              AND grant_record.authority_definition_id =
+                                  stage_record.
+                                  required_authority_definition_id
+                        )
+                      )
+          )
+    );
+$function$;
+
+COMMENT ON FUNCTION approval.approval_request_is_current_for_authorization(
+    uuid,
+    timestamptz
+) IS
+    'Revalidate one finalized APPROVED request for later authorization use '
+    'without rewriting its historical result. Every required finalized stage, '
+    'counted Approval Action Record, effective actor, and exact Authority '
+    'Grant must remain current at the supplied authoritative time.';
+
+CREATE FUNCTION decision.link_approval_stage_evaluation(
+    p_decision_id uuid,
+    p_evaluation_id uuid,
+    p_approval_stage_evaluation_id uuid
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, decision, approval
+AS $function$
+DECLARE
+    v_decision decision.decision_records%ROWTYPE;
+    v_evaluation decision.evaluation_records%ROWTYPE;
+    v_stage_evaluation approval.approval_stage_evaluations%ROWTYPE;
+    v_request approval.approval_requests%ROWTYPE;
+BEGIN
+    SELECT decision_record.*
+      INTO v_decision
+      FROM decision.decision_records AS decision_record
+     WHERE decision_record.decision_id = p_decision_id
+     FOR SHARE;
+
+    IF NOT FOUND
+       OR v_decision.record_status <> 'DRAFT'
+       OR v_decision.approval_request_id IS NULL
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'DECISION_APPROVAL_CONTEXT_INVALID';
+    END IF;
+
+    SELECT evaluation_record.*
+      INTO v_evaluation
+      FROM decision.evaluation_records AS evaluation_record
+     WHERE evaluation_record.evaluation_id = p_evaluation_id
+       AND evaluation_record.decision_id = p_decision_id;
+
+    IF NOT FOUND
+       OR v_evaluation.evaluation_key NOT IN (
+            'APPROVAL',
+            'SEPARATION_OF_DUTIES'
+          )
+       OR v_evaluation.result <> 'PASS'
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'DECISION_APPROVAL_EVALUATION_INVALID';
+    END IF;
+
+    SELECT stage_evaluation.*
+      INTO v_stage_evaluation
+      FROM approval.approval_stage_evaluations AS stage_evaluation
+     WHERE stage_evaluation.approval_stage_evaluation_id =
+           p_approval_stage_evaluation_id;
+
+    IF NOT FOUND
+       OR NOT v_stage_evaluation.finalized_evaluation
+       OR v_stage_evaluation.result <> 'SATISFIED'
+       OR v_stage_evaluation.approval_request_id <>
+          v_decision.approval_request_id
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'DECISION_APPROVAL_STAGE_INVALID';
+    END IF;
+
+    SELECT request_record.*
+      INTO STRICT v_request
+      FROM approval.approval_requests AS request_record
+     WHERE request_record.approval_request_id =
+           v_stage_evaluation.approval_request_id;
+
+    IF v_request.status <> 'APPROVED'
+       OR v_decision.requester_identity_id IS DISTINCT FROM
+          v_request.requester_identity_id
+       OR v_decision.requester_organization_id IS DISTINCT FROM
+          v_request.requester_organization_id
+       OR v_decision.service_id IS DISTINCT FROM v_request.service_id
+       OR v_decision.purpose_definition_id IS DISTINCT FROM
+          v_request.purpose_definition_id
+       OR v_decision.operation_definition_id IS DISTINCT FROM
+          v_request.operation_definition_id
+       OR v_decision.operation_key <> v_request.operation_key
+       OR v_decision.protected_target_type <>
+          v_request.protected_target_type
+       OR v_decision.protected_target_reference <>
+          v_request.protected_target_reference
+       OR v_decision.governed_scope_id IS DISTINCT FROM
+          v_request.governed_scope_id
+       OR v_decision.classification_key IS DISTINCT FROM
+          v_request.classification_key
+       OR v_decision.correlation_id <> v_request.correlation_id
+       OR NOT approval.approval_request_is_current_for_authorization(
+            v_request.approval_request_id,
+            v_decision.evaluated_at
+          )
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'DECISION_APPROVAL_CONTEXT_MISMATCH';
+    END IF;
+
+    INSERT INTO decision.approval_stage_evaluation_links (
+        decision_id,
+        evaluation_id,
+        approval_request_id,
+        approval_stage_evaluation_id,
+        approval_policy_stage_id,
+        linked_at
+    )
+    VALUES (
+        p_decision_id,
+        p_evaluation_id,
+        v_stage_evaluation.approval_request_id,
+        p_approval_stage_evaluation_id,
+        v_stage_evaluation.approval_policy_stage_id,
+        statement_timestamp()
+    );
+
+    RETURN true;
+END;
+$function$;
+
+COMMENT ON FUNCTION decision.link_approval_stage_evaluation(
+    uuid,
+    uuid,
+    uuid
+) IS
+    'Bind one PASS APPROVAL or SEPARATION_OF_DUTIES Decision Record '
+    'evaluation to the exact finalized SATISFIED approval-stage evaluation '
+    'whose request and protected context match the draft Decision Record.';
+
+CREATE FUNCTION decision.prevent_approval_stage_evaluation_link_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, decision
+AS $function$
+BEGIN
+    RAISE EXCEPTION
+        USING
+            ERRCODE = 'object_not_in_prerequisite_state',
+            MESSAGE = 'DECISION_APPROVAL_STAGE_LINK_IMMUTABLE';
+END;
+$function$;
+
+CREATE TRIGGER approval_stage_evaluation_links_append_only_guard
+    BEFORE UPDATE OR DELETE
+    ON decision.approval_stage_evaluation_links
+    FOR EACH ROW
+    EXECUTE FUNCTION
+        decision.prevent_approval_stage_evaluation_link_mutation();
+
+ALTER TABLE access_control.authorization_leases
+    ADD COLUMN approval_continuity_required boolean
+        NOT NULL DEFAULT false;
+
+COMMENT ON COLUMN
+    access_control.authorization_leases.approval_continuity_required IS
+    'True only when the issuing Decision Record cites finalized approval-stage '
+    'evaluations. Such a lease must revalidate approval continuity at issuance '
+    'and before every successful-use increment.';
+
+CREATE FUNCTION approval.enforce_authorization_lease_approval_continuity()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, approval, decision
+AS $function$
+DECLARE
+    v_linked_approval boolean := false;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        SELECT EXISTS (
+            SELECT 1
+            FROM decision.approval_stage_evaluation_links AS link
+            WHERE link.decision_id = NEW.issuing_decision_id
+        )
+        INTO v_linked_approval;
+
+        NEW.approval_continuity_required := v_linked_approval;
+
+        IF v_linked_approval
+           AND (
+                NEW.approval_request_id IS NULL
+                OR NOT approval.
+                       approval_request_is_current_for_authorization(
+                           NEW.approval_request_id,
+                           statement_timestamp()
+                       )
+               )
+        THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'APPROVAL_CONTINUITY_REQUIRED';
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
+    IF NEW.approval_continuity_required IS DISTINCT FROM
+       OLD.approval_continuity_required
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'object_not_in_prerequisite_state',
+                MESSAGE = 'APPROVAL_CONTINUITY_BINDING_IMMUTABLE';
+    END IF;
+
+    IF OLD.approval_continuity_required
+       AND NEW.successful_use_count > OLD.successful_use_count
+       AND (
+            NEW.approval_request_id IS NULL
+            OR NOT approval.approval_request_is_current_for_authorization(
+                NEW.approval_request_id,
+                statement_timestamp()
+            )
+           )
+    THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'APPROVAL_CONTINUITY_REQUIRED';
+    END IF;
+
+    RETURN NEW;
+END;
+$function$;
+
+COMMENT ON FUNCTION
+    approval.enforce_authorization_lease_approval_continuity() IS
+    'Derive immutable approval-continuity binding from exact Decision Record '
+    'stage-evaluation links, reject issuance when linked approval is not '
+    'current, and reject each later successful-use increment after continuity '
+    'is lost. Approval-unrelated legacy decisions remain unaffected.';
+
+CREATE TRIGGER authorization_lease_approval_continuity_guard
+    BEFORE INSERT OR UPDATE OF
+        successful_use_count,
+        approval_continuity_required
+    ON access_control.authorization_leases
+    FOR EACH ROW
+    EXECUTE FUNCTION
+        approval.enforce_authorization_lease_approval_continuity();
+
+REVOKE ALL ON FUNCTION
+    approval.approval_action_is_current(uuid, timestamptz)
+    FROM PUBLIC;
+
+REVOKE ALL ON FUNCTION
+    approval.evaluate_approval_stage(uuid, uuid, timestamptz, boolean)
+    FROM PUBLIC;
+
+REVOKE ALL ON FUNCTION
+    approval.finalize_approval_request(uuid, text, uuid)
+    FROM PUBLIC;
+
+REVOKE ALL ON FUNCTION
+    approval.approval_request_is_current_for_authorization(
+        uuid,
+        timestamptz
+    )
+    FROM PUBLIC;
+
+REVOKE ALL ON FUNCTION
+    decision.link_approval_stage_evaluation(uuid, uuid, uuid)
+    FROM PUBLIC;
+
+REVOKE ALL ON FUNCTION
+    decision.prevent_approval_stage_evaluation_link_mutation()
+    FROM PUBLIC;
+
+REVOKE ALL ON FUNCTION
+    approval.enforce_authorization_lease_approval_continuity()
+    FROM PUBLIC;
+
+REVOKE ALL ON TABLE
+    decision.approval_stage_evaluation_links
+    FROM PUBLIC;
 
 REVOKE ALL ON FUNCTION
     approval.prevent_approval_action_record_mutation()
@@ -1814,7 +2961,7 @@ SELECT foundation_meta.register_migration(
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
     p_notes =>
-        'Added Phase 4 structural context, controlled Approval Action recording, exact actor/session/organization/Authority Grant validation, typed action-lineage rules, append-only mutation guards, Step 4 independence enforcement, and Step 5 explicit delegation lineage, JOINT_EXERCISE, CONCURRENT_HOLDING, CHAIN_PARTICIPATION, immutable APPROVE duty recording, and approval-side prohibited duty-combination enforcement. Stage satisfaction and finalization remain Phase 4 Step 6.'
+        'Added Phase 4 structural context, controlled Approval Action recording, exact actor/session/organization/Authority Grant validation, typed action-lineage rules, append-only mutation guards, Step 4 independence enforcement, Step 5 delegation and incompatible-authority enforcement, and Step 6 current-action derivation, persisted stage satisfaction, finalization-once Approval Requests, exact Decision Record stage links, and later-use approval continuity for approval-backed leases. Independent-connection finalization races remain Phase 4 Step 7.'
 );
 
 COMMIT;

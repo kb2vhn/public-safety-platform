@@ -43,3 +43,10 @@ SET LOCAL idle_in_transaction_session_timeout = '1min';
 It is a static repository-policy check and contributes no SQL PASS rows. The
 active Phase 4 Step 5 gate invokes it automatically before database execution;
 it remains independently runnable for focused migration review.
+
+## Phase 4 Step 6
+
+Use `tools/validation/phase-gates/validate_phase4_step6.sh` for the active
+stage-satisfaction and Approval Request finalization candidate. The gate
+preserves the Foundation migration timeout contract and runs the complete
+correctness and resource-observation workflow unless `--static-only` is used.
