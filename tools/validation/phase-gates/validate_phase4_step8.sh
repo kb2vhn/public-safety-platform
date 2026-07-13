@@ -552,26 +552,125 @@ else
         check_contains "$summary_file" \
             'Runner exit status: 0' \
             'Correctness runner exit status is zero'
-        check_contains "$summary_file" \
-            'Manifest migrations: 34' \
+        # STEP8_SUMMARY_TABLE_PARSER_V1
+        summary_metrics="$(
+            python3 - "$summary_file" <<'PY_SUMMARY'
+from pathlib import Path
+import re
+import sys
+
+text = Path(sys.argv[1]).read_text(encoding="utf-8")
+lines = text.splitlines()
+
+status_counts = {
+    "PASS": 0,
+    "FAIL": 0,
+    "WARN": 0,
+}
+
+saw_result_totals = False
+in_result_totals = False
+
+manifest_migrations = "MISSING"
+registered_migrations = "MISSING"
+in_migration_totals = False
+
+status_row = re.compile(
+    r"^\|\s*(PASS|FAIL|WARN)\s*\|\s*(\d+)\s*\|$"
+)
+migration_row = re.compile(
+    r"^\|\s*(\d+)\s*\|\s*(\d+)\s*\|$"
+)
+
+for line in lines:
+    stripped = line.strip()
+
+    if stripped == "Result totals":
+        saw_result_totals = True
+        in_result_totals = True
+        continue
+
+    if stripped == "Failed assertions":
+        in_result_totals = False
+        continue
+
+    if stripped == "Migration totals":
+        in_migration_totals = True
+        continue
+
+    if in_result_totals:
+        match = status_row.match(line)
+        if match:
+            status_counts[match.group(1)] = int(match.group(2))
+
+    if in_migration_totals:
+        match = migration_row.match(line)
+        if match:
+            manifest_migrations = match.group(1)
+            registered_migrations = match.group(2)
+            in_migration_totals = False
+
+if not saw_result_totals:
+    status_counts = {
+        "PASS": "MISSING",
+        "FAIL": "MISSING",
+        "WARN": "MISSING",
+    }
+
+print(
+    "|".join(
+        str(value)
+        for value in (
+            manifest_migrations,
+            registered_migrations,
+            status_counts["PASS"],
+            status_counts["FAIL"],
+            status_counts["WARN"],
+        )
+    )
+)
+PY_SUMMARY
+        )"
+
+        IFS='|' read -r \
+            summary_manifest_migrations \
+            summary_registered_migrations \
+            summary_pass_count \
+            summary_fail_count \
+            summary_warn_count \
+            <<<"$summary_metrics"
+
+        check_equal \
+            "$summary_manifest_migrations" \
+            '34' \
             'Correctness summary has 34 manifest migrations'
-        check_contains "$summary_file" \
-            'Registered migrations: 34' \
+
+        check_equal \
+            "$summary_registered_migrations" \
+            '34' \
             'Correctness summary has 34 registered migrations'
+
         check_contains "$summary_file" \
             'Sequential test files: 21' \
             'Correctness summary has 21 sequential tests'
+
         check_contains "$summary_file" \
             'Concurrency test files: 16' \
             'Correctness summary has 16 concurrency tests'
-        check_regex "$summary_file" \
-            '\|[[:space:]]*PASS[[:space:]]*\|[[:space:]]*734[[:space:]]*\|' \
+
+        check_equal \
+            "$summary_pass_count" \
+            '734' \
             'Correctness summary has 734 PASS'
-        check_regex "$summary_file" \
-            '\|[[:space:]]*FAIL[[:space:]]*\|[[:space:]]*0[[:space:]]*\|' \
+
+        check_equal \
+            "$summary_fail_count" \
+            '0' \
             'Correctness summary has 0 FAIL'
-        check_regex "$summary_file" \
-            '\|[[:space:]]*WARN[[:space:]]*\|[[:space:]]*3[[:space:]]*\|' \
+
+        check_equal \
+            "$summary_warn_count" \
+            '3' \
             'Correctness summary has 3 WARN'
     fi
 
