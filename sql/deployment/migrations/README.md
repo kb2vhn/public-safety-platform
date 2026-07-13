@@ -25,3 +25,12 @@ security boundaries.
   - leaves passwords unprovisioned;
   - leaves ownership and object privileges unchanged;
   - records exact SHA-256 deployment migration metadata.
+
+## Phase 5 Step 3
+
+`910_database_schema_and_object_ownership.sql` transfers the active database
+and protected objects to approved non-login owners, removes existing `PUBLIC`
+database and protected-object access, establishes creator-specific default
+privileges, and records the PostgreSQL extension catalog-owner limitation.
+
+Runtime object grants remain deferred to migration `920` and Phase 5 Step 4.

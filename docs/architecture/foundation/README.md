@@ -360,7 +360,7 @@ The annotated tag identifies the exact accepted SQL and executable test tree.
 The formal acceptance record is an administrative documentation change that
 must descend from the tag without changing the accepted implementation.
 
-## Phase 5 Step 2 Implementation
+## Accepted Phase 5 Step 2 Implementation
 
 Phase 5 Step 2 implements the separate deployment tree, deployment migration
 registry, canonical PostgreSQL role shells, and bounded capability membership
@@ -369,3 +369,13 @@ topology.
 It does not transfer object ownership or grant protected object privileges.
 
 - [Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology](phase-5-step-2-deployment-role-topology.md)
+
+## Active Phase 5 Step 3
+
+Step 3 transfers the database and protected objects to approved `NOLOGIN`
+owner roles, revokes existing `PUBLIC` database and protected-object access,
+and establishes creator-specific default privileges.
+
+Runtime service grants remain deferred to Phase 5 Step 4.
+
+- [Phase 5 Step 3 — Ownership and Creator-Specific Default Privileges](phase-5-step-3-ownership-and-default-privileges.md)

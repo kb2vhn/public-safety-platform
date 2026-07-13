@@ -1,1 +1,2 @@
 migrations/900_postgresql_role_topology_and_membership.sql
+migrations/910_database_schema_and_object_ownership.sql

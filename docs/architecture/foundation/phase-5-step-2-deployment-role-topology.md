@@ -1,6 +1,6 @@
 # Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology
 
-> **Status:** Candidate implementation.
+> **Status:** Accepted implementation.
 >
 > **Predecessor:** Phase 5 Step 1 production database role, ownership, and
 > runtime-privilege contract.

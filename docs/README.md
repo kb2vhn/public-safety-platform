@@ -121,10 +121,18 @@ Active gate:
 ./tools/validation/phase-gates/validate_phase5_step1.sh
 ```
 
-## Active Phase 5 Step 2
+## Accepted Phase 5 Step 2
 
 Phase 5 Step 2 implements the separate deployment tree and canonical
 PostgreSQL role topology while preserving the accepted Phase 4 `sql/schema`
 and executable test tree.
 
 - [Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology](architecture/foundation/phase-5-step-2-deployment-role-topology.md)
+
+## Active Phase 5 Step 3
+
+Phase 5 Step 3 transfers protected PostgreSQL ownership to approved non-login
+owners and establishes creator-specific default privileges without granting
+runtime service access.
+
+- [Phase 5 Step 3 — Ownership and Creator-Specific Default Privileges](architecture/foundation/phase-5-step-3-ownership-and-default-privileges.md)

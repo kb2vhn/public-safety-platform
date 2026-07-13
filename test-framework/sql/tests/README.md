@@ -156,3 +156,13 @@ Run:
 The test creates and destroys an isolated PostgreSQL cluster, applies all 34
 Foundation migrations, applies deployment migration 900 twice, and proves
 role attributes, credential state, bounded memberships, and denial behavior.
+
+## Phase 5 Step 3 Deployment Validation
+
+The deployment-layer Step 3 test uses a disposable PostgreSQL cluster to prove
+database, schema, relation, routine, and standalone-type ownership; absence of
+login-capable protected owners; exact deployment-migration registration; and
+creator-specific default privileges.
+
+The accepted Foundation regression remains 34 migrations, 21 sequential test
+files, 16 concurrency test files, 734 PASS, 0 FAIL, and 3 understood WARN.

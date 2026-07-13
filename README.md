@@ -925,7 +925,7 @@ organizations can rely on it without surrendering security, explainability,
 historical integrity, operational control, or the ability to replace external
 systems.
 
-### Active Phase 5 Step 2 — Deployment Role Topology
+### Accepted Phase 5 Step 2 — Deployment Role Topology
 
 Phase 5 Step 1 is accepted at 77 gate PASS checks and zero failures.
 
@@ -951,4 +951,31 @@ Active gate:
 
 ```bash
 ./tools/validation/phase-gates/validate_phase5_step2.sh
+```
+
+### Active Phase 5 Step 3 — Ownership and Default Privileges
+
+Phase 5 Step 2 is accepted. Step 3 transfers the database and protected
+objects away from the login-capable bootstrap identity and into the approved
+`NOLOGIN` ownership roles.
+
+Step 3 assigns:
+
+- the database and `deployment_meta` to `issp_database_owner`;
+- Platform Foundation schemas and objects to `issp_foundation_owner`;
+- the `extensions` schema and extension member objects to
+  `issp_extension_owner`.
+
+It revokes `PUBLIC` database and protected-object access and establishes
+creator-specific default privileges. Runtime object grants remain deferred to
+Phase 5 Step 4.
+
+Governing implementation record:
+
+- [Phase 5 Step 3 — Ownership and Creator-Specific Default Privileges](docs/architecture/foundation/phase-5-step-3-ownership-and-default-privileges.md)
+
+Active gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step3.sh
 ```

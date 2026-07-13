@@ -60,8 +60,15 @@ Step 1 is documentation and validation only. It preserves the accepted Phase 4
 implementation and uses `validate_phase4_step8.sh` as its regression
 predecessor.
 
-## Phase 5 Step 2
+## Accepted Phase 5 Step 2
 
 `validate_phase5_step2.sh` validates the separate deployment tree, migration
 900, canonical role inventory, membership semantics, documentation, accepted
 Foundation regression, and isolated disposable-cluster role behavior.
+
+## Phase 5 Step 3
+
+`validate_phase5_step3.sh` verifies deployment migration `910`, protected
+database ownership, creator-specific default privileges, documentation
+synchronization, the frozen Phase 4 tree, the accepted Foundation regression,
+and isolated disposable-cluster ownership behavior.

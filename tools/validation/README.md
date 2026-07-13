@@ -73,7 +73,7 @@ Repository/database migration parity is checked separately with:
 ./tools/validation/validate_foundation_database_parity.sh dev_testing
 ```
 
-## Phase 5 Step 2 Gate
+## Accepted Phase 5 Step 2 Gate
 
 Run the complete deployment-role topology gate:
 
@@ -86,3 +86,20 @@ Run static validation only:
 ```bash
 ./tools/validation/phase-gates/validate_phase5_step2.sh --static-only
 ```
+
+## Phase 5 Step 3 Gate
+
+Complete validation:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step3.sh
+```
+
+Static repository and contract validation:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step3.sh --static-only
+```
+
+The complete gate reruns the accepted Phase 4 regression and then validates
+ownership and default privileges in a disposable PostgreSQL cluster.

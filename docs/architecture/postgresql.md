@@ -95,3 +95,14 @@ controlled PostgreSQL superuser for initial cluster-role bootstrap.
 
 Role tests use a disposable Unix-socket-only PostgreSQL cluster so shared
 development-cluster roles are not modified.
+
+## Phase 5 Step 3 Ownership Boundary
+
+Phase 5 Step 3 assigns the database and protected PostgreSQL objects to
+approved non-login owners. Creator-specific default privileges remove implicit
+`PUBLIC` access for future deployable objects.
+
+The PostgreSQL `pgcrypto` extension catalog owner cannot be changed through a
+supported `ALTER EXTENSION ... OWNER TO` command. The extension schema and
+member objects move to `issp_extension_owner`, while the catalog-owner
+limitation is explicitly recorded for production review.

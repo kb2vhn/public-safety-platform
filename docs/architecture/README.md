@@ -141,3 +141,16 @@ validation. Ownership transfer and object privileges remain deferred.
 See:
 
 - [Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology](foundation/phase-5-step-2-deployment-role-topology.md)
+
+## Active Phase 5 Step 3
+
+Phase 5 Step 3 implements production database, protected schema, relation,
+routine, and standalone-type ownership plus creator-specific default
+privileges.
+
+The work remains in the deployment layer and does not move CAD or other
+module-owned state into the Platform Foundation.
+
+See:
+
+- [Phase 5 Step 3 — Ownership and Creator-Specific Default Privileges](foundation/phase-5-step-3-ownership-and-default-privileges.md)

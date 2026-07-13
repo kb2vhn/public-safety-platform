@@ -97,3 +97,13 @@ Object ownership and least-privileged object grants remain deferred.
 See:
 
 - [Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology](phase-5-step-2-deployment-role-topology.md)
+
+## Phase 5 Step 3 Ownership Implementation
+
+Deployment migration `910_database_schema_and_object_ownership.sql` transfers
+the database, Foundation schemas, deployment metadata, extension schema,
+relations, routines, and standalone types to approved non-login owners.
+
+It also revokes `PUBLIC` database and protected-object access and establishes
+creator-specific default privileges. Least-privileged runtime grants remain
+Phase 5 Step 4 work.
