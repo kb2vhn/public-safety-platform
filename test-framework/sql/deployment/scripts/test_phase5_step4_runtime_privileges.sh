@@ -123,16 +123,31 @@ done <"$foundation_manifest"
 
 pass "Applied all Foundation migrations"
 
-sql/deployment/scripts/apply_deployment.sh \
+# Preserve the exact accepted Step 4 deployment boundary. Later Phase 5
+# migrations may be appended to the authoritative deployment manifest without
+# changing this predecessor test.
+step4_deployment_root="$work_root/step4-deployment"
+
+mkdir -p "$step4_deployment_root"
+cp -R sql/deployment/. "$step4_deployment_root/"
+
+cat >"$step4_deployment_root/manifests/deployment.manifest" <<'MANIFEST'
+migrations/900_postgresql_role_topology_and_membership.sql
+migrations/910_database_schema_and_object_ownership.sql
+migrations/920_least_privileged_runtime_grants_and_controlled_service_apis.sql
+MANIFEST
+
+chmod +x \
+    "$step4_deployment_root/scripts/apply_deployment.sh"
+
+"$step4_deployment_root/scripts/apply_deployment.sh" \
     "$database_name" \
     >/dev/null
-
 pass "Applied deployment migrations 900, 910, and 920"
 
-sql/deployment/scripts/apply_deployment.sh \
+"$step4_deployment_root/scripts/apply_deployment.sh" \
     "$database_name" \
     >/dev/null
-
 pass "Reapplied deployment manifest idempotently"
 
 sql_value() {
