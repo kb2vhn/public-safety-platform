@@ -628,7 +628,7 @@ SELECT sql_test.assert_true(
 SELECT sql_test.assert_false(
     'PUBLIC cannot execute current Approval Action derivation',
     has_function_privilege(
-        'PUBLIC',
+        'public',
         'approval.approval_action_is_current(uuid,timestamp with time zone)',
         'EXECUTE'
     )
@@ -637,7 +637,7 @@ SELECT sql_test.assert_false(
 SELECT sql_test.assert_false(
     'PUBLIC cannot execute stage evaluation',
     has_function_privilege(
-        'PUBLIC',
+        'public',
         'approval.evaluate_approval_stage(uuid,uuid,timestamp with time zone,boolean)',
         'EXECUTE'
     )
@@ -646,7 +646,7 @@ SELECT sql_test.assert_false(
 SELECT sql_test.assert_false(
     'PUBLIC cannot execute Approval Request finalization',
     has_function_privilege(
-        'PUBLIC',
+        'public',
         'approval.finalize_approval_request(uuid,text,uuid)',
         'EXECUTE'
     )
@@ -655,7 +655,7 @@ SELECT sql_test.assert_false(
 SELECT sql_test.assert_false(
     'PUBLIC cannot execute approval continuity revalidation',
     has_function_privilege(
-        'PUBLIC',
+        'public',
         'approval.approval_request_is_current_for_authorization(uuid,timestamp with time zone)',
         'EXECUTE'
     )
@@ -664,7 +664,7 @@ SELECT sql_test.assert_false(
 SELECT sql_test.assert_false(
     'PUBLIC cannot execute Decision approval-stage linking',
     has_function_privilege(
-        'PUBLIC',
+        'public',
         'decision.link_approval_stage_evaluation(uuid,uuid,uuid)',
         'EXECUTE'
     )
@@ -673,7 +673,7 @@ SELECT sql_test.assert_false(
 SELECT sql_test.assert_false(
     'PUBLIC cannot read Decision approval-stage links',
     has_table_privilege(
-        'PUBLIC',
+        'public',
         'decision.approval_stage_evaluation_links',
         'SELECT'
     )

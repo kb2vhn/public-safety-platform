@@ -232,7 +232,7 @@ else
     results_dir="$(cd -- "$results_dir" && pwd -P)"
 fi
 
-time_file="$(mktemp "${TMPDIR:-/tmp}/psp-foundation-time.XXXXXX")"
+time_file="$(mktemp "${TMPDIR:-/tmp}/issp-foundation-time.XXXXXX")"
 
 cleanup_time_file() {
     rm -f -- "$time_file"
@@ -275,7 +275,7 @@ overall_result="$(awk -F': ' '/^Overall result:/ {print $2; exit}' "$summary_fil
 [[ -n "$run_id" ]] || die 70 \
     'Could not read Run ID from the correctness summary'
 
-[[ "$test_database" =~ ^psp_foundation_test_[A-Za-z0-9_]+$ ]] \
+[[ "$test_database" =~ ^issp_foundation_test_[A-Za-z0-9_]+$ ]] \
     || die 70 "Unsafe or missing test database name in summary: ${test_database}"
 
 quoted_test_database="$(quote_sql_literal "$test_database")"

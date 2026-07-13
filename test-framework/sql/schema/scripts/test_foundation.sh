@@ -45,7 +45,7 @@ usage() {
         '' \
         '  TEST_DATABASE_NAME' \
         '      Optional disposable database name. It must begin with' \
-        '      psp_foundation_test_.' \
+        '      issp_foundation_test_.' \
         '' \
         '  KEEP_TEST_DB=1' \
         '      Same as --keep-database.' \
@@ -399,12 +399,12 @@ preflight_postgresql "$maintenance_db"
 
 timestamp="$(date +%Y%m%d_%H%M%S)"
 run_id="foundation_${timestamp}_$$"
-test_database="${TEST_DATABASE_NAME:-psp_foundation_test_${timestamp}_$$}"
+test_database="${TEST_DATABASE_NAME:-issp_foundation_test_${timestamp}_$$}"
 
-if [[ ! "$test_database" =~ ^psp_foundation_test_[A-Za-z0-9_]+$ ]]; then
+if [[ ! "$test_database" =~ ^issp_foundation_test_[A-Za-z0-9_]+$ ]]; then
     die 64 \
         "Unsafe test database name: ${test_database}
-The name must begin with psp_foundation_test_ and contain only letters, numbers, and underscores.
+The name must begin with issp_foundation_test_ and contain only letters, numbers, and underscores.
 No results directory, log file, temporary file, or database was created."
 fi
 
@@ -452,7 +452,7 @@ ln -s -- "$(basename -- "$log_file")" "$latest_log"
 exec > >(tee -a "$log_file") 2>&1
 
 database_created=0
-expected_sql_file="$(mktemp "${TMPDIR:-/tmp}/psp-foundation-expected.XXXXXX.sql")"
+expected_sql_file="$(mktemp "${TMPDIR:-/tmp}/issp-foundation-expected.XXXXXX.sql")"
 migration_count=0
 sequential_test_count=0
 concurrency_test_count=0
