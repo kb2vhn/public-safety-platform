@@ -7,9 +7,9 @@
 >
 > **Phase:** 4 — Approval Independence and Separation of Duties
 >
-> **Step:** 3 — Controlled Approval Actions
+> **Step:** 5 — Incompatible Authority and Separation of Duties
 >
-> **Status:** Normative Phase 4 contract; Step 3 accepted and Step 4 independence-enforcement candidate
+> **Status:** Normative Phase 4 contract; Step 4 accepted and Step 5 enforcement candidate
 >
 > **Accepted prerequisite:** `phase-3-authorization-control-complete-v1`
 >
@@ -825,10 +825,26 @@ proximity or free-form text.
 
 ### Step 5 — Incompatible Authority and Separation of Duties
 
-- Enforcement modes
-- Duty recording
-- Prohibited duty combinations
-- Direct and delegated Authority Grant accumulation
+Step 5 preserves every accepted Step 4 independence rule and adds:
+
+- Explicit direct and delegated Authority Grant lineage
+- Stage-controlled delegated-authority permission and maximum depth
+- `JOINT_EXERCISE`, preventing one effective actor from exercising two member
+  authorities in one Approval Request or explicit approval chain
+- `CONCURRENT_HOLDING`, preventing one actor from holding two current applicable
+  member grants when the set policy requires it
+- `CHAIN_PARTICIPATION`, preventing prohibited member-authority participation
+  across explicitly related requests or a shared approval-chain identifier
+- Policy-controlled inclusion or exclusion of delegated grants
+- Immutable `APPROVE` duty links for successful approval actions
+- Prohibited-duty evaluation for exact evaluable stage, request, and approval-
+  chain scope
+- Fail-closed `DUTY_SCOPE_NOT_EVALUATED` when an authorization-chain scope is
+  configured before that chain is represented by authoritative data
+
+No conflict is inferred from job titles, group names, role names, time
+proximity, or free-form descriptions. Rejected attempts create no successful
+Approval Action Record or duty link.
 
 ### Step 6 — Stage Satisfaction and Finalization
 
@@ -954,7 +970,36 @@ Step 4 is complete only when:
   synchronized before acceptance.
 - No Step 5 through Step 7 behavior is claimed by Step 4.
 
-## 30. Revalidation Triggers
+## 30. Step 5 Acceptance Criteria
+
+Step 5 is complete only when:
+
+- The manifest remains at 34 ordered migrations.
+- The sequential manifest contains 20 tests.
+- Test `200` contributes exactly 50 functional assertions.
+- Direct grants remain usable under the exact accepted Step 4 boundary.
+- Delegated grants require an explicit valid parent chain, stage permission,
+  and a depth not exceeding the stage maximum.
+- `JOINT_EXERCISE`, `CONCURRENT_HOLDING`, and `CHAIN_PARTICIPATION` each fail
+  closed under their exact configured scope.
+- Suspended grants, inactive sets, and malformed set membership do not satisfy
+  an incompatible-authority policy.
+- Successful `APPROVE` actions receive exactly one immutable `APPROVE` duty.
+- Non-`APPROVE` controlled actions do not receive an automatic approval duty.
+- Configured prohibited combinations involving `REQUEST`, `GRANT_AUTHORITY`,
+  and recorded duties such as `EXECUTE` fail closed.
+- An unavailable configured duty scope returns `DUTY_SCOPE_NOT_EVALUATED`.
+- Rejected Step 5 attempts create no successful Approval Action Record or duty.
+- The accepted nine concurrency tests remain unchanged.
+- The complete candidate result is 590 PASS, 0 FAIL, and the same three
+  understood WARN results.
+- Resource observation is `RECORDED` and thresholds remain `NOT_EVALUATED`.
+- Root, architecture, test, validation, and phase-status documentation are
+  synchronized before acceptance.
+- No Step 6 or Step 7 behavior is claimed by Step 5.
+
+## 31. Revalidation Triggers
+
 
 Phase 4 must be revalidated after any change to:
 
@@ -977,7 +1022,7 @@ Phase 4 must be revalidated after any change to:
 - The accepted Phase 3 tag or acceptance record
 - This normative contract
 
-## 30. Related Documents
+## 32. Related Documents
 
 - [Approval Framework](approval-framework.md)
 - [Authority and Authorization Model](authority-and-authorization-model.md)

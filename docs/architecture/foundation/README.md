@@ -6,8 +6,8 @@
 > controls are database-enforced and tested; structural presence does not imply
 > complete runtime, deployment, or operational enforcement.
 >
-> **Current status:** Phase 4 Step 3 accepted; Phase 4 Step 4 independence
-> enforcement candidate with observation-only resource telemetry.
+> **Current status:** Phase 4 Step 4 accepted; Phase 4 Step 5 incompatible-authority
+> and duty-conflict enforcement candidate with observation-only resource telemetry.
 
 ## Purpose
 
@@ -158,10 +158,10 @@ must not alter that accepted implementation without Phase 3 revalidation.
 
 Phase 4 Step 1 froze the normative approval-independence and
 separation-of-duties contract. Step 2 added the relational structure and
-resource-observation path.
+resource-observation path. Step 3 established controlled Approval Action
+recording. Step 4 is accepted at 540 PASS, 0 FAIL, and 3 understood WARN.
 
-Phase 4 Step 3 is accepted at 500 PASS, 0 FAIL, and 3 understood WARN.
-Phase 4 Step 4 extends the same migration and controlled function:
+Phase 4 Step 5 extends the same migration and controlled function:
 
 ```text
 sql/schema/migrations/foundation/
@@ -170,26 +170,28 @@ sql/schema/migrations/foundation/
 test-framework/sql/tests/foundation/
 ├── 170_approval_independence_and_separation_of_duties_structure.sql
 ├── 180_controlled_approval_action_recording.sql
-└── 190_approval_independence_enforcement.sql
+├── 190_approval_independence_enforcement.sql
+└── 200_incompatible_authority_and_duty_conflict_enforcement.sql
 ```
 
-The Step 4 candidate enforces requester and affected-identity policy,
-duplicate effective-actor prevention, distinct acting organizations,
-Authority Grant origin independence, and explicit reciprocal approval chains.
-Withdrawn, corrected, or superseded approvals are not treated as current.
+The Step 5 candidate adds explicit direct and delegated Authority Grant lineage,
+three incompatible-authority modes, immutable `APPROVE` duty recording,
+policy-defined prohibited-duty combinations, and fail-closed handling when an
+`AUTHORIZATION_CHAIN` duty scope cannot yet be evaluated. Withdrawn, corrected,
+or superseded approvals do not remain current.
 
-Step 4 does not yet enforce incompatible Authority Sets, prohibited duty
-combinations, stage satisfaction, request finalization, or independent-
-connection approval races.
+Step 5 does not yet enforce current stage satisfaction, Approval Request
+finalization, Decision Record integration for final approval outcomes, or
+independent-connection approval races.
 
-Step 4 target:
+Step 5 target:
 
 ```text
 34 manifest migrations
 34 registered migrations
-19 sequential test files
+20 sequential test files
 9 concurrency test files
-540 PASS
+590 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
@@ -301,7 +303,7 @@ The static contract validator is:
 ./tools/validation/validate_foundation_migration_timeouts.sh
 ```
 
-The active Phase 4 Step 4 gate invokes the validator before database execution.
+The active Phase 4 Step 5 gate invokes the validator before database execution.
 It remains independently runnable for focused migration review.
 
 See [Foundation Migration Timeout and Execution Performance Standard](foundation-migration-timeout-and-execution-performance-standard.md).

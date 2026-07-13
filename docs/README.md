@@ -2,8 +2,8 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current status:** Phase 4 Step 3 accepted; Phase 4 Step 4 independence
-> enforcement candidate with observation-only resource telemetry
+> **Current status:** Phase 4 Step 4 accepted; Phase 4 Step 5 incompatible-authority
+> and duty-conflict enforcement candidate with observation-only resource telemetry
 >
 > **Status:** Pre-alpha; not ready for production use
 
@@ -26,11 +26,11 @@
 - Phase 2 Session Control: `phase-2-session-control-complete-v1`
 - Phase 3 Authorization Decision and Controlled Lease Issuance:
   `phase-3-authorization-control-complete-v1`
-- Phase 4 Step 3 controlled Approval Action recording:
-  34 migrations, 18 sequential tests, 9 concurrency tests,
-  500 PASS, 0 FAIL, 3 understood WARN
+- Phase 4 Step 4 approval independence enforcement:
+  34 migrations, 19 sequential tests, 9 concurrency tests,
+  540 PASS, 0 FAIL, 3 understood WARN
 
-## Active Phase 4 Step 4
+## Active Phase 4 Step 5
 
 ```text
 sql/schema/migrations/foundation/
@@ -39,21 +39,23 @@ sql/schema/migrations/foundation/
 test-framework/sql/tests/foundation/
 ├── 170_approval_independence_and_separation_of_duties_structure.sql
 ├── 180_controlled_approval_action_recording.sql
-└── 190_approval_independence_enforcement.sql
+├── 190_approval_independence_enforcement.sql
+└── 200_incompatible_authority_and_duty_conflict_enforcement.sql
 ```
 
-The Step 4 candidate extends the controlled Approval Action API with
-self-approval, directly affected identity, duplicate effective actor, distinct
-organization, Authority Grant origin, and explicit reciprocal-chain checks.
-Test `190` contributes exactly 40 functional assertions.
+The Step 5 candidate preserves the accepted Step 4 independence boundary and
+adds delegated Authority Grant lineage, three explicit incompatible-authority
+modes, immutable `APPROVE` duty recording, prohibited-duty evaluation, and
+fail-closed treatment of an unavailable duty scope. Test `200` contributes
+exactly 50 functional assertions.
 
-Step 4 target:
+Step 5 target:
 
 ```text
 34 migrations
-19 sequential tests
+20 sequential tests
 9 concurrency tests
-540 PASS
+590 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
@@ -79,6 +81,6 @@ Static validation:
 ./tools/validation/validate_foundation_migration_timeouts.sh
 ```
 
-The active Phase 4 Step 4 gate invokes this validator automatically. It can
+The active Phase 4 Step 5 gate invokes this validator automatically. It can
 also be run independently. The repository-policy check does not add SQL PASS
 rows or activate a general performance-regression threshold.

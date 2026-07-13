@@ -2312,7 +2312,7 @@ SELECT sql_test.assert_equal_bigint(
 );
 
 SELECT sql_test.assert_equal_bigint(
-    'Step 3 controlled recording does not yet claim duty-combination enforcement',
+    'Later Phase 4 duty recording adds one APPROVE duty without changing the Step 3 action count',
     (
         SELECT count(*)
         FROM approval.approval_action_duties AS duty_record
@@ -2322,6 +2322,8 @@ SELECT sql_test.assert_equal_bigint(
         WHERE action_record.approval_request_id = (
             SELECT approval_request_id FROM pg_temp.step3_context
         )
+          AND duty_record.duty_key = 'APPROVE'
+          AND action_record.action_type = 'APPROVE'
     ),
-    0
+    1
 );

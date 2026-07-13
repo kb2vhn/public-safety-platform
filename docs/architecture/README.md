@@ -4,8 +4,8 @@
 >
 > **Status:** Normative architecture under active refinement
 >
-> **Current status:** Phase 4 Step 3 accepted; Phase 4 Step 4 independence
-> enforcement candidate with observation-only resource telemetry
+> **Current status:** Phase 4 Step 4 accepted; Phase 4 Step 5 incompatible-authority
+> and duty-conflict enforcement candidate with observation-only resource telemetry
 
 ## Dependency Direction
 
@@ -39,14 +39,14 @@ monitoring vendor, identity provider, or compliance framework.
 
 ## Accepted Implementation Status
 
-Phases 1, 2, and 3 are formally accepted. Phase 4 Step 3 is the current
+Phases 1, 2, and 3 are formally accepted. Phase 4 Step 4 is the current
 accepted implementation boundary:
 
 ```text
 34 migrations
-18 sequential tests
+19 sequential tests
 9 concurrency tests
-500 PASS
+540 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
@@ -55,15 +55,16 @@ Performance thresholds: NOT_EVALUATED
 
 ## Active Architecture Boundary
 
-Phase 4 Step 4 extends the controlled Approval Action write boundary with
-fail-closed independence checks. It uses exact identities, organizations,
-Authority Grants, Approval Request dependencies, approval-chain identifiers,
-and current-action lineage. It does not infer cycles from time or free-form
-text.
+Phase 4 Step 5 extends the accepted controlled Approval Action and independence
+boundary with explicit delegation lineage, bounded delegated-authority use,
+`JOINT_EXERCISE`, `CONCURRENT_HOLDING`, and `CHAIN_PARTICIPATION` enforcement,
+immutable `APPROVE` duties, and policy-defined prohibited-duty combinations.
+It uses persisted identities, Authority Grants, request dependencies, and
+approval-chain identifiers; it does not infer conflicts from titles, groups,
+time proximity, or free-form text.
 
-Step 5 incompatible-authority and duty-conflict enforcement, Step 6 stage
-satisfaction and finalization, and Step 7 independent-connection approval races
-remain future work.
+Step 6 stage satisfaction and finalization and Step 7 independent-connection
+approval races remain future work.
 
 ## Migration Execution Boundary
 

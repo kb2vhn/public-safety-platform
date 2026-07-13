@@ -2,16 +2,16 @@
 -- Migration: 083_postgresql_approval_independence_and_separation_of_duties.sql
 -- Title: PostgreSQL approval independence and separation of duties structure
 -- Layer: Platform Foundation
--- Status: PHASE 4 STEP 4 INDEPENDENCE ENFORCEMENT CANDIDATE
+-- Status: PHASE 4 STEP 5 INCOMPATIBLE-AUTHORITY AND DUTY-CONFLICT CANDIDATE
 -- Target: PostgreSQL 18
 -- Compatibility policy: prefer mature features supported before PostgreSQL 18.
 -- ============================================================================
 
 BEGIN;
 
-SET LOCAL lock_timeout = '10s';
-SET LOCAL statement_timeout = '10min';
-SET LOCAL idle_in_transaction_session_timeout = '10min';
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '1min';
+SET LOCAL idle_in_transaction_session_timeout = '1min';
 
 SELECT pg_advisory_xact_lock(
     hashtext(current_database()),
@@ -311,6 +311,50 @@ ALTER TABLE access_control.incompatible_authority_sets
             )
         );
 
+
+-- Phase 4 Step 5 records explicit Authority Grant delegation lineage so
+-- direct and delegated grant accumulation can be evaluated without inferring
+-- delegation from job titles, group membership, or free-form descriptions.
+ALTER TABLE access_control.authority_grants
+    ADD COLUMN delegated_from_authority_grant_id uuid
+        REFERENCES access_control.authority_grants(authority_grant_id),
+    ADD COLUMN delegation_depth integer NOT NULL DEFAULT 0,
+    ADD CONSTRAINT authority_grants_delegation_not_self_ck
+        CHECK (
+            delegated_from_authority_grant_id IS NULL
+            OR delegated_from_authority_grant_id <> authority_grant_id
+        ),
+    ADD CONSTRAINT authority_grants_delegation_shape_ck
+        CHECK (
+            (
+                delegated_from_authority_grant_id IS NULL
+                AND delegation_depth = 0
+            )
+            OR
+            (
+                delegated_from_authority_grant_id IS NOT NULL
+                AND delegation_depth > 0
+            )
+        );
+
+COMMENT ON COLUMN
+    access_control.authority_grants.delegated_from_authority_grant_id IS
+    'Exact parent Authority Grant for an explicitly delegated grant. NULL identifies a direct grant.';
+
+COMMENT ON COLUMN access_control.authority_grants.delegation_depth IS
+    'Persisted delegation depth. Direct grants use zero; each delegated child must be exactly one level deeper than its parent.';
+
+CREATE INDEX authority_grants_delegation_lineage_idx
+    ON access_control.authority_grants(
+        delegated_from_authority_grant_id,
+        delegation_depth,
+        identity_id,
+        authority_definition_id,
+        status,
+        valid_until
+    )
+    WHERE delegated_from_authority_grant_id IS NOT NULL;
+
 -- --------------------------------------------------------------------------
 -- Persisted stage evaluation structure
 -- --------------------------------------------------------------------------
@@ -467,6 +511,542 @@ CREATE INDEX approval_stage_evaluation_actions_action_idx
         approval_stage_evaluation_id,
         counted
     );
+
+-- --------------------------------------------------------------------------
+-- Phase 4 Step 5 reusable conflict-evaluation helpers
+-- --------------------------------------------------------------------------
+
+CREATE FUNCTION approval.authority_grant_is_current_for_approval(
+    p_authority_grant_id uuid,
+    p_approval_request_id uuid,
+    p_acting_organization_id uuid,
+    p_evaluated_at timestamptz
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SET search_path = pg_catalog, approval, access_control
+AS $function$
+    SELECT EXISTS (
+        SELECT 1
+        FROM access_control.authority_grants AS grant_record
+        JOIN approval.approval_requests AS request_record
+          ON request_record.approval_request_id = p_approval_request_id
+        WHERE grant_record.authority_grant_id = p_authority_grant_id
+          AND grant_record.status = 'ACTIVE'
+          AND grant_record.valid_from <= p_evaluated_at
+          AND (
+                grant_record.valid_until IS NULL
+                OR p_evaluated_at < grant_record.valid_until
+          )
+          AND (
+                grant_record.service_id IS NULL
+                OR grant_record.service_id = request_record.service_id
+          )
+          AND (
+                grant_record.purpose_definition_id IS NULL
+                OR grant_record.purpose_definition_id =
+                   request_record.purpose_definition_id
+          )
+          AND (
+                grant_record.operation_definition_id IS NULL
+                OR grant_record.operation_definition_id =
+                   request_record.operation_definition_id
+          )
+          AND (
+                grant_record.organization_id IS NULL
+                OR grant_record.organization_id IS NOT DISTINCT FROM
+                   p_acting_organization_id
+          )
+          AND grant_record.scope_reference IS NULL
+          AND (
+                grant_record.applies_to_all_governed_scopes
+                OR grant_record.governed_scope_id IS NOT DISTINCT FROM
+                   request_record.governed_scope_id
+          )
+          AND (
+                grant_record.applies_to_all_targets
+                OR (
+                    grant_record.protected_target_type IS NOT DISTINCT FROM
+                        request_record.protected_target_type
+                    AND grant_record.protected_target_reference
+                        IS NOT DISTINCT FROM
+                        request_record.protected_target_reference
+                )
+          )
+    );
+$function$;
+
+COMMENT ON FUNCTION approval.authority_grant_is_current_for_approval(
+    uuid, uuid, uuid, timestamptz
+) IS
+    'Returns true only when the exact Authority Grant is current and applicable to the exact Approval Request, organization, Governed Scope, and Protected Resource Target at one authoritative time.';
+
+CREATE FUNCTION approval.approval_request_is_in_duty_scope(
+    p_candidate_approval_request_id uuid,
+    p_anchor_approval_request_id uuid,
+    p_enforcement_scope text
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SET search_path = pg_catalog, approval
+AS $function$
+    SELECT CASE
+        WHEN p_enforcement_scope IN ('STAGE', 'REQUEST') THEN
+            p_candidate_approval_request_id = p_anchor_approval_request_id
+        WHEN p_enforcement_scope = 'APPROVAL_CHAIN' THEN
+            EXISTS (
+                SELECT 1
+                FROM approval.approval_requests AS candidate_request
+                JOIN approval.approval_requests AS anchor_request
+                  ON anchor_request.approval_request_id =
+                     p_anchor_approval_request_id
+                WHERE candidate_request.approval_request_id =
+                      p_candidate_approval_request_id
+                  AND (
+                        candidate_request.approval_chain_id =
+                            anchor_request.approval_chain_id
+                        OR EXISTS (
+                            SELECT 1
+                            FROM approval.approval_request_dependencies AS dep
+                            WHERE dep.dependency_type IN (
+                                'RECIPROCAL_REVIEW',
+                                'SHARED_APPROVAL_CHAIN'
+                            )
+                              AND (
+                                    (
+                                        dep.approval_request_id =
+                                            p_anchor_approval_request_id
+                                        AND dep.depends_on_approval_request_id =
+                                            p_candidate_approval_request_id
+                                    )
+                                    OR
+                                    (
+                                        dep.approval_request_id =
+                                            p_candidate_approval_request_id
+                                        AND dep.depends_on_approval_request_id =
+                                            p_anchor_approval_request_id
+                                    )
+                              )
+                        )
+                  )
+            )
+        ELSE false
+    END;
+$function$;
+
+COMMENT ON FUNCTION approval.approval_request_is_in_duty_scope(
+    uuid, uuid, text
+) IS
+    'Evaluates exact request or explicit approval-chain scope. AUTHORIZATION_CHAIN remains unavailable until its typed chain record exists and therefore fails closed in Step 5.';
+
+CREATE FUNCTION approval.enforce_approval_action_conflicts(
+    p_approval_request_id uuid,
+    p_approval_policy_stage_id uuid,
+    p_acting_identity_id uuid,
+    p_acting_organization_id uuid,
+    p_authority_grant_id uuid,
+    p_evaluated_at timestamptz
+)
+RETURNS void
+LANGUAGE plpgsql
+SET search_path = pg_catalog, approval, access_control
+AS $function$
+DECLARE
+    v_request approval.approval_requests%ROWTYPE;
+    v_stage approval.approval_policy_stages%ROWTYPE;
+    v_grant access_control.authority_grants%ROWTYPE;
+    v_lineage_grant access_control.authority_grants%ROWTYPE;
+    v_parent_grant access_control.authority_grants%ROWTYPE;
+    v_set access_control.incompatible_authority_sets%ROWTYPE;
+    v_seen_grants uuid[] := ARRAY[]::uuid[];
+    v_expected_depth integer;
+    v_rule record;
+    v_other_duty_key text;
+    v_conflict boolean;
+BEGIN
+    SELECT request_record.*
+    INTO STRICT v_request
+    FROM approval.approval_requests AS request_record
+    WHERE request_record.approval_request_id = p_approval_request_id;
+
+    SELECT stage_record.*
+    INTO STRICT v_stage
+    FROM approval.approval_policy_stages AS stage_record
+    WHERE stage_record.approval_policy_stage_id =
+          p_approval_policy_stage_id
+      AND stage_record.approval_policy_id = v_request.approval_policy_id;
+
+    SELECT grant_record.*
+    INTO STRICT v_grant
+    FROM access_control.authority_grants AS grant_record
+    WHERE grant_record.authority_grant_id = p_authority_grant_id;
+
+    -- Explicit delegation lineage is validated from the selected grant to one
+    -- direct root. Every link must remain current and context-applicable.
+    IF v_grant.delegated_from_authority_grant_id IS NOT NULL THEN
+        IF NOT v_stage.delegated_authority_allowed THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'DELEGATED_AUTHORITY_NOT_ALLOWED';
+        END IF;
+
+        IF v_stage.maximum_delegation_depth IS NULL
+           OR v_grant.delegation_depth >
+              v_stage.maximum_delegation_depth
+        THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'DELEGATION_DEPTH_EXCEEDED';
+        END IF;
+
+        v_lineage_grant := v_grant;
+        v_expected_depth := v_grant.delegation_depth;
+
+        LOOP
+            IF v_lineage_grant.authority_grant_id = ANY(v_seen_grants)
+               OR v_lineage_grant.delegation_depth <> v_expected_depth
+               OR v_lineage_grant.authority_definition_id <>
+                  v_grant.authority_definition_id
+               OR NOT approval.authority_grant_is_current_for_approval(
+                    v_lineage_grant.authority_grant_id,
+                    p_approval_request_id,
+                    p_acting_organization_id,
+                    p_evaluated_at
+               )
+            THEN
+                RAISE EXCEPTION
+                    USING
+                        ERRCODE = 'invalid_authorization_specification',
+                        MESSAGE = 'DELEGATED_AUTHORITY_LINEAGE_INVALID';
+            END IF;
+
+            v_seen_grants := array_append(
+                v_seen_grants,
+                v_lineage_grant.authority_grant_id
+            );
+
+            IF v_lineage_grant.delegated_from_authority_grant_id IS NULL THEN
+                IF v_expected_depth <> 0 THEN
+                    RAISE EXCEPTION
+                        USING
+                            ERRCODE = 'invalid_authorization_specification',
+                            MESSAGE = 'DELEGATED_AUTHORITY_LINEAGE_INVALID';
+                END IF;
+                EXIT;
+            END IF;
+
+            SELECT parent_record.*
+            INTO v_parent_grant
+            FROM access_control.authority_grants AS parent_record
+            WHERE parent_record.authority_grant_id =
+                  v_lineage_grant.delegated_from_authority_grant_id;
+
+            IF NOT FOUND
+               OR v_parent_grant.identity_id IS DISTINCT FROM
+                  v_lineage_grant.granted_by_identity_id
+            THEN
+                RAISE EXCEPTION
+                    USING
+                        ERRCODE = 'invalid_authorization_specification',
+                        MESSAGE = 'DELEGATED_AUTHORITY_LINEAGE_INVALID';
+            END IF;
+
+            v_expected_depth := v_expected_depth - 1;
+            IF v_expected_depth < 0 THEN
+                RAISE EXCEPTION
+                    USING
+                        ERRCODE = 'invalid_authorization_specification',
+                        MESSAGE = 'DELEGATED_AUTHORITY_LINEAGE_INVALID';
+            END IF;
+
+            v_lineage_grant := v_parent_grant;
+        END LOOP;
+    ELSIF v_grant.delegation_depth <> 0 THEN
+        RAISE EXCEPTION
+            USING
+                ERRCODE = 'invalid_authorization_specification',
+                MESSAGE = 'DELEGATED_AUTHORITY_LINEAGE_INVALID';
+    END IF;
+
+    IF v_stage.incompatible_authority_set_id IS NOT NULL THEN
+        SELECT set_record.*
+        INTO STRICT v_set
+        FROM access_control.incompatible_authority_sets AS set_record
+        WHERE set_record.incompatible_authority_set_id =
+              v_stage.incompatible_authority_set_id;
+
+        IF v_set.status <> 'ACTIVE' THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'INCOMPATIBLE_AUTHORITY_SET_NOT_ACTIVE';
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM access_control.incompatible_authority_members AS member
+            WHERE member.incompatible_authority_set_id =
+                  v_set.incompatible_authority_set_id
+              AND member.authority_definition_id =
+                  v_grant.authority_definition_id
+        ) THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'INCOMPATIBLE_AUTHORITY_POLICY_INVALID';
+        END IF;
+
+        IF v_stage.incompatible_authority_mode = 'JOINT_EXERCISE'
+           AND EXISTS (
+                SELECT 1
+                FROM approval.approval_actions AS prior_action
+                JOIN access_control.authority_grants AS prior_grant
+                  ON prior_grant.authority_grant_id =
+                     prior_action.authority_grant_id
+                JOIN access_control.incompatible_authority_members AS member
+                  ON member.incompatible_authority_set_id =
+                     v_set.incompatible_authority_set_id
+                 AND member.authority_definition_id =
+                     prior_grant.authority_definition_id
+                WHERE prior_action.approval_request_id =
+                      p_approval_request_id
+                  AND prior_action.effective_actor_identity_id =
+                      p_acting_identity_id
+                  AND prior_action.action_type = 'APPROVE'
+                  AND prior_grant.authority_definition_id <>
+                      v_grant.authority_definition_id
+                  AND (
+                        v_set.include_delegated_grants
+                        OR prior_grant.delegated_from_authority_grant_id
+                           IS NULL
+                  )
+                  AND NOT EXISTS (
+                        SELECT 1
+                        FROM approval.approval_actions AS later_action
+                        WHERE later_action.prior_approval_action_id =
+                              prior_action.approval_action_id
+                          AND later_action.action_type IN (
+                              'WITHDRAW_APPROVAL',
+                              'CORRECT',
+                              'SUPERSEDE'
+                          )
+                  )
+           )
+        THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'INCOMPATIBLE_AUTHORITY_JOINT_EXERCISE';
+        ELSIF v_stage.incompatible_authority_mode = 'CONCURRENT_HOLDING'
+              AND EXISTS (
+                    SELECT 1
+                    FROM access_control.authority_grants AS other_grant
+                    JOIN access_control.incompatible_authority_members AS member
+                      ON member.incompatible_authority_set_id =
+                         v_set.incompatible_authority_set_id
+                     AND member.authority_definition_id =
+                         other_grant.authority_definition_id
+                    WHERE other_grant.identity_id = p_acting_identity_id
+                      AND other_grant.authority_grant_id <>
+                          p_authority_grant_id
+                      AND other_grant.authority_definition_id <>
+                          v_grant.authority_definition_id
+                      AND (
+                            v_set.include_delegated_grants
+                            OR other_grant.delegated_from_authority_grant_id
+                               IS NULL
+                      )
+                      AND approval.authority_grant_is_current_for_approval(
+                            other_grant.authority_grant_id,
+                            p_approval_request_id,
+                            p_acting_organization_id,
+                            p_evaluated_at
+                      )
+              )
+        THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'INCOMPATIBLE_AUTHORITY_CONCURRENT_HOLDING';
+        ELSIF v_stage.incompatible_authority_mode = 'CHAIN_PARTICIPATION'
+              AND EXISTS (
+                    SELECT 1
+                    FROM approval.approval_actions AS prior_action
+                    JOIN access_control.authority_grants AS prior_grant
+                      ON prior_grant.authority_grant_id =
+                         prior_action.authority_grant_id
+                    JOIN access_control.incompatible_authority_members AS member
+                      ON member.incompatible_authority_set_id =
+                         v_set.incompatible_authority_set_id
+                     AND member.authority_definition_id =
+                         prior_grant.authority_definition_id
+                    WHERE prior_action.effective_actor_identity_id =
+                          p_acting_identity_id
+                      AND prior_action.action_type = 'APPROVE'
+                      AND prior_grant.authority_definition_id <>
+                          v_grant.authority_definition_id
+                      AND (
+                            v_set.include_delegated_grants
+                            OR prior_grant.delegated_from_authority_grant_id
+                               IS NULL
+                      )
+                      AND approval.approval_request_is_in_duty_scope(
+                            prior_action.approval_request_id,
+                            p_approval_request_id,
+                            'APPROVAL_CHAIN'
+                      )
+                      AND NOT EXISTS (
+                            SELECT 1
+                            FROM approval.approval_actions AS later_action
+                            WHERE later_action.prior_approval_action_id =
+                                  prior_action.approval_action_id
+                              AND later_action.action_type IN (
+                                  'WITHDRAW_APPROVAL',
+                                  'CORRECT',
+                                  'SUPERSEDE'
+                              )
+                      )
+              )
+        THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'INCOMPATIBLE_AUTHORITY_CHAIN_PARTICIPATION';
+        END IF;
+    END IF;
+
+    -- This controlled path records APPROVE, so it evaluates every active
+    -- prohibited pair that contains APPROVE. Other controlled paths must
+    -- enforce the same catalog when they later record their own duties.
+    FOR v_rule IN
+        SELECT rule_record.*
+        FROM approval.approval_policy_prohibited_duty_combinations
+             AS rule_record
+        WHERE rule_record.approval_policy_id = v_request.approval_policy_id
+          AND rule_record.status = 'ACTIVE'
+          AND 'APPROVE' IN (
+                rule_record.first_duty_key,
+                rule_record.second_duty_key
+          )
+    LOOP
+        IF v_rule.enforcement_scope = 'AUTHORIZATION_CHAIN' THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'DUTY_SCOPE_NOT_EVALUATED';
+        END IF;
+
+        v_other_duty_key := CASE
+            WHEN v_rule.first_duty_key = 'APPROVE'
+                THEN v_rule.second_duty_key
+            ELSE v_rule.first_duty_key
+        END;
+        v_conflict := false;
+
+        IF v_other_duty_key = 'REQUEST' THEN
+            SELECT EXISTS (
+                SELECT 1
+                FROM approval.approval_requests AS scoped_request
+                WHERE scoped_request.requester_identity_id =
+                      p_acting_identity_id
+                  AND approval.approval_request_is_in_duty_scope(
+                        scoped_request.approval_request_id,
+                        p_approval_request_id,
+                        v_rule.enforcement_scope
+                  )
+            )
+            INTO v_conflict;
+        ELSIF v_other_duty_key = 'GRANT_AUTHORITY' THEN
+            v_conflict := v_grant.granted_by_identity_id =
+                          p_acting_identity_id;
+
+            IF NOT v_conflict THEN
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM approval.approval_actions AS scoped_action
+                    JOIN access_control.authority_grants AS scoped_grant
+                      ON scoped_grant.authority_grant_id =
+                         scoped_action.authority_grant_id
+                    WHERE scoped_grant.granted_by_identity_id =
+                          p_acting_identity_id
+                      AND scoped_action.action_type = 'APPROVE'
+                      AND approval.approval_request_is_in_duty_scope(
+                            scoped_action.approval_request_id,
+                            p_approval_request_id,
+                            v_rule.enforcement_scope
+                      )
+                      AND (
+                            v_rule.enforcement_scope <> 'STAGE'
+                            OR scoped_action.approval_policy_stage_id =
+                               p_approval_policy_stage_id
+                      )
+                      AND NOT EXISTS (
+                            SELECT 1
+                            FROM approval.approval_actions AS later_action
+                            WHERE later_action.prior_approval_action_id =
+                                  scoped_action.approval_action_id
+                              AND later_action.action_type IN (
+                                  'WITHDRAW_APPROVAL',
+                                  'CORRECT',
+                                  'SUPERSEDE'
+                              )
+                      )
+                )
+                INTO v_conflict;
+            END IF;
+        ELSE
+            SELECT EXISTS (
+                SELECT 1
+                FROM approval.approval_actions AS scoped_action
+                JOIN approval.approval_action_duties AS scoped_duty
+                  ON scoped_duty.approval_action_id =
+                     scoped_action.approval_action_id
+                WHERE scoped_action.effective_actor_identity_id =
+                      p_acting_identity_id
+                  AND scoped_duty.duty_key = v_other_duty_key
+                  AND approval.approval_request_is_in_duty_scope(
+                        scoped_action.approval_request_id,
+                        p_approval_request_id,
+                        v_rule.enforcement_scope
+                  )
+                  AND (
+                        v_rule.enforcement_scope <> 'STAGE'
+                        OR scoped_action.approval_policy_stage_id =
+                           p_approval_policy_stage_id
+                  )
+                  AND NOT EXISTS (
+                        SELECT 1
+                        FROM approval.approval_actions AS later_action
+                        WHERE later_action.prior_approval_action_id =
+                              scoped_action.approval_action_id
+                          AND later_action.action_type IN (
+                              'WITHDRAW_APPROVAL',
+                              'CORRECT',
+                              'SUPERSEDE'
+                          )
+                  )
+            )
+            INTO v_conflict;
+        END IF;
+
+        IF v_conflict THEN
+            RAISE EXCEPTION
+                USING
+                    ERRCODE = 'invalid_authorization_specification',
+                    MESSAGE = 'PROHIBITED_DUTY_COMBINATION';
+        END IF;
+    END LOOP;
+END;
+$function$;
+
+COMMENT ON FUNCTION approval.enforce_approval_action_conflicts(
+    uuid, uuid, uuid, uuid, uuid, timestamptz
+) IS
+    'Fail-closed Phase 4 Step 5 enforcement for delegated Authority Grant lineage, incompatible-authority modes, and approval-side prohibited duty combinations.';
 
 -- --------------------------------------------------------------------------
 -- Controlled Approval Action recording
@@ -1058,6 +1638,17 @@ BEGIN
         END IF;
     END IF;
 
+    IF p_action_type = 'APPROVE' THEN
+        PERFORM approval.enforce_approval_action_conflicts(
+            p_approval_request_id,
+            p_approval_policy_stage_id,
+            p_acting_identity_id,
+            p_acting_organization_id,
+            p_authority_grant_id,
+            v_now
+        );
+    END IF;
+
     IF v_requires_prior THEN
         SELECT action_record.*
         INTO v_prior_action
@@ -1136,6 +1727,19 @@ BEGIN
         p_action_reason_code
     );
 
+    IF p_action_type = 'APPROVE' THEN
+        INSERT INTO approval.approval_action_duties (
+            approval_action_id,
+            duty_key,
+            recorded_at
+        )
+        VALUES (
+            v_action_id,
+            'APPROVE',
+            v_now
+        );
+    END IF;
+
     RETURN QUERY
     SELECT
         v_action_id,
@@ -1157,7 +1761,7 @@ COMMENT ON FUNCTION approval.record_approval_action(
     text,
     uuid
 ) IS
-    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, action-lineage, self-approval, affected-identity, duplicate-actor, organization-independence, authority-origin, and explicit reciprocal-chain validation. Phase 4 Steps 5 and 6 add incompatible-authority, duty-conflict, stage-satisfaction, and finalization behavior.';
+    'Records one Approval Action Record only after exact request, policy, stage, actor, session, organization, Authority Grant, action-lineage, independence, delegated-grant lineage, incompatible-authority, and approval-side separation-of-duties validation. Successful APPROVE actions receive one immutable APPROVE duty link. Phase 4 Step 6 adds stage satisfaction and finalization.';
 
 REVOKE ALL ON FUNCTION
     approval.prevent_approval_action_record_mutation()
@@ -1174,6 +1778,22 @@ REVOKE ALL ON FUNCTION approval.record_approval_action(
     text,
     text,
     uuid
+)
+FROM PUBLIC;
+
+
+REVOKE ALL ON FUNCTION approval.authority_grant_is_current_for_approval(
+    uuid, uuid, uuid, timestamptz
+)
+FROM PUBLIC;
+
+REVOKE ALL ON FUNCTION approval.approval_request_is_in_duty_scope(
+    uuid, uuid, text
+)
+FROM PUBLIC;
+
+REVOKE ALL ON FUNCTION approval.enforce_approval_action_conflicts(
+    uuid, uuid, uuid, uuid, uuid, timestamptz
 )
 FROM PUBLIC;
 
@@ -1194,7 +1814,7 @@ SELECT foundation_meta.register_migration(
     p_migration_layer => 'FOUNDATION',
     p_migration_checksum => NULL,
     p_notes =>
-        'Added Phase 4 structural context, controlled Approval Action recording, exact actor/session/organization/Authority Grant validation, typed action-lineage rules, append-only mutation guards, and Step 4 self-approval, affected-identity, duplicate-actor, distinct-organization, authority-origin, and explicit reciprocal-chain independence enforcement. Incompatible-authority, duty-conflict, stage-satisfaction, and finalization behavior remain later Phase 4 steps.'
+        'Added Phase 4 structural context, controlled Approval Action recording, exact actor/session/organization/Authority Grant validation, typed action-lineage rules, append-only mutation guards, Step 4 independence enforcement, and Step 5 explicit delegation lineage, JOINT_EXERCISE, CONCURRENT_HOLDING, CHAIN_PARTICIPATION, immutable APPROVE duty recording, and approval-side prohibited duty-combination enforcement. Stage satisfaction and finalization remain Phase 4 Step 6.'
 );
 
 COMMIT;

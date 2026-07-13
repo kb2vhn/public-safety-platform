@@ -227,19 +227,26 @@ recording, exact actor/session/Authority Grant context binding, typed
 withdrawal/correction/supersession lineage, mutation guards, and the accepted
 500 PASS, 0 FAIL, 3 WARN boundary.
 
-Phase 4 Step 4 is the current candidate. It adds fail-closed requester and
-directly affected identity checks, duplicate effective-actor prevention,
-distinct-organization enforcement, Authority Grant origin independence, and
-explicit circular or reciprocal approval prevention.
+Phase 4 Step 4 is accepted at 540 PASS, 0 FAIL, and 3 understood WARN.
+It established fail-closed requester and directly affected identity checks,
+duplicate effective-actor prevention, distinct-organization enforcement,
+Authority Grant origin independence, and explicit circular or reciprocal
+approval prevention.
 
-The Step 4 target is:
+Phase 4 Step 5 is the current candidate. It adds explicit direct and delegated
+Authority Grant lineage, incompatible-authority enforcement for
+`JOINT_EXERCISE`, `CONCURRENT_HOLDING`, and `CHAIN_PARTICIPATION`, immutable
+`APPROVE` duty recording, prohibited-duty evaluation, and fail-closed handling
+when a configured duty scope cannot yet be evaluated.
+
+The Step 5 target is:
 
 ```text
 34 manifest migrations
 34 registered migrations
-19 sequential test files
+20 sequential test files
 9 concurrency test files
-540 PASS
+590 PASS
 0 FAIL
 3 understood WARN
 Resource observation: RECORDED
@@ -498,36 +505,32 @@ Accepted behavior now includes:
 - Manifest-driven clean installation
 - Structural, catalog, privilege, behavioral, negative, and concurrency tests
 
-### Current Phase 4 Step 4 Candidate
+### Current Phase 4 Step 5 Candidate
 
-The accepted Step 3 controlled write boundary remains in place. The Step 4
+The accepted Step 4 independence boundary remains in place. The Step 5
 candidate extends `approval.record_approval_action(...)` with:
 
-- Requester self-approval prevention unless both policy and exact stage permit it
-- Directly affected identity exclusion unless the exact stage permits it
-- Duplicate current approval prevention by effective actor
-- Distinct acting-organization enforcement when required by stage policy
-- Authority Grant origin independence using persisted grant and request lineage
-- Explicit circular and reciprocal approval prevention using request
-  dependencies and approval-chain identifiers
-- Withdrawal-aware current-approval derivation
-- Behavioral test `190_approval_independence_enforcement.sql`
+- Explicit direct and delegated Authority Grant lineage and bounded depth
+- Stage-controlled delegated-authority eligibility
+- `JOINT_EXERCISE` prevention within one Approval Request or explicit chain
+- `CONCURRENT_HOLDING` evaluation with policy-controlled delegated-grant inclusion
+- `CHAIN_PARTICIPATION` evaluation using typed request and chain relationships
+- Immutable `APPROVE` duty recording for successful approval actions
+- Policy-defined prohibited-duty combinations at evaluable scopes
+- Fail-closed `DUTY_SCOPE_NOT_EVALUATED` for unavailable authorization-chain scope
+- Behavioral test `200_incompatible_authority_and_duty_conflict_enforcement.sql`
 
-Step 4 does not yet claim:
+Step 5 does not yet claim:
 
-- Incompatible-authority enforcement
-- Prohibited-duty enforcement
 - Current approval-stage satisfaction
 - Approval Request finalization
+- Decision Record integration for final approval outcomes
 - Independent-connection approval-race proofs
 
 ### Remaining Foundation Work
 
 The following remain active Foundation work:
 
-- Complete Phase 4 separation-of-duties enforcement
-- Incompatible-authority evaluation
-- Prohibited-duty-combination evaluation
 - Current approval-stage satisfaction
 - Controlled Approval Request finalization
 - Approval-related independent-connection concurrency proofs
@@ -755,15 +758,16 @@ See:
 
 ## Current Phase Gate
 
-Run the active Phase 4 Step 4 gate from the repository root:
+Run the active Phase 4 Step 5 gate from the repository root:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step4.sh
+./tools/validation/phase-gates/validate_phase4_step5.sh
 ```
 
-The gate validates the accepted Step 3 boundary, exact Phase 4 Step 4 files,
-manifests, independence reason codes and behavior, synchronized status
-documentation, file hygiene, correctness results, and resource observations.
+The gate validates the accepted Step 4 boundary, exact Phase 4 Step 5 files,
+manifests, delegation lineage, incompatible-authority and prohibited-duty
+reason codes and behavior, synchronized status documentation, file hygiene,
+correctness results, and resource observations.
 
 The active gate invokes the cross-phase migration timeout validator before
 PostgreSQL execution. The validator can also be run independently with:
