@@ -583,7 +583,7 @@ assert_fails_as_role \
 assert_scalar \
     "PUBLIC cannot execute emergency-control routines" \
     "0" \
-    "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='emergency_control' AND has_function_privilege('PUBLIC',p.oid,'EXECUTE');"
+    "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace CROSS JOIN LATERAL pg_catalog.aclexplode(coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))) AS acl_record WHERE n.nspname='emergency_control' AND acl_record.grantee=0 AND acl_record.privilege_type='EXECUTE';"
 
 printf '\n== Disposable-cluster final result ==\n'
 printf 'PASS checks: %s\n' "$PASS_COUNT"
