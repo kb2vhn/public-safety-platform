@@ -84,3 +84,16 @@ The Foundation SQL test framework must test the requirements that can be demonst
 - [Authentication and Authorization Evaluation](authentication-and-authorization-evaluation-model.md)
 - [Decision Record Repository](decision-record-repository.md)
 - [SQL Migration Map](sql-migration-map.md)
+
+## Phase 5 Step 2 Role Topology
+
+The approved role and ownership contract now has a concrete deployment tree
+and PostgreSQL role topology. Canonical owner, migration, runtime, writer,
+review, service, and disabled break-glass role shells are created by migration
+900.
+
+Object ownership and least-privileged object grants remain deferred.
+
+See:
+
+- [Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology](phase-5-step-2-deployment-role-topology.md)

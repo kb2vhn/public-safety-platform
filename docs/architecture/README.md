@@ -131,3 +131,13 @@ other module state into the Platform Foundation.
 See:
 
 - [Production Database Role, Ownership, and Runtime Privilege Model](foundation/production-database-role-ownership-and-runtime-privilege-model.md)
+
+## Active Phase 5 Step 2
+
+The deployment layer now has a separate `sql/deployment` tree, canonical role
+shells, bounded service-to-capability memberships, and disposable-cluster
+validation. Ownership transfer and object privileges remain deferred.
+
+See:
+
+- [Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology](foundation/phase-5-step-2-deployment-role-topology.md)

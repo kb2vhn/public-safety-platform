@@ -86,3 +86,12 @@ See:
 ## Current Limitations
 
 The schema is still pre-alpha. Final deployment roles, ownership transfers, complete append-only enforcement, populated migration checksums, off-host integrity anchoring, production backup protection, and the production Go data-access layer remain future work.
+
+## Phase 5 Step 2 Deployment Role Topology
+
+The reserved deployment range now begins in `sql/deployment` with migration
+900. The deployment runner records exact SHA-256 checksums and requires a
+controlled PostgreSQL superuser for initial cluster-role bootstrap.
+
+Role tests use a disposable Unix-socket-only PostgreSQL cluster so shared
+development-cluster roles are not modified.

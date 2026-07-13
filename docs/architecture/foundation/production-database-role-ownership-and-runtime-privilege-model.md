@@ -552,3 +552,26 @@ Phase 5 Step 1 does not claim:
 
 It freezes the contract against which those later implementations will be
 built and tested.
+
+## Phase 5 Step 2 Implementation Status
+
+Phase 5 Step 2 implements the deployment manifest and canonical PostgreSQL
+role topology defined by this contract in the separate `sql/deployment` tree.
+
+Implemented in Step 2:
+
+- exact deployment migration registry and SHA-256 recording;
+- 18 canonical role shells;
+- four bounded login roles with null passwords;
+- nine service-to-capability memberships using `INHERIT TRUE`, `SET FALSE`,
+  and `ADMIN FALSE`;
+- disabled-at-rest `issp_break_glass` shell;
+- disposable-cluster role validation.
+
+Still deferred:
+
+- object ownership transfer and creator-specific default privileges;
+- protected object grants;
+- approved review surfaces;
+- credential provisioning;
+- break-glass activation lifecycle.

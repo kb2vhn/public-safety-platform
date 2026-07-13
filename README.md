@@ -924,3 +924,31 @@ The Foundation succeeds only when municipalities, schools, and similar
 organizations can rely on it without surrendering security, explainability,
 historical integrity, operational control, or the ability to replace external
 systems.
+
+### Active Phase 5 Step 2 — Deployment Role Topology
+
+Phase 5 Step 1 is accepted at 77 gate PASS checks and zero failures.
+
+Phase 5 Step 2 implements a deployment tree outside the formally frozen
+`sql/schema` tree, an exact deployment migration registry, 18 canonical
+PostgreSQL role shells, and nine bounded service-to-capability memberships.
+
+Step 2 creates no passwords, transfers no object ownership, and grants no
+protected object privileges. Cluster-global role behavior is tested only in a
+disposable PostgreSQL cluster.
+
+The persistent-database parity report is now:
+
+```bash
+./tools/validation/validate_foundation_database_parity.sh dev_testing
+```
+
+Governing implementation record:
+
+- [Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology](docs/architecture/foundation/phase-5-step-2-deployment-role-topology.md)
+
+Active gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step2.sh
+```

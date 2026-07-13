@@ -59,3 +59,9 @@ default-privilege, and break-glass contract.
 Step 1 is documentation and validation only. It preserves the accepted Phase 4
 implementation and uses `validate_phase4_step8.sh` as its regression
 predecessor.
+
+## Phase 5 Step 2
+
+`validate_phase5_step2.sh` validates the separate deployment tree, migration
+900, canonical role inventory, membership semantics, documentation, accepted
+Foundation regression, and isolated disposable-cluster role behavior.

@@ -141,3 +141,18 @@ Performance thresholds: NOT_EVALUATED
 Cluster-role implementation tests begin only after a disposable-cluster
 strategy is accepted. They must not silently alter shared development-cluster
 roles.
+
+## Phase 5 Step 2 Disposable-Cluster Tests
+
+PostgreSQL roles are cluster-global, so Step 2 role tests do not use an
+ordinary disposable database in the shared development cluster.
+
+Run:
+
+```bash
+./test-framework/sql/deployment/scripts/test_phase5_step2_role_topology.sh
+```
+
+The test creates and destroys an isolated PostgreSQL cluster, applies all 34
+Foundation migrations, applies deployment migration 900 twice, and proves
+role attributes, credential state, bounded memberships, and denial behavior.

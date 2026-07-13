@@ -1,0 +1,27 @@
+# Deployment and Bootstrap Migrations
+
+This directory contains environment-facing migrations in the reserved
+`900–999` range.
+
+Deployment migrations are separate from the accepted Platform Foundation
+`000–099` history. They may create PostgreSQL cluster roles, transfer
+ownership, establish default privileges, and configure deployment-specific
+security boundaries.
+
+## Safety Rules
+
+- Apply these migrations only through `sql/deployment/scripts/apply_deployment.sh`.
+- A controlled PostgreSQL bootstrap identity is required.
+- Never place passwords, private keys, tokens, or environment secrets in these
+  files.
+- Cluster-role tests must use a disposable PostgreSQL cluster.
+- Ordinary Foundation test databases do not isolate cluster-global roles.
+
+## Current Inventory
+
+- `900_postgresql_role_topology_and_membership.sql`
+  - creates canonical role shells;
+  - creates bounded service-to-capability memberships;
+  - leaves passwords unprovisioned;
+  - leaves ownership and object privileges unchanged;
+  - records exact SHA-256 deployment migration metadata.

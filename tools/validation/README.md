@@ -63,3 +63,26 @@ Static repository and contract validation only:
 
 The complete gate re-runs the formally accepted Phase 4 gate and confirms that
 Step 1 did not alter the accepted Foundation SQL or executable test tree.
+
+## Foundation Repository/Database Parity
+
+The accepted Phase 4 review script remains frozen under `sql/schema`.
+Repository/database migration parity is checked separately with:
+
+```bash
+./tools/validation/validate_foundation_database_parity.sh dev_testing
+```
+
+## Phase 5 Step 2 Gate
+
+Run the complete deployment-role topology gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step2.sh
+```
+
+Run static validation only:
+
+```bash
+./tools/validation/phase-gates/validate_phase5_step2.sh --static-only
+```

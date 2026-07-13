@@ -120,3 +120,11 @@ Active gate:
 ```bash
 ./tools/validation/phase-gates/validate_phase5_step1.sh
 ```
+
+## Active Phase 5 Step 2
+
+Phase 5 Step 2 implements the separate deployment tree and canonical
+PostgreSQL role topology while preserving the accepted Phase 4 `sql/schema`
+and executable test tree.
+
+- [Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology](architecture/foundation/phase-5-step-2-deployment-role-topology.md)
