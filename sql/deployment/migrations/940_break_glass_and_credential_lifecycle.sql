@@ -1540,12 +1540,18 @@ BEGIN
     FROM pg_proc AS routine_record
     JOIN pg_namespace AS namespace_record
       ON namespace_record.oid = routine_record.pronamespace
+    CROSS JOIN LATERAL pg_catalog.aclexplode(
+        coalesce(
+            routine_record.proacl,
+            pg_catalog.acldefault(
+                'f',
+                routine_record.proowner
+            )
+        )
+    ) AS acl_record
     WHERE namespace_record.nspname = 'emergency_control'
-      AND has_function_privilege(
-          'PUBLIC',
-          routine_record.oid,
-          'EXECUTE'
-      );
+      AND acl_record.grantee = 0
+      AND acl_record.privilege_type = 'EXECUTE';
 
     IF v_violation_count <> 0 THEN
         RAISE EXCEPTION USING
