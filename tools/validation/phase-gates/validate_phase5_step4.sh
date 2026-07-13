@@ -171,6 +171,12 @@ check_equal \
 
 migration_920="sql/deployment/migrations/920_least_privileged_runtime_grants_and_controlled_service_apis.sql"
 
+if [[ "$(sed -n '1p' "$migration_920")" == "-- ============================================================================" ]]; then
+    pass "Migration 920 begins with SQL rather than a psql meta-command"
+else
+    fail "Migration 920 begins with SQL rather than a psql meta-command"
+fi
+
 migration_markers=(
     "PHASE 5 STEP 4 CANDIDATE"
     "CREATE TABLE deployment_meta.runtime_privilege_contract"

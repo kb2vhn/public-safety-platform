@@ -1,4 +1,3 @@
-\
 -- ============================================================================
 -- Migration: 920_least_privileged_runtime_grants_and_controlled_service_apis.sql
 -- Title: Least-Privileged Runtime Grants and Controlled Service APIs
