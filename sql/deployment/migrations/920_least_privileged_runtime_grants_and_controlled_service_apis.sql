@@ -952,12 +952,19 @@ BEGIN
     SELECT count(*)
     INTO v_violation_count
     FROM deployment_meta.runtime_privilege_contract AS privilege_contract
-    WHERE privilege_contract.object_kind = 'SCHEMA'
-      AND NOT has_schema_privilege(
-          privilege_contract.grantee_role_name,
-          privilege_contract.object_identity,
-          privilege_contract.privilege_type
-      );
+    WHERE CASE
+        WHEN privilege_contract.object_kind <> 'SCHEMA' THEN false
+        WHEN pg_catalog.to_regnamespace(
+            privilege_contract.object_identity
+        ) IS NULL THEN true
+        ELSE NOT has_schema_privilege(
+            privilege_contract.grantee_role_name,
+            pg_catalog.to_regnamespace(
+                privilege_contract.object_identity
+            ),
+            privilege_contract.privilege_type
+        )
+    END;
 
     IF v_violation_count <> 0 THEN
         RAISE EXCEPTION USING
@@ -969,14 +976,19 @@ BEGIN
     SELECT count(*)
     INTO v_violation_count
     FROM deployment_meta.runtime_privilege_contract AS privilege_contract
-    WHERE privilege_contract.object_kind = 'ROUTINE'
-      AND NOT has_function_privilege(
-          privilege_contract.grantee_role_name,
-          pg_catalog.to_regprocedure(
-              privilege_contract.object_identity
-          ),
-          privilege_contract.privilege_type
-      );
+    WHERE CASE
+        WHEN privilege_contract.object_kind <> 'ROUTINE' THEN false
+        WHEN pg_catalog.to_regprocedure(
+            privilege_contract.object_identity
+        ) IS NULL THEN true
+        ELSE NOT has_function_privilege(
+            privilege_contract.grantee_role_name,
+            pg_catalog.to_regprocedure(
+                privilege_contract.object_identity
+            ),
+            privilege_contract.privilege_type
+        )
+    END;
 
     IF v_violation_count <> 0 THEN
         RAISE EXCEPTION USING
