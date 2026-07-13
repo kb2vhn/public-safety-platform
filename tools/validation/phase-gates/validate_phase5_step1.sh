@@ -311,7 +311,7 @@ else
     check_file "$resources_json"
 
     if [[ -f "$summary" ]]; then
-        check_contains "$summary" "Correctness result: PASS" \
+        check_contains "$summary" "Overall result: PASS" \
             "Correctness summary result is PASS"
         check_contains "$summary" "Sequential test files: 21" \
             "Correctness summary has 21 sequential tests"
