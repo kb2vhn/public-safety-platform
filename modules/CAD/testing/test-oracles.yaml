@@ -1,0 +1,205 @@
+schema_version: '1.0'
+registry_id: CAD-REG-TEST-ORACLES
+module: CAD
+owner: Iron Signal Systems
+status: DESIGN_ONLY
+authority: modules/CAD/docs/architecture/cad-test-oracle-and-side-effect-verification-model.md
+outcome_classes:
+- COMMITTED
+- REJECTED_POLICY
+- REJECTED_AUTHENTICATION
+- REJECTED_AUTHORIZATION
+- REJECTED_VALIDATION
+- REJECTED_CONFLICT
+- REJECTED_STATE
+- QUEUED_NONAUTHORITATIVE
+- PENDING_AUTHORITATIVE_VALIDATION
+- RETRYABLE_SERIALIZATION
+- RETRYABLE_DEADLOCK
+- RETRYABLE_TIMEOUT
+- CANCELLED
+- CONNECTION_LOST_UNCERTAIN
+- FAILED_TECHNICAL
+- EXPIRED
+- QUARANTINED
+- RECONCILED
+- UNKNOWN
+entries:
+- id: CAD-ORACLE-UNIT-ASSIGN-COMMIT
+  title: Authorized unit assignment commits exactly once
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  operation_id: CAD-OP-UNIT-ASSIGN
+  expected_outcomes:
+  - COMMITTED
+  before_state:
+  - unit.current_assignment
+  - unit.current_status
+  - incident.current
+  - incident.timeline
+  - outbox.pending
+  expected_changes:
+  - unit.current_assignment
+  - incident.timeline
+  expected_unchanged:
+  - unrelated_unit.current_assignment
+  - unrelated_incident.current
+  expected_absent:
+  - duplicate_assignment.committed
+  - cross_context.effect
+  permitted_evidence:
+  - audit.operation_commit
+  - telemetry.operation_result
+  comparison:
+    method: canonical_state_digest
+    digest: sha256
+  applicable_tiers:
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  reviewer: UNASSIGNED
+  provisional_invariant_statements:
+  - one_authoritative_assignment_when_single_assignment_required
+  - timeline_matches_current_projection
+- id: CAD-ORACLE-UNIT-ASSIGN-REJECT
+  title: Rejected unit assignment creates no unauthorized assignment or delivery
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  operation_id: CAD-OP-UNIT-ASSIGN
+  expected_outcomes:
+  - REJECTED_AUTHENTICATION
+  - REJECTED_AUTHORIZATION
+  - REJECTED_VALIDATION
+  - REJECTED_CONFLICT
+  - REJECTED_STATE
+  - EXPIRED
+  - QUARANTINED
+  before_state:
+  - unit.current_assignment
+  - unit.current_status
+  - incident.current
+  - incident.timeline
+  - outbox.pending
+  - delivery.current
+  expected_changes: []
+  expected_unchanged:
+  - unit.current_assignment
+  - unit.current_status
+  - incident.current
+  - incident.timeline
+  - outbox.pending
+  - delivery.current
+  expected_absent:
+  - assignment.committed
+  - outbox.created
+  - delivery.created
+  - cross_context.effect
+  - foundation.authority_manufactured
+  permitted_evidence:
+  - security.authorization_denial
+  - security.validation_rejection
+  - telemetry.operation_result
+  - quarantine.record_when_required
+  comparison:
+    method: canonical_state_digest
+    digest: sha256
+  applicable_tiers:
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  reviewer: UNASSIGNED
+  provisional_invariant_statements:
+  - one_authoritative_assignment_when_single_assignment_required
+  - no_local_or_external_state_creates_authority
+- id: CAD-ORACLE-ALERT-ACKNOWLEDGE
+  title: Alert acknowledgment remains distinct from resolution
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  operation_id: CAD-OP-ALERT-ACKNOWLEDGE
+  expected_outcomes:
+  - COMMITTED
+  before_state:
+  - alert.current
+  - alert.history
+  expected_changes:
+  - alert.acknowledgment
+  - alert.history
+  expected_unchanged:
+  - alert.resolution
+  expected_absent:
+  - alert.false_resolution
+  - duplicate_acknowledgment_effect
+  permitted_evidence:
+  - audit.operation_commit
+  - telemetry.operation_result
+  comparison:
+    method: canonical_state_digest
+    digest: sha256
+  applicable_tiers:
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  reviewer: UNASSIGNED
+  provisional_invariant_statements:
+  - acknowledgment_does_not_equal_resolution
+- id: CAD-ORACLE-DEGRADED-RECONCILE
+  title: Degraded action receives fresh authority and explicit reconciliation
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  operation_id: CAD-OP-DEGRADED-ACTION-RECONCILE
+  expected_outcomes:
+  - COMMITTED
+  - REJECTED_AUTHORIZATION
+  - REJECTED_CONFLICT
+  - REJECTED_STATE
+  - EXPIRED
+  - QUARANTINED
+  - RECONCILED
+  before_state:
+  - reconciliation.local_action
+  - reconciliation.current
+  - authorization.current_context
+  - incident.current
+  - unit.current_assignment
+  - outbox.pending
+  expected_changes:
+  - reconciliation.disposition
+  expected_unchanged:
+  - foundation.approval_state_unless_authoritatively_changed
+  - foundation.authorization_state_unless_authoritatively_changed
+  expected_absent:
+  - local_record_promoted_without_fresh_decision
+  - technical_retry_converted_to_allow
+  - provider_acknowledgment_converted_to_commit
+  - cross_context.effect
+  permitted_evidence:
+  - audit.reconciliation
+  - security.authorization_denial
+  - quarantine.record_when_required
+  - telemetry.operation_result
+  comparison:
+    method: canonical_state_digest
+    digest: sha256
+  applicable_tiers:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  reviewer: UNASSIGNED
+  provisional_invariant_statements:
+  - local_state_is_never_authoritative
+  - reconciliation_preserves_original_and_canonical_state

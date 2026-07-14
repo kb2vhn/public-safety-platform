@@ -106,3 +106,14 @@ Phase 5 Step 7 adds hostile-input and PostgreSQL role-race validation plus one p
 ```
 
 This gate formally accepts and freezes the production database security boundary at `phase-5-production-database-security-boundary-complete-v1` after complete Step 7 revalidation.
+
+## CAD Phase 0 Static Gate
+
+```bash
+./tools/validation/phase-gates/cad/validate_phase0.sh
+```
+
+The CAD Phase 0 gate validates the documentation package, 104 seeded
+requirements, testing registries, identifier uniqueness, cross-registry
+references, status synchronization, and the absence of executable or production
+claims. It does not establish CAD implementation acceptance.

@@ -23,6 +23,34 @@ and production acceptance are governed by the
 Standards conformance is governed by the
 [CAD Standards-Conformance and Interoperability Model](cad-standards-conformance-and-interoperability-model.md).
 
+## Authoritative Supporting Contracts
+
+This document owns the complete CAD testing categories, minimum campaign
+requirements, retry contract, telemetry expectations, failure intelligence, and
+overall acceptance conditions.
+
+The following subordinate contracts make those requirements executable and
+unambiguous:
+
+- [CAD Testing Identifiers and Authoritative Registries Model](cad-testing-identifiers-and-authoritative-registries-model.md) owns stable assurance identifiers and registry authority.
+- [CAD Test Campaign Accounting Model](cad-test-campaign-accounting-model.md) owns generated, attempted, completed, credited, excluded, and invalidated count semantics.
+- [CAD Test-Oracle and Side-Effect Verification Model](cad-test-oracle-and-side-effect-verification-model.md) owns expected outcomes, authoritative-state checks, permitted evidence effects, and prohibited side effects.
+- [CAD Test Execution Tiers and Gate Cadence](cad-test-execution-tiers-and-gate-cadence.md) owns development, candidate, formal, and preproduction execution tiers.
+- [CAD Test Evidence Retention and Integrity Model](cad-test-evidence-retention-and-integrity-model.md) owns evidence manifests, digests, storage, transfer, sensitivity, and retention.
+- [CAD Acceptance Record Model](cad-acceptance-record-model.md) owns acceptance-record structure, independence, automatic blockers, decisions, and supersession.
+
+When documents overlap:
+
+1. This testing model owns what must be tested and the minimum assurance floor.
+2. The accounting model owns how attempts receive count credit.
+3. The oracle model owns how outcomes and side effects are proven.
+4. The tier model owns when each body of testing must run.
+5. The evidence model owns how proof is retained and verified.
+6. The acceptance model owns how a decision is recorded.
+
+No subordinate document may reduce a minimum or weaken a correctness rule from
+this testing model.
+
 ## Purpose
 
 Define how CAD changes are designed, built, tested, observed, and accepted.

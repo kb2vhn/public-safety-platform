@@ -195,3 +195,15 @@ Each implemented requirement should eventually map to:
 - Resource observation when applicable.
 - Phase gate.
 - Acceptance record.
+
+## Machine-Readable Registration
+
+The authoritative seed register for these `CAD-DSP-*` identifiers is:
+
+```text
+modules/CAD/requirements/cad-requirements.yaml
+```
+
+Every identifier and normative statement in this catalog must appear exactly
+once in that register. The current entries remain not implemented, not tested,
+and not evaluated for acceptance.

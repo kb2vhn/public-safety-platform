@@ -1,0 +1,2884 @@
+schema_version: '1.0'
+registry_id: CAD-REG-REQUIREMENTS
+module: CAD
+owner: Iron Signal Systems
+status: DESIGN_ONLY
+authority: modules/CAD/docs/requirements/cad-requirements-traceability-model.md
+source_catalog: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+notes:
+- This seed register mirrors the existing CAD-DSP requirements.
+- No entry is implemented, tested, accepted, or production-ready.
+- Empty mappings identify future traceability work and are not acceptance evidence.
+requirements:
+- id: CAD-DSP-001
+  title: The dispatcher must be able to determine what is happening, where it is happening, which resources are
+    available, which resources are assigned, and what requires attention
+  normative_text: The dispatcher must be able to determine what is happening, where it is happening, which resources
+    are available, which resources are assigned, and what requires attention.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-001
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-002
+  title: The workspace must identify the authenticated operator, active dispatch position, assigned agencies, disciplines,
+    and scopes
+  normative_text: The workspace must identify the authenticated operator, active dispatch position, assigned agencies,
+    disciplines, and scopes.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-002
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-003
+  title: The workspace must expose CAD and integration degradation with operational consequences
+  normative_text: The workspace must expose CAD and integration degradation with operational consequences.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-003
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-004
+  title: Current, stale, estimated, unconfirmed, queued, failed, conflicted, and committed state must be distinguishable
+  normative_text: Current, stale, estimated, unconfirmed, queued, failed, conflicted, and committed state must be
+    distinguishable.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-004
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-005
+  title: Critical meaning must not depend on color, sound, position, shape, animation, or one input method alone
+  normative_text: Critical meaning must not depend on color, sound, position, shape, animation, or one input method
+    alone.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-005
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-006
+  title: The workspace should preserve stable logical regions during background updates
+  normative_text: The workspace should preserve stable logical regions during background updates.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-006
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-007
+  title: Essential operation must remain possible in a supported single-monitor configuration
+  normative_text: Essential operation must remain possible in a supported single-monitor configuration.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-007
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-008
+  title: Multi-monitor layouts may be configurable without changing the meaning of core workflows
+  normative_text: Multi-monitor layouts may be configurable without changing the meaning of core workflows.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-008
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-020
+  title: The dispatcher must have an active incident queue
+  normative_text: The dispatcher must have an active incident queue.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-020
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-021
+  title: A queue entry must expose incident identifier, priority, type, location summary, scope, received time,
+    ownership, assignment state, and active attention state
+  normative_text: A queue entry must expose incident identifier, priority, type, location summary, scope, received
+    time, ownership, assignment state, and active attention state.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-021
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-022
+  title: The queue must identify incidents awaiting dispatch
+  normative_text: The queue must identify incidents awaiting dispatch.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-022
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-023
+  title: The queue must identify incidents with unread or materially changed information
+  normative_text: The queue must identify incidents with unread or materially changed information.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-023
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-024
+  title: The queue must identify active timers and escalations
+  normative_text: The queue must identify active timers and escalations.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-024
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-025
+  title: The queue must identify responder-safety warning state without exposing restricted detail to unauthorized
+    users
+  normative_text: The queue must identify responder-safety warning state without exposing restricted detail to unauthorized
+    users.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-025
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-026
+  title: The queue should support governed filtering and grouping by agency, discipline, scope, priority, ownership,
+    assignment, and lifecycle state
+  normative_text: The queue should support governed filtering and grouping by agency, discipline, scope, priority,
+    ownership, assignment, and lifecycle state.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-026
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-027
+  title: Queue sorting or filtering must not silently change the selected incident
+  normative_text: Queue sorting or filtering must not silently change the selected incident.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-027
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-028
+  title: Virtualization or pagination must not misrepresent a partial list as the complete operational queue
+  normative_text: Virtualization or pagination must not misrepresent a partial list as the complete operational
+    queue.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-028
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-040
+  title: Selecting an incident must establish one coherent operational context
+  normative_text: Selecting an incident must establish one coherent operational context.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-040
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-041
+  title: The selected incident must expose identity, priority, classification, lifecycle state, ownership, and elapsed
+    time
+  normative_text: The selected incident must expose identity, priority, classification, lifecycle state, ownership,
+    and elapsed time.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-041
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-042
+  title: The selected incident must distinguish reported, caller, verified, staging, destination, and other location
+    roles
+  normative_text: The selected incident must distinguish reported, caller, verified, staging, destination, and other
+    location roles.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-042
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-043
+  title: Caller or reporting-party information must be purpose-bound and access-controlled
+  normative_text: Caller or reporting-party information must be purpose-bound and access-controlled.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-043
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-044
+  title: The selected incident must expose assigned resources and assignment lifecycle
+  normative_text: The selected incident must expose assigned resources and assignment lifecycle.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-044
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-045
+  title: The selected incident must expose the append-oriented operational timeline
+  normative_text: The selected incident must expose the append-oriented operational timeline.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-045
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-046
+  title: The selected incident must expose active alerts, timers, premise information, hazards, and related incidents
+    when authorized
+  normative_text: The selected incident must expose active alerts, timers, premise information, hazards, and related
+    incidents when authorized.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-046
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-047
+  title: Common incident actions should be available without navigating through unrelated windows
+  normative_text: Common incident actions should be available without navigating through unrelated windows.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-047
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-048
+  title: Corrections must preserve the original material record and create accountable lineage
+  normative_text: Corrections must preserve the original material record and create accountable lineage.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-048
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-049
+  title: Closing, reopening, transferring, or cancelling an incident must use controlled operations
+  normative_text: Closing, reopening, transferring, or cancelling an incident must use controlled operations.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-049
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-060
+  title: The dispatcher must have a unit and resource board
+  normative_text: The dispatcher must have a unit and resource board.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-060
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-061
+  title: A resource entry must expose identifier, agency, discipline, current status, status age, assignment, and
+    availability
+  normative_text: A resource entry must expose identifier, agency, discipline, current status, status age, assignment,
+    and availability.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-061
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-062
+  title: Availability and dispatchability must be distinct
+  normative_text: Availability and dispatchability must be distinct.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-062
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-063
+  title: A resource entry should expose capabilities, crew summary, station or response area, communications reference,
+    and last contact when authorized
+  normative_text: A resource entry should expose capabilities, crew summary, station or response area, communications
+    reference, and last contact when authorized.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-063
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-064
+  title: Current location must include source, age, confidence, and degradation state
+  normative_text: Current location must include source, age, confidence, and degradation state.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-064
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-065
+  title: A stale location must not appear current
+  normative_text: A stale location must not appear current.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-065
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-066
+  title: A unit assignment must distinguish recommended, proposed, committed, delivered, acknowledged, active, completed,
+    cancelled, and failed state as applicable
+  normative_text: A unit assignment must distinguish recommended, proposed, committed, delivered, acknowledged,
+    active, completed, cancelled, and failed state as applicable.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-066
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-067
+  title: Concurrent assignment of one unit must produce one authoritative result when single assignment is required
+  normative_text: Concurrent assignment of one unit must produce one authoritative result when single assignment
+    is required.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-067
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-068
+  title: Exceptional status or assignment transitions must require a reason
+  normative_text: Exceptional status or assignment transitions must require a reason.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-068
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-080
+  title: The system may recommend resources but must not silently commit a recommendation
+  normative_text: The system may recommend resources but must not silently commit a recommendation.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-080
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-081
+  title: A material recommendation must identify the applicable response plan and version
+  normative_text: A material recommendation must identify the applicable response plan and version.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-081
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-082
+  title: A recommendation must explain why a resource was included, ranked, or excluded
+  normative_text: A recommendation must explain why a resource was included, ranked, or excluded.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-082
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-083
+  title: Recommendation logic must consider capability, availability, dispatchability, scope, location freshness,
+    policy, and operational constraints
+  normative_text: Recommendation logic must consider capability, availability, dispatchability, scope, location
+    freshness, policy, and operational constraints.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-083
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-084
+  title: Recommendations must expire or be reevaluated when material inputs change
+  normative_text: Recommendations must expire or be reevaluated when material inputs change.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-084
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-085
+  title: An authorized operator may override a recommendation
+  normative_text: An authorized operator may override a recommendation.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-085
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-086
+  title: An override must preserve the original recommendation and record actor, authority, reason, and selected
+    resource
+  normative_text: An override must preserve the original recommendation and record actor, authority, reason, and
+    selected resource.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-086
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-087
+  title: A response-plan exception must not silently modify the governed response-plan version
+  normative_text: A response-plan exception must not silently modify the governed response-plan version.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-087
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-100
+  title: The dispatcher must be able to inspect incident and unit location without depending solely on a map
+  normative_text: The dispatcher must be able to inspect incident and unit location without depending solely on
+    a map.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-100
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-101
+  title: Map selection and alternative-list selection must establish consistent context
+  normative_text: Map selection and alternative-list selection must establish consistent context.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-101
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-102
+  title: Location data must retain source, effective time, recorded time, confidence, and verification state
+  normative_text: Location data must retain source, effective time, recorded time, confidence, and verification
+    state.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-102
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-103
+  title: Jurisdiction and response-area derivation must expose failure or uncertainty
+  normative_text: Jurisdiction and response-area derivation must expose failure or uncertainty.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-103
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-104
+  title: Premise information must support structured access, facility, hazard, and response context
+  normative_text: Premise information must support structured access, facility, hazard, and response context.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-104
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-105
+  title: Sensitive access information must be classified and limited to operational need
+  normative_text: Sensitive access information must be classified and limited to operational need.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-105
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-106
+  title: A responder-safety warning must retain source, verification, review, expiration, organization, and lineage
+  normative_text: A responder-safety warning must retain source, verification, review, expiration, organization,
+    and lineage.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-106
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-107
+  title: Unverified free text must not automatically become a permanent premise warning
+  normative_text: Unverified free text must not automatically become a permanent premise warning.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-107
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-108
+  title: Map-provider failure must not remove essential location text or controlled CAD operation
+  normative_text: Map-provider failure must not remove essential location text or controlled CAD operation.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-108
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-120
+  title: Alerts must identify severity, source, affected target, age, required action, owner, acknowledgment, escalation,
+    and resolution state
+  normative_text: Alerts must identify severity, source, affected target, age, required action, owner, acknowledgment,
+    escalation, and resolution state.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-120
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-121
+  title: Acknowledging an alert must not mean the condition is resolved
+  normative_text: Acknowledging an alert must not mean the condition is resolved.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-121
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-122
+  title: Alert acknowledgment must be attributable and authorized
+  normative_text: Alert acknowledgment must be attributable and authorized.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-122
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-123
+  title: Alert resolution must identify the resolving condition or disposition
+  normative_text: Alert resolution must identify the resolving condition or disposition.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-123
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-124
+  title: Repeated conditions must be deduplicated without hiding material changes
+  normative_text: Repeated conditions must be deduplicated without hiding material changes.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-124
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-125
+  title: Suppression must be governed, time-bounded, attributable, and safety constrained
+  normative_text: Suppression must be governed, time-bounded, attributable, and safety constrained.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-125
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-126
+  title: A timer must identify its policy version, start event, threshold, escalation, and affected workflow
+  normative_text: A timer must identify its policy version, start event, threshold, escalation, and affected workflow.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-126
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-127
+  title: Critical alerts must persist according to policy until acknowledged or resolved
+  normative_text: Critical alerts must persist according to policy until acknowledged or resolved.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-127
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-128
+  title: Alert presentation must provide accessible visual, textual, audible, or programmatic equivalents appropriate
+    to urgency
+  normative_text: Alert presentation must provide accessible visual, textual, audible, or programmatic equivalents
+    appropriate to urgency.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-128
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-140
+  title: High-frequency essential actions must be keyboard operable
+  normative_text: High-frequency essential actions must be keyboard operable.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-140
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-141
+  title: A command must resolve to explicit targets and a proposed governed operation
+  normative_text: A command must resolve to explicit targets and a proposed governed operation.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-141
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-142
+  title: Ambiguous commands must not commit until ambiguity is resolved
+  normative_text: Ambiguous commands must not commit until ambiguity is resolved.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-142
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-143
+  title: High-impact actions must expose material consequences before commit when operationally appropriate
+  normative_text: High-impact actions must expose material consequences before commit when operationally appropriate.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-143
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-144
+  title: The interface must report committed, rejected, pending, queued, failed, expired, or conflicted results
+    accurately
+  normative_text: The interface must report committed, rejected, pending, queued, failed, expired, or conflicted
+    results accurately.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-144
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-145
+  title: Plain-language interpretation must not grant authority
+  normative_text: Plain-language interpretation must not grant authority.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-145
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-146
+  title: Background refresh must not move keyboard focus or discard valid operator input
+  normative_text: Background refresh must not move keyboard focus or discard valid operator input.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-146
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-147
+  title: Reauthentication or step-up should preserve safe unsaved work
+  normative_text: Reauthentication or step-up should preserve safe unsaved work.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-147
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-148
+  title: Destructive or irreversible actions must not be hidden behind unlabeled icons or transient gestures
+  normative_text: Destructive or irreversible actions must not be hidden behind unlabeled icons or transient gestures.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-148
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-160
+  title: CAD must distinguish a committed platform action from successful external delivery
+  normative_text: CAD must distinguish a committed platform action from successful external delivery.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-160
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-161
+  title: External messages must retain provider identity, contract version, source identity, receipt time, and disposition
+  normative_text: External messages must retain provider identity, contract version, source identity, receipt time,
+    and disposition.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-161
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-162
+  title: Duplicate external messages must not create duplicate operational effect when single effect is required
+  normative_text: Duplicate external messages must not create duplicate operational effect when single effect is
+    required.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-162
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-163
+  title: Failed, queued, retried, expired, and delivered communications must be distinguishable
+  normative_text: Failed, queued, retried, expired, and delivered communications must be distinguishable.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-163
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-164
+  title: Recording systems should be referenced through governed identifiers rather than copied indiscriminately
+    into incidents
+  normative_text: Recording systems should be referenced through governed identifiers rather than copied indiscriminately
+    into incidents.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-164
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-165
+  title: Provider-specific behavior must remain inside replaceable adapters
+  normative_text: Provider-specific behavior must remain inside replaceable adapters.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-165
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-166
+  title: Integration health must state the affected capability and operational consequence
+  normative_text: Integration health must state the affected capability and operational consequence.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-166
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-180
+  title: Normal dispatcher access must be limited by identity, organization, position, scope, purpose, operation,
+    target, session, policy, and current authority
+  normative_text: Normal dispatcher access must be limited by identity, organization, position, scope, purpose,
+    operation, target, session, policy, and current authority.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-180
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-181
+  title: A normal dispatcher account must not include user administration, security administration, unrestricted
+    export, audit deletion, or direct protected-table writes
+  normative_text: A normal dispatcher account must not include user administration, security administration, unrestricted
+    export, audit deletion, or direct protected-table writes.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-181
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-182
+  title: Supervisory operations must remain distinct from unrestricted administration
+  normative_text: Supervisory operations must remain distinct from unrestricted administration.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-182
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-183
+  title: Material supervisor overrides must require a reason and durable history
+  normative_text: Material supervisor overrides must require a reason and durable history.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-183
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-184
+  title: Sensitive access and bulk export must be purpose-bound and auditable
+  normative_text: Sensitive access and bulk export must be purpose-bound and auditable.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-184
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-185
+  title: No ordinary identity or accumulated role set may provide unrestricted CAD authority
+  normative_text: No ordinary identity or accumulated role set may provide unrestricted CAD authority.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-185
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-186
+  title: Break-glass access must be explicit, limited, time-bound, attributable, accessible, and reviewable
+  normative_text: Break-glass access must be explicit, limited, time-bound, attributable, accessible, and reviewable.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-186
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-187
+  title: Approval Action recording, stage satisfaction, Approval Request finalization, Authorization Decision, Authorization
+    Lease continuity, CAD commit, and external delivery must remain distinguishable
+  normative_text: Approval Action recording, stage satisfaction, Approval Request finalization, Authorization Decision,
+    Authorization Lease continuity, CAD commit, and external delivery must remain distinguishable.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-187
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-188
+  title: An approval must remain a bounded policy input and must not be represented as permission or a committed
+    CAD action
+  normative_text: An approval must remain a bounded policy input and must not be represented as permission or a
+    committed CAD action.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-188
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-189
+  title: A local client, cache, or queue must not create or finalize Foundation approval or authorization records
+  normative_text: A local client, cache, or queue must not create or finalize Foundation approval or authorization
+    records.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-189
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-190
+  title: Retryable serialization, deadlock, and conflict outcomes must remain distinguishable from policy denial
+  normative_text: Retryable serialization, deadlock, and conflict outcomes must remain distinguishable from policy
+    denial.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-190
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-200
+  title: The dispatcher must be told which capability is degraded and what remains authoritative
+  normative_text: The dispatcher must be told which capability is degraded and what remains authoritative.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-200
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-201
+  title: The workspace must distinguish locally recorded, queued, pending authoritative validation, rejected, expired,
+    conflicted, reconciled, and authoritatively committed actions
+  normative_text: The workspace must distinguish locally recorded, queued, pending authoritative validation, rejected,
+    expired, conflicted, reconciled, and authoritatively committed actions.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-201
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-202
+  title: Offline or queued operation must define maximum authority and conflict behavior
+  normative_text: Offline or queued operation must define maximum authority and conflict behavior.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-202
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-203
+  title: Reconciliation must preserve local action, central state, conflict, disposition, and resulting canonical
+    state
+  normative_text: Reconciliation must preserve local action, central state, conflict, disposition, and resulting
+    canonical state.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-203
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-204
+  title: Recovery must not be declared complete until required queues, conflicts, delivery, and operational checks
+    are resolved
+  normative_text: Recovery must not be declared complete until required queues, conflicts, delivery, and operational
+    checks are resolved.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-204
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-205
+  title: Degraded operation must preserve accessible essential interaction
+  normative_text: Degraded operation must preserve accessible essential interaction.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-205
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-220
+  title: Essential CAD workflows must be fully keyboard operable
+  normative_text: Essential CAD workflows must be fully keyboard operable.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-220
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-221
+  title: Focus order and active context must remain predictable
+  normative_text: Focus order and active context must remain predictable.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-221
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-222
+  title: Unit, incident, priority, alert, timer, queue, staleness, and degradation state must be programmatically
+    exposed where supported
+  normative_text: Unit, incident, priority, alert, timer, queue, staleness, and degradation state must be programmatically
+    exposed where supported.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-222
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-223
+  title: Maps must provide an equivalent synchronized non-map representation
+  normative_text: Maps must provide an equivalent synchronized non-map representation.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-223
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-224
+  title: Critical alerts must not depend on one sensory channel
+  normative_text: Critical alerts must not depend on one sensory channel.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-224
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-225
+  title: High-density operation must retain stable landmarks, logical region navigation, and clear context
+  normative_text: High-density operation must retain stable landmarks, logical region navigation, and clear context.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-225
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-226
+  title: Accessibility preferences should follow the authenticated operator without requiring medical disclosure
+  normative_text: Accessibility preferences should follow the authenticated operator without requiring medical disclosure.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-226
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-227
+  title: User preferences must not suppress mandatory life-safety or security controls without governed authority
+  normative_text: User preferences must not suppress mandatory life-safety or security controls without governed
+    authority.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-227
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null
+- id: CAD-DSP-228
+  title: Accessibility acceptance requires automated, manual, assistive-technology, degraded-operation, and representative
+    workflow evaluation
+  normative_text: Accessibility acceptance requires automated, manual, assistive-technology, degraded-operation,
+    and representative workflow evaluation.
+  status: ACTIVE
+  implementation_status: NOT_IMPLEMENTED
+  test_status: NOT_TESTED
+  acceptance_status: NOT_EVALUATED
+  owner: Iron Signal Systems
+  applicability: PLANNED_INITIAL_CAD_SCOPE
+  source:
+    document: modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+    identifier: CAD-DSP-228
+  priority: UNASSIGNED
+  consequence: UNCLASSIFIED
+  related_requirements: []
+  invariants: []
+  hazards: []
+  threats: []
+  standards: []
+  controlled_operations: []
+  enforcement_points: []
+  tests: []
+  evidence: []
+  exceptions: []
+  reviewer: UNASSIGNED
+  supersedes: null
+  superseded_by: null

@@ -147,3 +147,14 @@ tools/validation/phase-gates/validate_phase5_step8.sh
 ```
 
 It validates the annotated tag, exact accepted implementation commit, frozen deployment and executable test tree, documentation synchronization, and complete Step 7 regression.
+
+## CAD Phase 0 Static Gate
+
+Validate CAD documentation and assurance registries:
+
+```bash
+./tools/validation/phase-gates/cad/validate_phase0.sh
+```
+
+This gate validates documentation and machine-readable design metadata only. It
+does not claim executable CAD implementation or production readiness.

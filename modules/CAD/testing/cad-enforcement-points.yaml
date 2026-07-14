@@ -1,0 +1,103 @@
+schema_version: '1.0'
+registry_id: CAD-REG-ENFORCEMENT-POINTS
+module: CAD
+owner: Iron Signal Systems
+status: DESIGN_ONLY
+authority: modules/CAD/docs/architecture/cad-testing-and-acceptance-model.md
+entries:
+- id: CAD-EP-CLIENT-INPUT
+  title: Client parsing and local input validation
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: client
+- id: CAD-EP-GO-TRANSPORT-VALIDATION
+  title: Go transport decoding, schema, size, and normalization
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: go_transport
+- id: CAD-EP-GO-AUTH-CONTEXT
+  title: Go authentication and authorization context construction
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: go_application
+- id: CAD-EP-GO-DOMAIN-PRECONDITION
+  title: Go application and domain preconditions
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: go_application
+- id: CAD-EP-GO-IDEMPOTENCY-RETRY
+  title: Go idempotency, retry, timeout, cancellation, and state version
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: go_application
+- id: CAD-EP-PG-RUNTIME-PRIVILEGE
+  title: PostgreSQL runtime role and schema privilege boundary
+  status: PROPOSED
+  authoritative: true
+  direct_test_required: true
+  boundary: postgresql
+- id: CAD-EP-PG-CONTROLLED-API
+  title: PostgreSQL controlled API
+  status: PROPOSED
+  authoritative: true
+  direct_test_required: true
+  boundary: postgresql
+- id: CAD-EP-PG-CURRENT-STATE
+  title: PostgreSQL current-state and operation precondition revalidation
+  status: PROPOSED
+  authoritative: true
+  direct_test_required: true
+  boundary: postgresql
+- id: CAD-EP-PG-INTEGRITY
+  title: PostgreSQL constraints, triggers, RLS, ownership, and security-definer integrity
+  status: PROPOSED
+  authoritative: true
+  direct_test_required: true
+  boundary: postgresql
+- id: CAD-EP-FOUNDATION-AUTHORIZATION
+  title: Foundation approval, authorization, decision, lease, and current-state validation
+  status: PROPOSED
+  authoritative: true
+  direct_test_required: true
+  boundary: foundation_integration
+- id: CAD-EP-QUEUE-WORKER-ADAPTER
+  title: Outbox, queue, worker, adapter, replay, and reconciliation boundary
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: asynchronous_processing
+- id: CAD-EP-WORKSTATION-CACHE-QUEUE
+  title: Workstation cache, local queue, spool, restore, and replay
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: workstation
+- id: CAD-EP-WORKSTATION-IPC
+  title: Workstation Unix-domain socket and local service submission
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: workstation
+- id: CAD-EP-FULL-STACK
+  title: Complete Go-to-PostgreSQL and applicable asynchronous path
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: end_to_end
+- id: CAD-EP-DIRECT-PG-BYPASS
+  title: Direct PostgreSQL bypass attempt using constrained runtime identity
+  status: PROPOSED
+  authoritative: true
+  direct_test_required: true
+  boundary: postgresql
+- id: CAD-EP-CONCURRENT-REORDERED
+  title: Independent concurrent, duplicate, and reordered clients, workers, or processes
+  status: PROPOSED
+  authoritative: false
+  direct_test_required: true
+  boundary: concurrency

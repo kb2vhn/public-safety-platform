@@ -4,7 +4,7 @@
 >
 > **Status:** Normative CAD architecture under active refinement
 >
-> **Implementation status:** Design only
+> **Implementation status:** Design and assurance metadata only
 
 ## Dependency Direction
 
@@ -27,8 +27,8 @@ an independent source of CAD authorization or canonical operational truth.
 
 Start with the
 [CAD Architecture Boundary and Precedence Model](cad-architecture-boundary-and-precedence-model.md).
-It resolves ownership where domain, interface, and workstation documents touch
-the same workflow.
+It resolves ownership where domain, interface, workstation, integration, and
+assurance documents touch the same workflow.
 
 ## CAD Domain and Application Models
 
@@ -60,18 +60,44 @@ This directory owns the managed workstation appliance, local workstation
 components, native services, IPC, cache, spool, release, security, management,
 resource, fault, and recovery behavior.
 
-## Delivery and Acceptance
+## Delivery, Assurance, and Acceptance
+
+### Governing Models
 
 - [CAD Testing and Acceptance Model](cad-testing-and-acceptance-model.md)
 - [CAD Phased Implementation Plan](cad-phased-implementation-plan.md)
-
 - [CAD Operational Readiness and Production Acceptance Model](cad-operational-readiness-and-production-acceptance-model.md)
 - [CAD Standards-Conformance and Interoperability Model](cad-standards-conformance-and-interoperability-model.md)
 - [CAD Data-Migration, Cutover, and Transition Model](cad-data-migration-cutover-and-transition-model.md)
 - [CAD Requirements and Evidence Traceability Model](../requirements/cad-requirements-traceability-model.md)
+
+### Supporting Assurance Contracts
+
+- [CAD Testing Identifiers and Authoritative Registries Model](cad-testing-identifiers-and-authoritative-registries-model.md)
+- [CAD Test Campaign Accounting Model](cad-test-campaign-accounting-model.md)
+- [CAD Test-Oracle and Side-Effect Verification Model](cad-test-oracle-and-side-effect-verification-model.md)
+- [CAD Test Execution Tiers and Gate Cadence](cad-test-execution-tiers-and-gate-cadence.md)
+- [CAD Test Evidence Retention and Integrity Model](cad-test-evidence-retention-and-integrity-model.md)
+- [CAD Acceptance Record Model](cad-acceptance-record-model.md)
+
+### Platform Assurance Dependencies
+
 - [Platform Verification, Validation, and Acceptance Governance](../../../../docs/architecture/verification-validation-and-acceptance-governance-model.md)
 - [Platform Software Supply-Chain and Release Integrity](../../../../docs/architecture/software-supply-chain-and-release-integrity-model.md)
 - [Platform Host Software, Configuration, and Runtime Integrity](../../../../docs/architecture/host-software-configuration-and-runtime-integrity-model.md)
+
+## Machine-Readable Assurance Metadata
+
+```text
+modules/CAD/requirements/cad-requirements.yaml
+modules/CAD/testing/cad-controlled-operations.yaml
+modules/CAD/testing/cad-enforcement-points.yaml
+modules/CAD/testing/cad-hostile-classes.yaml
+modules/CAD/testing/test-oracles.yaml
+```
+
+These registries are design scaffolding until executable implementation and
+applicable tests are accepted.
 
 ## Architecture Acceptance Rule
 

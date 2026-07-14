@@ -6,7 +6,7 @@
 >
 > **Document status:** Normative CAD requirements architecture
 >
-> **Implementation status:** Register contract only
+> **Implementation status:** Register and traceability contract only
 
 ## Purpose
 
@@ -14,6 +14,9 @@ Ensure every accepted CAD claim can be traced from its operational need and
 architecture through implementation, testing, evidence, review, and release.
 
 Large test counts do not compensate for an unmapped requirement.
+
+This document is governed with the
+[CAD Testing Identifiers and Authoritative Registries Model](../architecture/cad-testing-identifiers-and-authoritative-registries-model.md).
 
 ## Required Traceability Chain
 
@@ -47,19 +50,28 @@ operational need
 At minimum, maintain stable identifiers for:
 
 ```text
-CAD-REQ-
-CAD-INV-
-CAD-HAZ-
-CAD-THR-
-CAD-OP-
-CAD-STD-
-CAD-TEST-
-CAD-HOSTILE-
-CAD-FAIL-
-CAD-EVID-
-CAD-EXC-
-CAD-ACC-
+CAD-DSP-       Existing dispatcher capability requirement
+CAD-REG-       Machine-readable assurance registry
+CAD-REQ-       General CAD requirement
+CAD-INV-       Invariant
+CAD-HAZ-       Hazard
+CAD-THR-       Threat or abuse case
+CAD-STD-       Standard or clause mapping
+CAD-OP-        Controlled operation or exchange
+CAD-EP-        Prevention or enforcement point
+CAD-HC-        Hostile behavior class
+CAD-FAIL-      Failure or fault class
+CAD-TEST-      Test case
+CAD-CMP-       Campaign definition or run
+CAD-ORACLE-    Test oracle
+CAD-EVID-      Evidence artifact or manifest
+CAD-DEF-       Defect or discovered mechanism
+CAD-EXC-       Exception
+CAD-ACC-       Acceptance record or decision
 ```
+
+The existing `CAD-DSP-` identifiers are valid requirement identifiers and must
+not be renumbered merely to fit `CAD-REQ-`.
 
 Identifiers must not be silently reused after retirement.
 
@@ -75,7 +87,10 @@ Each requirement must include:
 - Owner.
 - Priority and consequence.
 - Applicability.
-- Status.
+- Requirement status.
+- Implementation status.
+- Test status.
+- Acceptance status.
 - Related requirements.
 - Invariants.
 - Hazards and threats.
@@ -85,9 +100,11 @@ Each requirement must include:
 - Tests.
 - Evidence.
 - Reviewer.
-- Acceptance state.
 - Exceptions.
 - Supersession lineage.
+
+Empty mappings are explicit unfinished traceability. They are not evidence that
+a mapping is unnecessary.
 
 ## Controlled Status
 
@@ -106,24 +123,65 @@ RETIRED
 
 `IMPLEMENTED` does not mean tested. `TESTED` does not mean accepted.
 
+Additional fields may use:
+
+```text
+DESIGN_ONLY
+NOT_IMPLEMENTED
+NOT_TESTED
+NOT_EVALUATED
+NOT_APPLICABLE
+BLOCKED
+FAILED
+```
+
 ## Machine-Readable Authority
 
-The authoritative register should become machine-readable before executable CAD
-phases produce large test inventories.
-
-Recommended future path:
+The authoritative requirement register is:
 
 ```text
 modules/CAD/requirements/cad-requirements.yaml
 ```
 
-Human-readable Markdown may be generated from that register.
+The initial register mirrors the current `CAD-DSP-*` records from:
+
+```text
+modules/CAD/docs/requirements/dispatcher-capability-catalog.md
+```
+
+Human-readable Markdown may be generated from the register after a reproducible
+generator is accepted.
+
+Until then, a static synchronization check must compare the catalog and
+register.
+
+The current register does not claim that any requirement is implemented,
+tested, accepted, or production-ready.
+
+## Related Authoritative Registries
+
+```text
+modules/CAD/testing/cad-controlled-operations.yaml
+modules/CAD/testing/cad-enforcement-points.yaml
+modules/CAD/testing/cad-hostile-classes.yaml
+modules/CAD/testing/test-oracles.yaml
+```
+
+Future executable phases may add test, campaign, failure, evidence, defect,
+exception, and machine-readable acceptance registries.
 
 ## Gate Rules
 
 The traceability gate must fail for:
 
-- Requirement without invariant.
+- YAML parse failure.
+- Unsupported schema version.
+- Duplicate identifier.
+- Invalid identifier namespace.
+- Catalog identifier missing from the requirements register.
+- Contradictory requirement text or status.
+- Unresolved cross-registry reference.
+- Requirement without invariant when implementation acceptance is claimed.
 - High-impact invariant without threat or hazard evaluation.
 - Controlled operation without enforcement-point inventory.
 - Mandatory standard clause without implementation and evidence mapping.
@@ -131,12 +189,16 @@ The traceability gate must fail for:
 - Race-sensitive operation without concurrency tests.
 - Human-facing behavior without accessibility status.
 - Production-critical path without performance and availability budgets.
-- Test without mapped requirement, threat, failure class, or exploration reason.
+- Test without mapped requirement, threat, failure class, or documented
+  exploration reason.
 - Evidence reference that does not exist or does not match the accepted run.
 - Expired exception.
-- Duplicate identifier.
 - Superseded requirement still presented as current.
 - Accepted release containing an unaccepted mandatory requirement.
+- Accepted object that remains marked `NOT_IMPLEMENTED` or `NOT_TESTED`.
+
+Phase 0 may contain empty future mappings when every affected record remains
+honestly marked as not implemented, not tested, and not evaluated.
 
 ## Evidence Binding
 
@@ -144,6 +206,7 @@ Evidence must identify:
 
 - Run and campaign.
 - Source and artifact digests.
+- Registry digests.
 - Schema inventory.
 - Configuration.
 - Environment.
@@ -152,6 +215,7 @@ Evidence must identify:
 - Result.
 - Telemetry completeness.
 - Reviewer.
+- Retention class.
 - Retention location and digest.
 
 A link to a mutable log location without identity or digest is insufficient for
@@ -185,12 +249,27 @@ When a requirement changes:
 2. Create or identify the superseding record.
 3. Perform impact analysis.
 4. Update architecture and implementation mappings.
-5. Update test and evidence mappings.
-6. Re-run affected regression.
-7. Reevaluate standards claims and exceptions.
-8. Update acceptance lineage.
+5. Update controlled-operation, enforcement-point, hostile-class, and oracle
+   mappings.
+6. Update test and evidence mappings.
+7. Re-run affected regression.
+8. Reevaluate standards claims and exceptions.
+9. Update acceptance lineage.
 
-## Acceptance
+## Phase 0 Acceptance
 
-Traceability is accepted only when every mandatory requirement in scope has a
-complete, current, evidence-bound chain and no expired or hidden exception.
+Phase 0 traceability may be accepted when:
+
+- The machine-readable requirement register exists and parses.
+- Every current `CAD-DSP-*` identifier appears exactly once.
+- All entries remain `NOT_IMPLEMENTED`, `NOT_TESTED`, and `NOT_EVALUATED`.
+- Seeded cross-registry identifiers are unique.
+- Documentation and register source paths agree.
+- No executable or production claim is created.
+- The exact static-gate result is retained.
+
+## Executable Acceptance
+
+Traceability for an executable phase is accepted only when every mandatory
+requirement in scope has a complete, current, evidence-bound chain and no
+expired or hidden exception.

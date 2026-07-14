@@ -1,0 +1,310 @@
+schema_version: '1.0'
+registry_id: CAD-REG-CONTROLLED-OPERATIONS
+module: CAD
+owner: Iron Signal Systems
+status: DESIGN_ONLY
+authority: modules/CAD/docs/architecture/cad-testing-identifiers-and-authoritative-registries-model.md
+entries:
+- id: CAD-OP-INCIDENT-CREATE
+  title: Create incident
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: incident commitment
+  sources:
+  - CAD-DSP-040
+  - CAD-DSP-041
+  enforcement_points:
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+  notes: Exact intake and incident-number allocation contract remains to be accepted.
+- id: CAD-OP-INCIDENT-UPDATE
+  title: Update current incident state
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: incident state change with durable history
+  sources:
+  - CAD-DSP-041
+  - CAD-DSP-045
+  enforcement_points:
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-INCIDENT-CORRECT
+  title: Correct material incident information
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: correction with preserved original and lineage
+  sources:
+  - CAD-DSP-048
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-INCIDENT-CLOSE
+  title: Close incident
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: terminal or closing lifecycle transition
+  sources:
+  - CAD-DSP-049
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-INCIDENT-REOPEN
+  title: Reopen incident
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: governed reopening transition
+  sources:
+  - CAD-DSP-049
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-INCIDENT-TRANSFER
+  title: Transfer incident ownership or scope
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: governed transfer with preserved lineage
+  sources:
+  - CAD-DSP-049
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-PG-RUNTIME-PRIVILEGE
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FOUNDATION-AUTHORIZATION
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-UNIT-ASSIGN
+  title: Assign unit or resource
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: one authoritative assignment when exclusivity is required
+  sources:
+  - CAD-DSP-066
+  - CAD-DSP-067
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-GO-IDEMPOTENCY-RETRY
+  - CAD-EP-PG-RUNTIME-PRIVILEGE
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FOUNDATION-AUTHORIZATION
+  - CAD-EP-FULL-STACK
+  - CAD-EP-DIRECT-PG-BYPASS
+- id: CAD-OP-UNIT-UNASSIGN
+  title: Remove unit or resource assignment
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: assignment termination with durable history
+  sources:
+  - CAD-DSP-066
+  - CAD-DSP-068
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-UNIT-STATUS-CHANGE
+  title: Change unit or resource status
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: valid current status with attributable history
+  sources:
+  - CAD-DSP-061
+  - CAD-DSP-068
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-RECOMMENDATION-GENERATE
+  title: Generate response recommendation
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: MEDIUM
+  authoritative_result: explainable nonauthoritative recommendation
+  sources:
+  - CAD-DSP-080
+  - CAD-DSP-081
+  - CAD-DSP-082
+  - CAD-DSP-083
+  - CAD-DSP-084
+  enforcement_points:
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+  notes: Recommendation must never silently become assignment authority.
+- id: CAD-OP-RECOMMENDATION-OVERRIDE
+  title: Override response recommendation
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: attributable override preserving original recommendation
+  sources:
+  - CAD-DSP-085
+  - CAD-DSP-086
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FOUNDATION-AUTHORIZATION
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-ALERT-ACKNOWLEDGE
+  title: Acknowledge alert
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: attributable acknowledgment without false resolution
+  sources:
+  - CAD-DSP-120
+  - CAD-DSP-121
+  - CAD-DSP-122
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-IDEMPOTENCY-RETRY
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-ALERT-RESOLVE
+  title: Resolve alert
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: resolution with condition or disposition
+  sources:
+  - CAD-DSP-123
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-DOMAIN-PRECONDITION
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-ALERT-SUPPRESS
+  title: Suppress alert
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: governed time-bounded suppression
+  sources:
+  - CAD-DSP-125
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FOUNDATION-AUTHORIZATION
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-PREMISE-WARNING-MAINTAIN
+  title: Create or change responder-safety premise warning
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: classified warning with source, verification, review, expiration, organization,
+    and lineage
+  sources:
+  - CAD-DSP-104
+  - CAD-DSP-105
+  - CAD-DSP-106
+  - CAD-DSP-107
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FOUNDATION-AUTHORIZATION
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-EXTERNAL-MESSAGE-INGEST
+  title: Ingest external message
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: deduplicated governed inbound disposition
+  sources:
+  - CAD-DSP-161
+  - CAD-DSP-162
+  - CAD-DSP-165
+  enforcement_points:
+  - CAD-EP-GO-TRANSPORT-VALIDATION
+  - CAD-EP-GO-IDEMPOTENCY-RETRY
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-QUEUE-WORKER-ADAPTER
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-EXTERNAL-DELIVERY-REQUEST
+  title: Request external delivery
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: CAD commitment distinct from outbox, transmission, and acknowledgment
+  sources:
+  - CAD-DSP-160
+  - CAD-DSP-163
+  - CAD-DSP-165
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-IDEMPOTENCY-RETRY
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-QUEUE-WORKER-ADAPTER
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-DEGRADED-ACTION-RECONCILE
+  title: Reconcile locally recorded or queued degraded action
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: fresh authoritative validation, conflict disposition, and canonical state
+  sources:
+  - CAD-DSP-200
+  - CAD-DSP-201
+  - CAD-DSP-202
+  - CAD-DSP-203
+  - CAD-DSP-204
+  enforcement_points:
+  - CAD-EP-WORKSTATION-CACHE-QUEUE
+  - CAD-EP-WORKSTATION-IPC
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-GO-IDEMPOTENCY-RETRY
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-QUEUE-WORKER-ADAPTER
+  - CAD-EP-FOUNDATION-AUTHORIZATION
+  - CAD-EP-FULL-STACK
+- id: CAD-OP-SENSITIVE-BULK-EXPORT
+  title: Export sensitive CAD information in bulk
+  status: PROPOSED
+  implementation_status: NOT_IMPLEMENTED
+  impact: HIGH
+  authoritative_result: purpose-bound, scoped, attributable export
+  sources:
+  - CAD-DSP-181
+  - CAD-DSP-184
+  - CAD-DSP-185
+  enforcement_points:
+  - CAD-EP-GO-AUTH-CONTEXT
+  - CAD-EP-PG-RUNTIME-PRIVILEGE
+  - CAD-EP-PG-CONTROLLED-API
+  - CAD-EP-PG-CURRENT-STATE
+  - CAD-EP-FOUNDATION-AUTHORIZATION
+  - CAD-EP-FULL-STACK
+  - CAD-EP-DIRECT-PG-BYPASS

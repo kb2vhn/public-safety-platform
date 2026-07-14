@@ -1,0 +1,107 @@
+schema_version: '1.0'
+registry_id: CAD-REG-HOSTILE-CLASSES
+module: CAD
+owner: Iron Signal Systems
+status: DESIGN_ONLY
+authority: modules/CAD/docs/architecture/cad-testing-and-acceptance-model.md
+entries:
+- id: CAD-HC-UNKNOWN-OR-DISABLED-IDENTITY
+  title: Unknown, disabled, suspended, expired, or revoked identity context
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-WRONG-SCOPE-OR-TARGET
+  title: Wrong organization, agency, scope, purpose, operation, target, incident, unit, alert, or resource
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-MISSING-FORGED-CONTRADICTORY-CONTEXT
+  title: Missing, forged, duplicated, contradictory, or malformed identity and authorization context
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-STALE-AUTHORIZATION
+  title: Stale approval, authorization, lease, policy, session, or authority context
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-STALE-OPERATIONAL-STATE
+  title: Stale incident, unit, location, recommendation, assignment, alert, timer, or version state
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-DUPLICATE-OR-REPLAY
+  title: Duplicate request, action, actor, delivery, acknowledgment, idempotency key, or replayed payload
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-MALFORMED-OR-BOUNDARY-INPUT
+  title: Oversized, truncated, invalidly encoded, unexpected, unknown, null, empty, or boundary input
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: false
+- id: CAD-HC-ILLEGAL-STATE-TRANSITION
+  title: Illegal transition, terminal modification, or impossible current projection attempt
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-DIRECT-PROTECTED-WRITE
+  title: Direct protected-table write or uncontrolled data mutation
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-UNAUTHORIZED-FUNCTION-EXECUTION
+  title: Unauthorized controlled-function execution
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-SEARCH-PATH-OR-OBJECT-SUBSTITUTION
+  title: Search-path manipulation or cross-schema object substitution
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-CONCURRENT-REORDERING
+  title: Concurrent, reordered, or winner-selection manipulation
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-TECHNICAL-OUTCOME-AS-POLICY
+  title: Serialization, deadlock, timeout, cancellation, or connection loss converted into policy or commitment
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-QUEUE-REDLIVERY-OR-WORKER-RESTART
+  title: Queue redelivery, worker restart, delayed claim, or replay misuse
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-PROVIDER-DUPLICATION-OR-REORDERING
+  title: Provider duplication, delay, reordering, partial success, or disagreement
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-CACHE-QUEUE-AUTHORITY-MISUSE
+  title: Cache, local record, queue, spool, outbox, retry, or provider state used to counterfeit authority
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-CROSS-CONTEXT-CONTAMINATION
+  title: Cross-user, workstation, organization, scope, incident, unit, session, or environment effect
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-RESOURCE-EXHAUSTION-FAIL-OPEN
+  title: Resource exhaustion intended to create fail-open authority or hidden loss
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-RECOVERY-RECONCILIATION-CONFLICT
+  title: Recovery, stale restore, failover, or reconciliation conflict used to create false commitment
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true
+- id: CAD-HC-TELEMETRY-EVASION
+  title: Telemetry loss, ambiguity, or correlation failure intended to hide outcome
+  status: PROPOSED
+  minimum_credit_class: PRIMARY
+  high_impact: true

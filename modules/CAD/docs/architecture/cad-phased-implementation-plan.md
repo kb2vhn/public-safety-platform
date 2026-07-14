@@ -1019,7 +1019,8 @@ is not defensible.
 
 ### Goal
 
-Establish one authoritative roadmap and make the current CAD status explicit.
+Establish one authoritative roadmap, stable assurance identifiers,
+machine-readable registers, and an explicit current CAD status.
 
 ### Documentation
 
@@ -1029,7 +1030,14 @@ Establish one authoritative roadmap and make the current CAD status explicit.
 - Inventory all CAD architecture, requirements, decisions, and acceptance paths.
 - Define document status vocabulary.
 - Define phase, step, candidate, accepted, and production-ready meanings.
-- Record explicitly that existing CAD design is not executable acceptance.
+- Accept the CAD testing identifier and authoritative registry contract.
+- Create the machine-readable CAD requirements seed register.
+- Create initial controlled-operation, enforcement-point, hostile-class, and
+  test-oracle registries.
+- Accept campaign accounting, oracle, execution-tier, evidence, and
+  acceptance-record contracts.
+- Create the CAD phase acceptance-record template.
+- Record explicitly that existing CAD design and registries are not executable acceptance.
 
 ### SQL
 
@@ -1041,20 +1049,35 @@ No production CAD Go code.
 
 ### Testing
 
-Static documentation checks:
+Static documentation and registry checks:
 
 - Required files exist.
 - Links resolve.
+- YAML registries parse.
+- Supported schema versions are used.
+- Identifiers are unique.
+- Registry prefixes match object types.
+- Cross-registry references resolve.
+- Every current `CAD-DSP-*` requirement appears exactly once in the
+  machine-readable register.
+- Seeded objects remain design-only, proposed, not implemented, not tested,
+  and not evaluated.
 - Status statements agree.
 - No old root architecture paths remain.
-- No production claim exists.
+- No executable or production claim exists.
 - No migration range is implied.
 
 ### Gate
 
-Create the first CAD static-only gate.
+The first CAD static-only gate is:
 
-The gate should validate documentation and repository truth only.
+```bash
+./tools/validation/phase-gates/cad/validate_phase0.sh
+```
+
+The gate validates documentation, machine-readable registries, identifier
+uniqueness, cross-registry references, exact `CAD-DSP-*` synchronization, and
+repository truth only.
 
 ### Performance
 
@@ -1067,8 +1090,12 @@ Performance thresholds: NOT_APPLICABLE
 
 - CAD Phase 0 acceptance record exists.
 - Exact static PASS count is retained.
+- Requirements and testing registries parse and pass identifier validation.
+- The register revision and digests are retained.
+- Every empty future mapping remains explicitly unfinished rather than
+  implicitly not applicable.
 - Next phase is stated.
-- No executable implementation is claimed.
+- No executable implementation or production acceptance is claimed.
 
 ## CAD Phase 1 — Dispatcher Operational Contract and Terminology
 

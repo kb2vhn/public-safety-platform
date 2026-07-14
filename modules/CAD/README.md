@@ -104,17 +104,24 @@ future approved module-range decision.
 - [CAD Architecture Index](docs/architecture/README.md)
 - [CAD User-Interface Architecture](docs/architecture/user-interface/README.md)
 - [CAD Operational Workstation Architecture](docs/architecture/operational-workstation/README.md)
+- [CAD Requirements Index](docs/requirements/README.md)
 - [Dispatcher Capability Catalog](docs/requirements/dispatcher-capability-catalog.md)
 - [CAD Requirements and Evidence Traceability Model](docs/requirements/cad-requirements-traceability-model.md)
+- [CAD Testing and Acceptance Model](docs/architecture/cad-testing-and-acceptance-model.md)
+- [CAD Testing Identifiers and Authoritative Registries Model](docs/architecture/cad-testing-identifiers-and-authoritative-registries-model.md)
+- [CAD Test Campaign Accounting Model](docs/architecture/cad-test-campaign-accounting-model.md)
+- [CAD Test-Oracle and Side-Effect Verification Model](docs/architecture/cad-test-oracle-and-side-effect-verification-model.md)
+- [CAD Test Execution Tiers and Gate Cadence](docs/architecture/cad-test-execution-tiers-and-gate-cadence.md)
+- [CAD Test Evidence Retention and Integrity Model](docs/architecture/cad-test-evidence-retention-and-integrity-model.md)
+- [CAD Acceptance Record Model](docs/architecture/cad-acceptance-record-model.md)
 - [CAD Operational Readiness and Production Acceptance Model](docs/architecture/cad-operational-readiness-and-production-acceptance-model.md)
 - [CAD Standards-Conformance and Interoperability Model](docs/architecture/cad-standards-conformance-and-interoperability-model.md)
-
 - [CAD Decisions](docs/decisions/README.md)
 - [CAD Acceptance Records](docs/acceptance/README.md)
 
-## Planned Executable Boundaries
+## Planned Production Executable Boundaries
 
-Executable paths remain intentionally absent until authorized:
+Production executable paths remain intentionally absent until authorized:
 
 ```text
 sql/schema/manifests/cad.manifest
@@ -123,7 +130,34 @@ test-framework/sql/tests/cad/
 test-framework/sql/tests/cad-tests.manifest
 test-framework/sql/tests/cad-concurrency-tests.manifest
 go/services/cad/
-tools/validation/phase-gates/cad/
 ```
 
-Exact paths and the migration range require a documented decision before use.
+Exact production paths and the migration range require a documented decision before use.
+
+## Current Static Gate
+
+The design-only CAD Phase 0 repository and registry gate is:
+
+```text
+tools/validation/phase-gates/cad/validate_phase0.sh
+```
+
+A passing result proves documentation and assurance-metadata consistency only.
+It does not prove executable CAD behavior or production readiness.
+
+## Current Assurance Metadata
+
+The following machine-readable files establish stable design identities and
+traceability scaffolding:
+
+```text
+modules/CAD/requirements/cad-requirements.yaml
+modules/CAD/testing/cad-controlled-operations.yaml
+modules/CAD/testing/cad-enforcement-points.yaml
+modules/CAD/testing/cad-hostile-classes.yaml
+modules/CAD/testing/test-oracles.yaml
+```
+
+They do not create SQL, Go services, workstation authority, deployment, or
+production acceptance. Seeded objects remain proposed, design-only, not
+implemented, and not tested.
