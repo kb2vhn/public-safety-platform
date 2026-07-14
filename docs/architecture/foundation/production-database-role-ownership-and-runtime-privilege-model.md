@@ -613,3 +613,16 @@ tokens, and passwords remain outside the repository and database. Phase 5 Step
 ## Phase 5 Step 7 — Hostile-Condition and Role-Race Validation
 
 Phase 5 Step 7 adds hostile-input and PostgreSQL role-race validation plus one pre-freeze hardening correction to deployment migration `940_break_glass_and_credential_lifecycle.sql`: an activated SCRAM verifier must use at least 4096 iterations and cryptographically match the independently approved fingerprint. It introduces no new deployment migration or authority. Concurrent preparation, activation, live-session deactivation, use-versus-closure, and expiration-versus-deactivation must remain deterministic, attributable, and fail-closed before Phase 5 formal acceptance.
+
+## Phase 5 Step 8 — Formal Acceptance
+
+This is the Accepted Phase 5 production database security boundary. Phase 5 is formally accepted and frozen.
+
+```text
+Accepted tag:    phase-5-production-database-security-boundary-complete-v1
+Accepted commit: 9f8dbf9d909ef157df72b12511b165a689559093
+Focused Step 7:  82 PASS, 0 FAIL
+Complete Step 7: 97 PASS, 0 FAIL
+```
+
+The annotated tag identifies the exact accepted deployment and executable validation tree. Later work must consume this boundary as an accepted Platform Foundation dependency. Any correction to a frozen implementation path requires explicit reopening, impact analysis, full predecessor and Phase 5 revalidation, and a new acceptance tag.

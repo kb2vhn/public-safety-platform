@@ -172,3 +172,9 @@ tokens, and passwords remain outside the repository and database. Phase 5 Step
 ## Phase 5 Step 7 — Hostile-Condition and Role-Race Validation
 
 Phase 5 Step 7 adds hostile-input and PostgreSQL role-race validation plus one pre-freeze hardening correction to deployment migration `940_break_glass_and_credential_lifecycle.sql`: an activated SCRAM verifier must use at least 4096 iterations and cryptographically match the independently approved fingerprint. It introduces no new deployment migration or authority. Concurrent preparation, activation, live-session deactivation, use-versus-closure, and expiration-versus-deactivation must remain deterministic, attributable, and fail-closed before Phase 5 formal acceptance.
+
+## Accepted Phase 5 — Production Database Security Boundary
+
+The production database security boundary is formally accepted at `phase-5-production-database-security-boundary-complete-v1`, targeting `9f8dbf9d909ef157df72b12511b165a689559093`. The accepted implementation preserves the five-migration deployment boundary through migration `940`, 82 hostile/race-test PASS checks, 97 final phase-gate PASS checks, and zero failures.
+
+See [Phase 5 Production Database Security Boundary Acceptance](architecture/foundation/phase-5-production-database-security-boundary-acceptance.md).

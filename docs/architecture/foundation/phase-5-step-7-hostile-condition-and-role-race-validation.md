@@ -2,7 +2,7 @@
 
 ## Status
 
-Phase 5 Step 7 candidate.
+Phase 5 Step 7 is accepted as the final implementation and adversarial-validation step for the Phase 5 production database security boundary.
 
 This step adds adversarial and concurrency validation for the production database security boundary through migration `940_break_glass_and_credential_lifecycle.sql` and applies one pre-freeze hardening correction: the activated SCRAM verifier must cryptographically match the independently approved credential fingerprint and must use at least 4096 iterations. It does not add a deployment migration, change the frozen Phase 4 schema tree, or grant any new authority.
 
@@ -104,3 +104,7 @@ Step 7 is accepted only when:
 - the complete Step 7 gate reports zero failures.
 
 After acceptance, Phase 5 Step 8 may perform formal production-database security-boundary acceptance, freeze the accepted deployment and validation boundary, and record the release tag and evidence.
+
+## Formal Acceptance
+
+Phase 5 Step 7 completed with 82 PASS and 0 FAIL in the focused hostile-condition and role-race test and 97 PASS and 0 FAIL in the complete implementation gate. Phase 5 Step 8 formally accepts the resulting tree at `phase-5-production-database-security-boundary-complete-v1` targeting `9f8dbf9d909ef157df72b12511b165a689559093`.
