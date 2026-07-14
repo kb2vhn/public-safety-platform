@@ -117,3 +117,12 @@ The CAD Phase 0 gate validates the documentation package, 104 seeded
 requirements, testing registries, identifier uniqueness, cross-registry
 references, status synchronization, and the absence of executable or production
 claims. It does not establish CAD implementation acceptance.
+
+<!-- PHASE6_STEP1_STATUS -->
+
+## Phase 6 Step 1
+
+`validate_phase6_step1.sh` validates the production Go service contract,
+three exact process-to-database-role mappings, absence of premature production
+Go code, unchanged accepted SQL and deployment trees, and the Phase 5 formal
+acceptance predecessor.

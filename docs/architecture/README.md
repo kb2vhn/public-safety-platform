@@ -196,3 +196,15 @@ Phase 5 Step 7 adds hostile-input and PostgreSQL role-race validation plus one p
 Phase 5 formally accepts and freezes the PostgreSQL production role, ownership, runtime privilege, review-surface, break-glass, credential-lifecycle, and hostile-condition concurrency boundary at `phase-5-production-database-security-boundary-complete-v1`.
 
 Downstream services and modules consume this accepted Foundation boundary. They do not independently redefine database ownership, grant protected authority, bypass controlled routines, or create standing emergency access.
+
+<!-- PHASE6_STEP1_STATUS -->
+
+## Phase 6 Step 1 — Production Go Service Boundary
+
+The production backend now has a contract-only checkpoint defining three
+bounded initial Go processes, their exact Phase 5 PostgreSQL service identities,
+controlled database API use, and runtime, observability, shutdown, build, and
+testing boundaries.
+
+- [Production Go Service Boundary and Runtime Model](backend-services/production-go-service-boundary-and-runtime-model.md)
+- [Phase 6 Step 1 Contract Freeze](backend-services/phase-6-step-1-production-go-service-contract.md)

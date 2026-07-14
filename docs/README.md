@@ -178,3 +178,13 @@ Phase 5 Step 7 adds hostile-input and PostgreSQL role-race validation plus one p
 The production database security boundary is formally accepted at `phase-5-production-database-security-boundary-complete-v1`, targeting `9f8dbf9d909ef157df72b12511b165a689559093`. The accepted implementation preserves the five-migration deployment boundary through migration `940`, 82 hostile/race-test PASS checks, 97 final phase-gate PASS checks, and zero failures.
 
 See [Phase 5 Production Database Security Boundary Acceptance](architecture/foundation/phase-5-production-database-security-boundary-acceptance.md).
+
+<!-- PHASE6_STEP1_STATUS -->
+
+## Phase 6 Step 1 — Production Go Service Contract
+
+Phase 6 Step 1 freezes the production Go service and runtime boundary without
+creating production Go code. See the
+[Production Go Service Boundary and Runtime Model](architecture/backend-services/production-go-service-boundary-and-runtime-model.md)
+and the
+[Step 1 contract record](architecture/backend-services/phase-6-step-1-production-go-service-contract.md).

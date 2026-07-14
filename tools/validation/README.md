@@ -158,3 +158,19 @@ Validate CAD documentation and assurance registries:
 
 This gate validates documentation and machine-readable design metadata only. It
 does not claim executable CAD implementation or production readiness.
+
+<!-- PHASE6_STEP1_STATUS -->
+
+## Phase 6 Step 1 — Production Go Service Contract
+
+Run the active gate from the repository root:
+
+```bash
+./tools/validation/phase-gates/validate_phase6_step1.sh
+```
+
+Static repository and predecessor-integrity validation only:
+
+```bash
+./tools/validation/phase-gates/validate_phase6_step1.sh --static-only
+```

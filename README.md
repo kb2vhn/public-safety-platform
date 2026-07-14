@@ -1046,3 +1046,25 @@ Performance thresholds:                     NOT_EVALUATED
 Formal acceptance record:
 
 - [Phase 5 Production Database Security Boundary Acceptance](docs/architecture/foundation/phase-5-production-database-security-boundary-acceptance.md)
+
+<!-- PHASE6_STEP1_STATUS -->
+
+## Active Phase 6 — Production Go Service Boundary
+
+Phase 5 is formally accepted and frozen at
+`phase-5-production-database-security-boundary-complete-v1`. Phase 6 Step 1
+freezes the production Go process topology, exact service-to-database identity
+mapping, controlled API consumption, configuration and secret boundary,
+transaction behavior, observability, health, shutdown, dependency, build, and
+testing contract before production Go code is introduced.
+
+Governing contract:
+
+- [Production Go Service Boundary and Runtime Model](docs/architecture/backend-services/production-go-service-boundary-and-runtime-model.md)
+- [Phase 6 Step 1 Production Go Service Contract Freeze](docs/architecture/backend-services/phase-6-step-1-production-go-service-contract.md)
+
+Active gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase6_step1.sh
+```
