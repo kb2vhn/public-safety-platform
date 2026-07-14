@@ -1,5 +1,5 @@
-// Package database defines the production process-to-database identity
-// boundary. Step 2 declares identities only; it does not open a connection.
+// Package database owns the production process-to-PostgreSQL identity boundary,
+// bounded pgx pool creation, and startup compatibility checks.
 package database
 
 // ServiceIdentity binds one production process to its exact accepted
@@ -31,12 +31,22 @@ var (
 	}
 )
 
-// All returns the complete Step 2 process identity inventory as a fixed-size
-// value so callers cannot mutate package-owned state.
+// All returns the complete process identity inventory as a fixed-size value so
+// callers cannot mutate package-owned state.
 func All() [3]ServiceIdentity {
 	return [3]ServiceIdentity{
 		FoundationAPI,
 		IntegrationDeliveryWorker,
 		MonitoringDeliveryWorker,
 	}
+}
+
+// ByPostgreSQLRole returns the exact compiled service identity for a role.
+func ByPostgreSQLRole(role string) (ServiceIdentity, bool) {
+	for _, identity := range All() {
+		if identity.PostgreSQLRole == role {
+			return identity, true
+		}
+	}
+	return ServiceIdentity{}, false
 }

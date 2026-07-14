@@ -2,31 +2,30 @@ package bootstrap
 
 import (
 	"bytes"
-	"fmt"
+	"context"
+	"strings"
 	"testing"
 
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/database"
 )
 
-func TestRunIsFailClosedSkeleton(t *testing.T) {
-	t.Parallel()
-
+func TestRunFailsClosedWithoutConfiguration(t *testing.T) {
 	for _, identity := range database.All() {
 		identity := identity
 		t.Run(identity.ProcessName, func(t *testing.T) {
-			t.Parallel()
+			t.Setenv("ISSP_ADMIN_LISTEN_ADDRESS", "")
+			t.Setenv("ISSP_DATABASE_DSN_FILE", "")
 
 			var output bytes.Buffer
-			if code := Run(&output, identity); code != ExitConfiguration {
+			if code := Run(context.Background(), &output, identity); code != ExitConfiguration {
 				t.Fatalf("exit code = %d, want %d", code, ExitConfiguration)
 			}
-
-			want := fmt.Sprintf(
-				"%s: Phase 6 Step 2 executable skeleton; runtime bootstrap is not implemented\n",
-				identity.ProcessName,
-			)
-			if output.String() != want {
-				t.Fatalf("output = %q, want %q", output.String(), want)
+			text := output.String()
+			if !strings.Contains(text, `"msg":"configuration rejected"`) {
+				t.Fatalf("output = %q", text)
+			}
+			if strings.Contains(text, "postgresql://") || strings.Contains(text, "password=") {
+				t.Fatalf("output disclosed a connection secret: %q", text)
 			}
 		})
 	}

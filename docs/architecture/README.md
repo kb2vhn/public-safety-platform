@@ -217,3 +217,19 @@ bounded executable skeletons, the exact `go1.26.5` toolchain, zero third-party
 modules, deterministic build controls, and a validation gate. No listener,
 database connection, credential, protected operation, or worker loop exists.
 <!-- phase-6-step-2-status:end -->
+
+<!-- phase-6-step-3-status:start -->
+## Phase 6 Step 3 — Runtime Bootstrap and Bounded PostgreSQL Connectivity
+
+The three production Go processes now have typed fail-closed configuration,
+protected-file PostgreSQL URL loading, exact service-role verification, bounded
+pgx pools, PostgreSQL 18 compatibility checks, loopback-only health/readiness,
+context cancellation, and graceful shutdown. No protected business operation,
+business listener, migration, or durable worker loop is implemented.
+
+Active gate:
+
+```bash
+./tools/validation/phase-gates/validate_phase6_step3.sh
+```
+<!-- phase-6-step-3-status:end -->

@@ -1,2 +1,4 @@
-// Package observability reserves bounded logging, metrics, and tracing contracts; Step 3 supplies implementation.
+// Package observability provides bounded structured process logging. Step 3
+// deliberately emits no secret, PostgreSQL URL, password, or raw database
+// error.
 package observability

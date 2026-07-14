@@ -1,2 +1,3 @@
-// Package config reserves typed configuration contracts; Step 3 supplies implementation.
+// Package config owns typed, fail-closed production process configuration and
+// protected-file secret loading.
 package config

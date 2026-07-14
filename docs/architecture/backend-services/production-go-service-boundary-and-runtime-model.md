@@ -2,7 +2,7 @@
 
 > **Document status:** Normative Platform service architecture.
 >
-> **Phase status:** Phase 6 Step 2 workspace and reproducible-build baseline candidate.
+> **Phase status:** Phase 6 Step 3 runtime bootstrap and bounded PostgreSQL connectivity candidate.
 >
 > **Implementation status:** Contract only. Step 1 creates no production Go
 > module, executable, network listener, service credential, database

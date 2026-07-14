@@ -1,6 +1,6 @@
 # Phase 6 Step 2 — Production Go Workspace and Reproducible Build Baseline
 
-> **Status:** Candidate until the complete Phase 6 Step 2 gate passes.
+> **Status:** Complete. The complete Phase 6 Step 2 gate passed with zero failures.
 >
 > **Accepted predecessor:** Phase 6 Step 1 implementation commit
 > `77f9ead23f5275e97989ea8c59b0c9c44f0c5a0b`.
@@ -163,3 +163,12 @@ protected business operation.
 ## Canonical Arch Compiler Build
 
 The exact compiler build validated by Step 2 is `go1.26.5-X:nodwarf5`. The `go.mod` toolchain directive remains `go1.26.5` because it names the upstream Go release, while `go/platform/TOOLCHAIN` records the complete distribution build identity.
+
+<!-- phase-6-step-2-accepted-result:start -->
+## Accepted Result
+
+Phase 6 Step 2 passed its complete gate with zero failures and was committed at
+`2c154e4f7e7cbb050c39f8ff99d132fae8c90658`. Step 3 may add runtime bootstrap only within the frozen
+service, identity, toolchain, dependency-review, and reproducible-build
+boundaries.
+<!-- phase-6-step-2-accepted-result:end -->
