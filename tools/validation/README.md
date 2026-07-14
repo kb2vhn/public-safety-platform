@@ -1,6 +1,10 @@
 # Validation Tools
 
 > **Owner:** Iron Signal Systems
+>
+> **Current production Go status:** Phase 6 Step 4 process-host
+> acceptance-hardening implementation candidate. Phase 6 Step 3 remains the
+> newest accepted implementation gate.
 
 Phase gates are retained under `tools/validation/phase-gates/`.
 
@@ -199,3 +203,24 @@ Active gate:
 ./tools/validation/phase-gates/validate_phase6_step3.sh
 ```
 <!-- phase-6-step-3-status:end -->
+
+<!-- phase-6-step-4-status:start -->
+## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
+
+The Step 4 contract is recorded at:
+
+```text
+docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md
+```
+
+Step 3 remains the newest accepted implementation. The pre-hardening Step 4
+candidate passed 59 static and 60 complete checks with zero failures. The
+acceptance-hardening correction must pass both modes again before acceptance is
+claimed.
+Step 4 must not add a protected business operation, business listener,
+migration, or durable worker loop.
+The candidate gate revalidates Step 3 from an isolated local clone on branch
+`dev` with the canonical GitHub origin restored before frozen predecessor gates
+run.
+
+<!-- phase-6-step-4-status:end -->

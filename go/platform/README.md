@@ -1,6 +1,8 @@
 # Iron Signal Platform Production Go Module
 
-> **Phase status:** Phase 6 Step 3 runtime bootstrap candidate.
+> **Phase status:** Phase 6 Step 4 process-host acceptance-hardening
+> implementation candidate. Step 3 remains the accepted implementation
+> boundary.
 >
 > **Runtime status:** Typed configuration, protected-file secret loading,
 > bounded PostgreSQL connectivity, compatibility checks, local administrative
@@ -91,3 +93,33 @@ Step 3 does not run migrations, expose a business API, authenticate a user,
 make an authorization decision, invoke a protected Foundation routine, mutate
 protected data, claim integration or monitoring work, or provision a production
 credential.
+
+## Step 4 Contract Boundary
+
+The Step 4 process-host contract is recorded at:
+
+```text
+../../docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md
+```
+
+Step 4 may add systemd process-host integration and hostile runtime validation.
+It must not add a protected business operation, business listener, migration,
+or durable worker loop. Step 3 remains the newest accepted executable
+implementation until the acceptance-hardened Step 4 gate passes.
+
+<!-- phase-6-step-4-implementation-candidate -->
+## Step 4 Acceptance-Hardening Candidate
+
+The pre-hardening candidate added a standard-library-only `internal/processhost` package,
+native systemd-compatible readiness, stopping, and watchdog notification, three
+hardened service units, three sysusers identities, service-specific encrypted
+credential references, and hostile runtime validation.
+
+Deployment boundary:
+
+```text
+deployment/README.md
+```
+
+Step 4 still performs no protected business operation, business transport,
+migration, or durable worker loop.

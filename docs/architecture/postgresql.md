@@ -85,7 +85,7 @@ See:
 
 ## Current Limitations
 
-The schema is still pre-alpha. Final deployment roles, ownership transfers, complete append-only enforcement, populated migration checksums, off-host integrity anchoring, production backup protection, and the production Go data-access layer remain future work.
+The schema remains pre-alpha. Phase 5 has accepted the production role, ownership, runtime-privilege, review-surface, break-glass, and credential-lifecycle database boundary. Phase 6 Step 3 has established bounded production Go connectivity and compatibility checks without protected business operations. Complete append-only enforcement, populated migration checksums, off-host integrity anchoring, production backup protection, controlled business adapters, and production operating approval remain future work.
 
 ## Phase 5 Step 2 Deployment Role Topology
 

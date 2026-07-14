@@ -2,10 +2,12 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current status:** Phase 4 approval independence and separation of duties
-> formally accepted
+> **Current status:** Phase 6 Step 4 process-host integration and hostile
+> runtime validation acceptance-hardening implementation candidate; Phase 6 Step 3 remains the newest
+> accepted production Go implementation boundary
 >
-> **Accepted tag:** `phase-4-approval-independence-and-separation-of-duties-complete-v1`
+> **Accepted database-security tag:**
+> `phase-5-production-database-security-boundary-complete-v1`
 >
 > **Status:** Pre-alpha; not ready for production use
 
@@ -16,7 +18,10 @@
 - [Platform Foundation Documentation](architecture/foundation/README.md)
 - [Approval Independence and Separation of Duties](architecture/foundation/approval-independence-and-separation-of-duties-model.md)
 - [Phase 4 Approval Independence and Separation of Duties Acceptance](architecture/foundation/phase-4-approval-independence-and-separation-of-duties-acceptance.md)
+- [Phase 5 Production Database Security Boundary Acceptance](architecture/foundation/phase-5-production-database-security-boundary-acceptance.md)
 - [Backend Services Architecture](architecture/backend-services/README.md)
+- [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](architecture/backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
+- [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Communications Architecture](architecture/communications/README.md)
 - [GIS and Mapping Architecture](architecture/gis-and-mapping/README.md)
 - [Operational Workstation Architecture](../modules/CAD/docs/architecture/operational-workstation/README.md)
@@ -44,6 +49,12 @@
   `phase-3-authorization-control-complete-v1`
 - Phase 4 Approval Independence and Separation of Duties:
   `phase-4-approval-independence-and-separation-of-duties-complete-v1`
+- Phase 5 Production Database Security Boundary:
+  `phase-5-production-database-security-boundary-complete-v1`
+
+Phase 6 Step 3 is the newest accepted production Go implementation boundary at
+commit `45f5449d57eda0ea8a5f2e3128f6903251599810`, with 144 static gate PASS
+checks and 0 failures.
 
 Accepted Phase 4 result:
 
@@ -112,7 +123,7 @@ Run the formal acceptance gate with:
 ./tools/validation/phase-gates/validate_phase4_step8.sh
 ```
 
-## Active Phase 5 Step 1
+## Historical Phase 5 Step 1
 
 Phase 5 Step 1 freezes the production PostgreSQL role, ownership, migration,
 runtime privilege, investigation, audit, validation, default-privilege, and
@@ -135,7 +146,7 @@ and executable test tree.
 
 - [Phase 5 Step 2 — Deployment Manifest and PostgreSQL Role Topology](architecture/foundation/phase-5-step-2-deployment-role-topology.md)
 
-## Active Phase 5 Step 3
+## Historical Phase 5 Step 3
 
 Phase 5 Step 3 transfers protected PostgreSQL ownership to approved non-login
 owners and establishes creator-specific default privileges without granting
@@ -143,7 +154,7 @@ runtime service access.
 
 - [Phase 5 Step 3 — Ownership and Creator-Specific Default Privileges](architecture/foundation/phase-5-step-3-ownership-and-default-privileges.md)
 
-## Active Phase 5 Step 4
+## Historical Phase 5 Step 4
 
 Phase 5 Step 4 implements the least-privileged runtime database boundary for
 the authorization, integration-delivery, and monitoring-delivery service
@@ -213,3 +224,23 @@ Active gate:
 ./tools/validation/phase-gates/validate_phase6_step3.sh
 ```
 <!-- phase-6-step-3-status:end -->
+
+<!-- phase-6-step-4-status:start -->
+## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
+
+Step 4 is an active implementation candidate. It defines the Linux systemd
+process-host, credential-delivery, readiness-notification, watchdog, restart,
+resource-containment, sandboxing, and hostile-runtime validation boundary
+without adding protected business operations.
+
+- [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
+
+Step 3 remains the newest accepted implementation. The Step 4 candidate
+previously passed 59 static and 60 complete gate checks with zero failures.
+The acceptance-hardening correction must now pass both Step 4 gate modes again:
+
+```bash
+./tools/validation/phase-gates/validate_phase6_step4.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step4.sh
+```
+<!-- phase-6-step-4-status:end -->

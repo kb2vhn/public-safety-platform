@@ -9,8 +9,9 @@
 > This repository began with public safety as its first operational focus.
 > Current development is concentrated on the shared Platform Foundation that
 > future public-safety, municipal, school, and other institutional modules may
-> use. The SQL is active work being completed in deliberate stages. This
-> repository is not ready for production use.
+> use. Foundation SQL, the accepted production database security boundary, and
+> the production Go service boundary are being completed in deliberate stages.
+> This repository is not ready for production use.
 
 Canonical repository:
 
@@ -119,6 +120,9 @@ The current Foundation includes:
 - A disposable PostgreSQL test framework
 - Writable correctness logs, summaries, and resource-observation reports
 - Positive, negative, and concurrency behavior tests
+- An accepted Phase 5 production database security boundary
+- An accepted Phase 6 Step 3 production Go runtime with three bounded
+  executables and PostgreSQL connectivity
 
 ### Accepted Phase 0 Baseline
 
@@ -252,42 +256,41 @@ not declare the complete Platform Foundation, Go services, deployment
 environment, operational modules, or production operating model ready for
 production use.
 
-### Active Phase 5 — Production Database Security Boundary
+### Accepted Phase 5 — Production Database Security Boundary
 
-Phase 4 approval independence and separation of duties is formally accepted at
-`phase-4-approval-independence-and-separation-of-duties-complete-v1`.
-
-Phase 5 Step 1 freezes the production database role, ownership, migration, and runtime-privilege contract.
-
-The Step 1 boundary defines separate non-login owners, controlled migration
-authority, service-specific login identities, capability-based runtime roles,
-read-only investigation, audit review, validation access, creator-specific
-default privileges, and disabled-at-rest break-glass access.
-
-Step 1 changes no accepted Foundation SQL or executable tests. The complete
-Phase 4 regression remains:
+Phase 5 is formally accepted and frozen at:
 
 ```text
-34 manifest migrations
-34 registered migrations
-21 sequential test files
-16 concurrency test files
-734 PASS
-0 FAIL
-3 understood WARN
-Correctness result: PASS
-Resource observation: RECORDED
-Performance thresholds: NOT_EVALUATED
+Tag:    phase-5-production-database-security-boundary-complete-v1
+Commit: 9f8dbf9d909ef157df72b12511b165a689559093
 ```
 
-Governing contract:
+The accepted deployment boundary establishes separate non-login ownership
+roles, controlled migration authority, service-specific PostgreSQL identities,
+least-privileged controlled runtime APIs, reduced-disclosure review surfaces,
+disabled-at-rest break-glass controls, external credential-lifecycle
+governance, and hostile-condition and independent-connection role-race proof.
+
+Accepted evidence includes:
+
+```text
+Step 7 hostile-condition and role-race test: 82 PASS, 0 FAIL
+Step 7 complete implementation gate:        97 PASS, 0 FAIL
+Foundation regression:                      734 PASS, 0 FAIL, 3 understood WARN
+Correctness result:                         PASS
+Resource observation:                       RECORDED
+Performance thresholds:                     NOT_EVALUATED
+```
+
+Governing records:
 
 - [Production Database Role, Ownership, and Runtime Privilege Model](docs/architecture/foundation/production-database-role-ownership-and-runtime-privilege-model.md)
+- [Phase 5 Production Database Security Boundary Acceptance](docs/architecture/foundation/phase-5-production-database-security-boundary-acceptance.md)
 
-Active gate:
+Formal acceptance gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase5_step1.sh
+./tools/validation/phase-gates/validate_phase5_step8.sh
 ```
 
 ## Staged Development Approach
@@ -562,21 +565,24 @@ user interfaces, and operational modules remain downstream consumers of
 governed Foundation decisions. No module-specific record or workflow is part of
 the accepted Phase 4 Foundation boundary.
 
-### Remaining Foundation Work
+### Remaining Platform Work
 
-The following remain active Foundation work:
+The following remain active work beyond the accepted Phase 5 database boundary
+and accepted Phase 6 Step 3 runtime:
 
+- Phase 6 Step 4 process-host integration and hostile runtime validation
+- Controlled Foundation API adapters
+- Authenticated request and transport boundaries
+- Integration and monitoring delivery-worker behavior
+- Full hostile, failure, concurrency, and resource validation for protected
+  operations and workers
 - Decision Record cryptographic integrity anchoring
 - Stronger append-only mutation protection where required
 - Migration-checksum population and enforcement
 - Trust-Provider-specific verifier-role and credential boundary enforcement
-- Final production ownership and login-role topology
-- Least-privileged runtime grants
-- Production Go services
-- External-System Adapters and delivery workers
+- External-System Adapters
 - Off-host integrity anchoring and protected logging
 - Backup protection and restoration validation
-- Break-glass access
 - Trusted rebuild and compromise recovery
 - Shared Resources and operational modules
 
@@ -603,28 +609,23 @@ The authoritative Foundation migration order is maintained in:
 │   ├── README.md
 │   ├── architecture/
 │   │   ├── README.md
-│   │   ├── postgresql.md
-│   │   ├── external-system-independent-observability.md
+│   │   ├── backend-services/
 │   │   ├── foundation/
-│   │   └── user-interface/
+│   │   ├── postgresql.md
+│   │   └── external-system-independent-observability.md
 │   ├── compliance-profiles/
 │   └── goals/
 ├── go/
-│   └── experiments/
+│   ├── README.md
+│   ├── experiments/             # historical; production must not import
+│   └── platform/                # accepted production Go module
+├── modules/
+│   └── CAD/
 ├── sql/
-│   └── schema/
-│       ├── manifests/
-│       ├── migrations/
-│       │   └── foundation/
-│       └── scripts/
+│   ├── deployment/              # accepted Phase 5 deployment boundary
+│   └── schema/                  # Platform Foundation migrations
 ├── test-framework/
-│   ├── INSTALL.txt
-│   ├── Makefile
 │   └── sql/
-│       ├── schema/
-│       │   └── scripts/
-│       ├── tests/
-│       └── test-results/
 ├── tools/
 │   └── validation/
 │       └── phase-gates/
@@ -791,51 +792,53 @@ See:
 
 ## Current Phase Gate
 
-Phase 4 is formally accepted. Revalidate the accepted boundary from the
-repository root with:
+Phase 6 Step 3 is the newest accepted production Go implementation boundary.
+Revalidate it from the repository root with:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step8.sh
+./tools/validation/phase-gates/validate_phase6_step3.sh
 ```
 
-Static repository, tag, tree-integrity, and documentation validation only:
+Static repository, predecessor-integrity, build, dependency, documentation, and
+source-boundary validation only:
 
 ```bash
-./tools/validation/phase-gates/validate_phase4_step8.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step3.sh --static-only
 ```
 
-The gate validates the annotated Phase 4 tag, the accepted implementation
-commit, unchanged SQL and executable test trees, 34 Foundation migrations,
-21 sequential tests, 16 concurrency tests, the 734 PASS result, the three
-understood warnings, synchronized acceptance documentation, and
-observation-only resource telemetry.
+The accepted static result is 144 PASS and 0 FAIL. The complete gate may also
+run disposable PostgreSQL 18 runtime validation. Historical Phase 4 and Phase 5
+acceptance gates remain available and validate their own frozen checkpoint
+trees.
 
-Historical phase gates remain available and validate their own checkpoint
-trees. The Step 7 gate is the implementation gate for the tagged Phase 4 tree.
+The Step 4 process-host implementation candidate passed its pre-hardening
+static gate with 59 PASS and 0 FAIL and its complete gate with 60 PASS and
+0 FAIL. Acceptance-hardening adds explicit startup-cancellation, SIGINT,
+repeated-signal, in-flight-request, and post-start listener-failure evidence.
+The corrected tree must pass both gate modes again before Step 4 acceptance is
+claimed.
 
-The active acceptance gate invokes the cross-phase migration timeout validator
-before PostgreSQL execution. The validator can also be run independently with:
+## Production Go and Historical Experiments
 
-```bash
-./tools/validation/validate_foundation_migration_timeouts.sh
+The accepted production Go module is:
+
+```text
+go/platform/
 ```
 
-## Go Experiments
+Phase 6 Step 3 implements three bounded executables with typed configuration,
+protected-file PostgreSQL URL consumption, exact service-role verification,
+bounded PostgreSQL 18 connectivity, loopback-only administrative
+health/readiness, cancellation, and graceful shutdown.
 
-The current Go code is historical experimentation created before the
-Foundation architecture and database boundaries were established.
-
-It is intentionally isolated under:
+Historical experimentation remains isolated under:
 
 ```text
 go/experiments/
 ```
 
-It is not the production backend and will not be extended as though it were
-current platform code.
-
-Production Go design will begin only after the controlling Foundation
-contracts and database boundaries are sufficiently complete.
+Production packages must not import `go/experiments/`. The historical tree is
+not extended as the production backend.
 
 ## Definition of Progress
 
@@ -953,7 +956,7 @@ Active gate:
 ./tools/validation/phase-gates/validate_phase5_step2.sh
 ```
 
-### Active Phase 5 Step 3 — Ownership and Default Privileges
+### Historical Phase 5 Step 3 — Ownership and Default Privileges
 
 Phase 5 Step 2 is accepted. Step 3 transfers the database and protected
 objects away from the login-capable bootstrap identity and into the approved
@@ -980,7 +983,7 @@ Active gate:
 ./tools/validation/phase-gates/validate_phase5_step3.sh
 ```
 
-### Active Phase 5 Step 4 — Least-Privileged Runtime Grants
+### Historical Phase 5 Step 4 — Least-Privileged Runtime Grants
 
 Phase 5 Step 4 grants only inherited database `CONNECT`, exact capability
 schema `USAGE`, and controlled routine `EXECUTE` to the current bounded
@@ -1052,21 +1055,33 @@ Formal acceptance record:
 ## Active Phase 6 — Production Go Service Boundary
 
 Phase 5 is formally accepted and frozen at
-`phase-5-production-database-security-boundary-complete-v1`. Phase 6 Step 1
-freezes the production Go process topology, exact service-to-database identity
-mapping, controlled API consumption, configuration and secret boundary,
-transaction behavior, observability, health, shutdown, dependency, build, and
-testing contract before production Go code is introduced.
+`phase-5-production-database-security-boundary-complete-v1`.
 
-Governing contract:
+Phase 6 Steps 1 through 3 are complete. The accepted Step 3 implementation at
+commit `45f5449d57eda0ea8a5f2e3128f6903251599810` establishes the production Go
+workspace, exact toolchain and dependency graph, typed configuration,
+protected-file secret loading, bounded PostgreSQL connectivity and
+compatibility checks, loopback-only administrative health/readiness,
+cancellation, and graceful shutdown. Its static gate passed with 144 PASS and
+0 FAIL.
+
+Phase 6 Step 4 is active acceptance-hardening work for process-host
+integration, systemd
+service and credential boundaries, startup ordering, readiness notification,
+watchdog behavior, resource containment, and hostile runtime validation. It
+must not add a protected business operation, business listener, migration, or
+durable worker loop.
+
+Governing records:
 
 - [Production Go Service Boundary and Runtime Model](docs/architecture/backend-services/production-go-service-boundary-and-runtime-model.md)
-- [Phase 6 Step 1 Production Go Service Contract Freeze](docs/architecture/backend-services/phase-6-step-1-production-go-service-contract.md)
+- [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](docs/architecture/backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
+- [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 
-Active gate:
+Newest accepted gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step1.sh
+./tools/validation/phase-gates/validate_phase6_step3.sh
 ```
 
 <!-- phase-6-step-2-status:start -->
@@ -1093,3 +1108,19 @@ Active gate:
 ./tools/validation/phase-gates/validate_phase6_step3.sh
 ```
 <!-- phase-6-step-3-status:end -->
+
+<!-- phase-6-step-4-status:start -->
+## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
+
+Step 4 is an active implementation candidate. It now includes three distinct
+systemd service identities, encrypted service-credential references, direct
+executable hosting, readiness and stopping notification, bounded watchdog
+behavior, restart and resource limits, sandboxing, explicit non-use of socket
+activation, and hostile runtime validation.
+
+Step 3 remains the newest accepted implementation boundary. Step 4 has a
+validated pre-hardening implementation candidate; the acceptance-hardening
+correction must be revalidated before acceptance is claimed.
+
+- [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
+<!-- phase-6-step-4-status:end -->

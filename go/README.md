@@ -1,27 +1,31 @@
 # Go Source
 
-> **Current production status:** Phase 6 Step 1 contract freeze.
+> **Current production status:** Phase 6 Step 4 process-host
+> acceptance-hardening implementation candidate. Phase 6 Step 3 remains the
+> newest accepted implementation boundary.
 
-The existing code under `go/experiments/` is historical experimentation created
-before the accepted Platform Foundation and production database security
-boundaries. It is not production backend code and must not be imported by future
-production packages.
-
-The planned production workspace is:
+The production Go module exists at:
 
 ```text
 go/platform/
 ```
 
-Phase 6 Step 1 creates no production Go module or source files. Phase 6 Step 2
-will freeze the Go module path, toolchain version, package graph, dependency
-policy, build commands, artifact metadata, and initial bounded executable
-skeletons.
+It contains three bounded executables with the exact accepted Go toolchain,
+typed fail-closed configuration, protected-file PostgreSQL URL consumption,
+exact service-role verification, bounded PostgreSQL 18 connectivity,
+loopback-only administrative health/readiness, cancellation, and graceful
+shutdown.
 
-The governing contract is:
+The code under `go/experiments/` remains historical experimentation created
+before the accepted Platform Foundation and production database security
+boundaries. It is not production backend code and must not be imported by
+production packages.
+
+Governing records:
 
 - [Production Go Service Boundary and Runtime Model](../docs/architecture/backend-services/production-go-service-boundary-and-runtime-model.md)
-- [Phase 6 Step 1 Production Go Service Contract Freeze](../docs/architecture/backend-services/phase-6-step-1-production-go-service-contract.md)
+- [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](../docs/architecture/backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
+- [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](../docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 
 <!-- phase-6-step-2-status:start -->
 ## Phase 6 Step 2 — Production Go Workspace and Reproducible Build Baseline
@@ -47,3 +51,17 @@ Active gate:
 ./tools/validation/phase-gates/validate_phase6_step3.sh
 ```
 <!-- phase-6-step-3-status:end -->
+
+<!-- phase-6-step-4-status:start -->
+## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
+
+Step 4 is active acceptance-hardening work for systemd process hosting,
+distinct
+operating-system identities, encrypted service credentials, readiness and
+stopping notification, bounded watchdog behavior, restart and resource limits,
+sandboxing, and hostile runtime failure tests.
+
+The pre-hardening Step 4 candidate passed both gate modes with zero
+failures. The acceptance-hardening correction must be revalidated before
+acceptance is claimed.
+<!-- phase-6-step-4-status:end -->

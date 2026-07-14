@@ -2,13 +2,19 @@
 
 > **Document status:** Normative Platform service architecture.
 >
-> **Phase status:** Phase 6 Step 3 runtime bootstrap and bounded PostgreSQL connectivity candidate.
+> **Phase status:** Phase 6 Step 4 process-host integration and hostile
+> runtime validation acceptance-hardening implementation candidate.
 >
-> **Implementation status:** Contract only. Step 1 creates no production Go
-> module, executable, network listener, service credential, database
-> connection, deployment unit, or runtime authority.
+> **Implementation status:** Phase 6 Step 3 is accepted at commit
+> `45f5449d57eda0ea8a5f2e3128f6903251599810`. The production Go module,
+> three bounded executables, typed configuration, protected-file PostgreSQL URL
+> loading, exact service-role checks, bounded PostgreSQL connectivity,
+> loopback-only administrative health/readiness, cancellation, and graceful
+> shutdown exist. The Step 4 process-host implementation passed its
+> pre-hardening static and complete gates with zero failures. The
+> acceptance-hardening correction must be revalidated before acceptance.
 >
-> **Accepted predecessor:** Phase 5 production database security boundary at
+> **Database predecessor:** Phase 5 production database security boundary at
 > `phase-5-production-database-security-boundary-complete-v1`, targeting
 > `9f8dbf9d909ef157df72b12511b165a689559093`.
 
@@ -482,9 +488,11 @@ Correctness, security, and resource observations remain separate outcomes.
 Performance thresholds become failures only after representative baselines and
 explicit budgets are accepted.
 
-## 19. Planned Production Source Boundary
+## 19. Production Source Boundary
 
-Step 1 reserves this direction without creating it:
+Steps 2 and 3 created the following bounded production direction. Step 4 may
+add only the process-host deployment and notification boundaries recorded in
+its governing contract:
 
 ```text
 go/
@@ -529,31 +537,46 @@ Implement typed configuration, redaction, process identity, bounded PostgreSQL
 pools, compatibility checks, health/readiness, cancellation, and graceful
 shutdown without protected business operations.
 
-### Step 4 — Controlled Foundation API Adapter
+### Step 4 — Process-Host Integration and Hostile Runtime Validation
+
+Implement and validate the Linux process-host boundary around the accepted
+Step 3 runtime. Add explicit systemd service, credential, startup-ordering,
+readiness-notification, watchdog, restart, shutdown, resource-limit, and
+sandboxing contracts. Exercise hostile host-environment, notification,
+listener, database-startup, cancellation, and shutdown conditions without
+adding a protected business operation, business listener, migration, or
+durable worker loop.
+
+Socket activation is decided explicitly in this step but is not introduced
+unless it can preserve the accepted loopback-only administrative surface
+without broadening process authority.
+
+### Step 5 — Controlled Foundation API Adapter
 
 Implement a narrow vertical slice that invokes accepted Phase 5 authorization
 and lifecycle routines through typed adapters while preserving reason codes and
 Decision Record references.
 
-### Step 5 — Authenticated Request and Transport Boundary
+### Step 6 — Authenticated Request and Transport Boundary
 
 Implement the accepted request-context construction, transport limits,
 authentication handoff, error envelopes, and cancellation behavior without
 allowing transport identity to become authorization.
 
-### Step 6 — Integration and Monitoring Delivery Workers
+### Step 7 — Integration and Monitoring Delivery Workers
 
 Implement bounded claim, external delivery, completion, retry, backpressure,
 and drain behavior for the accepted integration and monitoring worker
 identities.
 
-### Step 7 — Hostile, Failure, Concurrency, and Resource Validation
+### Step 8 — Hostile, Failure, Concurrency, and Resource Validation
 
 Prove privilege denial, malformed-context rejection, timeout and cancellation
 behavior, connection-pool containment, worker duplication handling, process
-shutdown, race-detector cleanliness, and observation-only resource baselines.
+shutdown, race-detector cleanliness, and observation-only resource baselines
+across the protected adapters, authenticated transport, and durable workers.
 
-### Step 8 — Formal Acceptance
+### Step 9 — Formal Acceptance
 
 Create the Phase 6 acceptance record and annotated implementation tag for the
 accepted production Go service boundary.

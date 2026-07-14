@@ -38,22 +38,36 @@ protected routine, claim durable work, or implement a business operation.
 The version is pinned in `go.mod`; all module content is verified by `go.sum`
 and `go mod verify`.
 
-## Transitive Modules
+## Selected Module Graph
 
-The complete accepted production module graph is:
+The exact module build list accepted by the Step 3 gate is:
 
 ```text
+github.com/davecgh/go-spew v1.1.1
 github.com/Iron-Signal-Systems/iron-signal-platform/go/platform
 github.com/jackc/pgpassfile v1.0.0
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
 github.com/jackc/pgx/v5 v5.10.0
 github.com/jackc/puddle/v2 v2.2.2
+github.com/kr/pretty v0.3.0
+github.com/pmezard/go-difflib v1.0.0
+github.com/stretchr/objx v0.1.0
+github.com/stretchr/testify v1.11.1
+golang.org/x/mod v0.27.0
 golang.org/x/sync v0.17.0
 golang.org/x/text v0.29.0
+golang.org/x/tools v0.36.0
+gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+gopkg.in/yaml.v3 v3.0.1
 ```
 
+The additional entries are selected upstream module requirements. The Iron
+Signal Platform source does not import them directly, and they are not promoted
+to direct requirements merely to mirror the selected build list.
+
 No ORM, migration framework, configuration library, logging framework, metrics
-framework, command framework, or test framework is introduced.
+framework, command framework, or test framework is imported by production
+source or added as a direct dependency.
 
 ## Authority and Removal Boundary
 
@@ -66,3 +80,10 @@ Callers consume the database package rather than importing pgx directly. This
 keeps replacement or upgrade work bounded.
 
 Production packages must not import code under `go/experiments/`.
+
+<!-- phase-6-step-4-dependency-status -->
+## Phase 6 Step 4 Dependency Status
+
+Step 4 adds no direct or transitive Go module. Native systemd-compatible
+notification is implemented with the Go standard library over a bounded Unix
+datagram socket.

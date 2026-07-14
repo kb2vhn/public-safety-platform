@@ -5,11 +5,16 @@
 This directory contains reproducible acceptance gates for completed and active
 Foundation phases. Historical gates validate their own checkpoint trees.
 
-Newest gate:
+Newest accepted production Go gate:
 
 ```text
-validate_phase4_step8.sh
+validate_phase6_step3.sh
 ```
+
+Phase 6 Step 4 is an acceptance-hardening implementation candidate. The
+pre-hardening candidate passed 59 static and 60 complete checks with zero
+failures. Step 3 remains the newest accepted implementation until the corrected
+Step 4 tree passes both gate modes.
 
 Phase 4 progression:
 
@@ -151,3 +156,23 @@ Active gate:
 ./tools/validation/phase-gates/validate_phase6_step3.sh
 ```
 <!-- phase-6-step-3-status:end -->
+
+<!-- phase-6-step-4-status:start -->
+## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
+
+The Step 4 contract is recorded at:
+
+```text
+docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md
+```
+
+Step 3 remains the newest accepted implementation. The corrected Step 4
+candidate gate must pass in static and complete modes before acceptance is
+claimed.
+Step 4 must not add a protected business operation, business listener,
+migration, or durable worker loop.
+The candidate gate revalidates Step 3 from an isolated local clone on branch
+`dev` with the canonical GitHub origin restored before frozen predecessor gates
+run.
+
+<!-- phase-6-step-4-status:end -->

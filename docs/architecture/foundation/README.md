@@ -1,5 +1,14 @@
 # Platform Foundation Documentation
 
+> **Current cross-boundary status:** Phase 5 production database security
+> boundary formally accepted; Phase 6 Step 3 production Go runtime
+> accepted; Phase 6 Step 4 process-host acceptance-hardening candidate
+> active.
+>
+> **Boundary:** This Foundation index records downstream consumption
+> status without moving service-host, transport, or module behavior into
+> the domain-neutral Foundation.
+
 > **Architecture status:** Normative and under active refinement.
 >
 > **SQL status:** Initial Foundation migrations `000–099` exist. Selected

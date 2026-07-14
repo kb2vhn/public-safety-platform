@@ -3,6 +3,8 @@ package bootstrap
 import (
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -29,4 +31,53 @@ func TestRunFailsClosedWithoutConfiguration(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRunRejectsMalformedNotificationSocketBeforeDatabaseAccess(t *testing.T) {
+	configureMinimumRuntime(t)
+	t.Setenv("NOTIFY_SOCKET", "relative-notify.sock")
+
+	var output bytes.Buffer
+	code := Run(context.Background(), &output, database.FoundationAPI)
+	if code != ExitOperatingSystem {
+		t.Fatalf("exit code = %d, want %d", code, ExitOperatingSystem)
+	}
+	if !strings.Contains(output.String(), "process-host environment rejected") {
+		t.Fatalf("output = %q", output.String())
+	}
+	if strings.Contains(output.String(), "relative-notify.sock") {
+		t.Fatalf("output disclosed notification socket path: %q", output.String())
+	}
+}
+
+func TestRunRejectsWatchdogWithoutNotificationSocket(t *testing.T) {
+	configureMinimumRuntime(t)
+	t.Setenv("WATCHDOG_USEC", "30000000")
+
+	var output bytes.Buffer
+	code := Run(context.Background(), &output, database.FoundationAPI)
+	if code != ExitConfiguration {
+		t.Fatalf("exit code = %d, want %d", code, ExitConfiguration)
+	}
+	if !strings.Contains(output.String(), "process-host environment rejected") {
+		t.Fatalf("output = %q", output.String())
+	}
+}
+
+func configureMinimumRuntime(t *testing.T) {
+	t.Helper()
+
+	directory := t.TempDir()
+	dsnPath := filepath.Join(directory, "database-url")
+	if err := os.WriteFile(
+		dsnPath,
+		[]byte("postgresql://role:secret@127.0.0.1:1/db?sslmode=disable\n"),
+		0o600,
+	); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	t.Setenv("ISSP_ADMIN_LISTEN_ADDRESS", "127.0.0.1:18081")
+	t.Setenv("ISSP_DATABASE_DSN_FILE", dsnPath)
+	t.Setenv("ISSP_DATABASE_ALLOW_INSECURE_LOCAL", "true")
 }

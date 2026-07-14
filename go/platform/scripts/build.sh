@@ -72,5 +72,5 @@ cat >"$output_root/build-manifest.json" <<JSON
 }
 JSON
 
-printf 'Built three bounded executable skeletons.\n'
+printf 'Built three bounded production executables.\n'
 printf 'Manifest: %s\n' "$output_root/build-manifest.json"
