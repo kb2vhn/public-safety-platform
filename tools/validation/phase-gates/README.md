@@ -126,3 +126,12 @@ claims. It does not establish CAD implementation acceptance.
 three exact process-to-database-role mappings, absence of premature production
 Go code, unchanged accepted SQL and deployment trees, and the Phase 5 formal
 acceptance predecessor.
+
+<!-- phase-6-step-2-status:start -->
+## Phase 6 Step 2 — Production Go Workspace and Reproducible Build Baseline
+
+The production module now exists at `go/platform/` with three fail-closed
+bounded executable skeletons, the exact `go1.26.5` toolchain, zero third-party
+modules, deterministic build controls, and a validation gate. No listener,
+database connection, credential, protected operation, or worker loop exists.
+<!-- phase-6-step-2-status:end -->

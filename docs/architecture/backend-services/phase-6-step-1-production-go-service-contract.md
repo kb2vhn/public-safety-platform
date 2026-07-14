@@ -73,3 +73,11 @@ The Step 1 gate validates:
 Phase 6 Step 2 may create the production Go workspace and reproducible build
 baseline under `go/platform/`. It must not yet implement protected business
 operations or provision production credentials.
+
+<!-- phase-6-step-1-accepted-result:start -->
+## Accepted Result
+
+Phase 6 Step 1 passed its complete gate with 63 PASS and 0 FAIL and was committed
+at `77f9ead23f5275e97989ea8c59b0c9c44f0c5a0b`. Step 2 may build only within the frozen production service
+contract.
+<!-- phase-6-step-1-accepted-result:end -->
