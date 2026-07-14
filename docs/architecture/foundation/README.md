@@ -2,8 +2,8 @@
 
 > **Current cross-boundary status:** Phase 5 production database security
 > boundary formally accepted; Phase 6 Step 3 production Go runtime
-> accepted; Phase 6 Step 4 process-host acceptance-hardening candidate
-> active.
+> accepted; Phase 6 Step 4 process-host checkpoint accepted; Phase 6 Step 5
+> controlled adapter implementation candidate active.
 >
 > **Boundary:** This Foundation index records downstream consumption
 > status without moving service-host, transport, or module behavior into

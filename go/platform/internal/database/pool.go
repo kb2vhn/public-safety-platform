@@ -38,6 +38,14 @@ type Error struct {
 	Cause error
 }
 
+// Pool owns the bounded PostgreSQL connection pool and the exact compiled
+// service identity used to create it. The underlying pgx pool remains private
+// so higher-level packages cannot bypass the database boundary.
+type Pool struct {
+	inner    *pgxpool.Pool
+	identity ServiceIdentity
+}
+
 func (e *Error) Error() string       { return fmt.Sprintf("database %s failed", e.Stage) }
 func (e *Error) Unwrap() error       { return e.Cause }
 func (e *Error) SafeMessage() string { return e.Error() }
@@ -57,7 +65,7 @@ func Diagnostic(err error) string {
 
 // Open reads the protected PostgreSQL URL, creates one bounded pool, and proves
 // the exact service identity and PostgreSQL 18 compatibility contract.
-func Open(ctx context.Context, cfg config.Config, identity ServiceIdentity) (*pgxpool.Pool, Compatibility, error) {
+func Open(ctx context.Context, cfg config.Config, identity ServiceIdentity) (*Pool, Compatibility, error) {
 	databaseURL, err := config.ReadDatabaseURL(cfg.Database.DSNFile)
 	if err != nil {
 		return nil, Compatibility{}, &Error{Stage: "credential loading", Cause: err}
@@ -102,12 +110,17 @@ func Open(ctx context.Context, cfg config.Config, identity ServiceIdentity) (*pg
 	poolConfig.ConnConfig.Port = uint16(portNumber)
 	poolConfig.ConnConfig.Database = strings.TrimPrefix(path.Clean(parsedURL.Path), "/")
 
-	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
+	innerPool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
 		return nil, Compatibility{}, &Error{Stage: "pool creation", Cause: err}
 	}
 
-	if err := pool.Ping(ctx); err != nil {
+	pool := &Pool{
+		inner:    innerPool,
+		identity: identity,
+	}
+
+	if err := pool.inner.Ping(ctx); err != nil {
 		pool.Close()
 		return nil, Compatibility{}, &Error{Stage: "connectivity", Cause: err}
 	}
@@ -123,7 +136,7 @@ func Open(ctx context.Context, cfg config.Config, identity ServiceIdentity) (*pg
 
 // CheckCompatibility executes the only SQL introduced by Step 3. It reads
 // session and server facts; it performs no protected operation or mutation.
-func CheckCompatibility(ctx context.Context, pool *pgxpool.Pool, identity ServiceIdentity) (Compatibility, error) {
+func CheckCompatibility(ctx context.Context, pool *Pool, identity ServiceIdentity) (Compatibility, error) {
 	const query = `
 SELECT
     current_user,
@@ -135,7 +148,11 @@ SELECT
     current_setting('standard_conforming_strings')`
 
 	var report Compatibility
-	if err := pool.QueryRow(ctx, query).Scan(
+	if pool == nil || pool.inner == nil {
+		return Compatibility{}, &Error{Stage: "compatibility query", Cause: fmt.Errorf("database pool is unavailable")}
+	}
+
+	if err := pool.inner.QueryRow(ctx, query).Scan(
 		&report.CurrentUser,
 		&report.CurrentDatabase,
 		&report.ServerVersionNumber,
@@ -170,6 +187,45 @@ SELECT
 	}
 
 	return report, nil
+}
+
+// Identity returns the immutable service identity bound to this pool.
+func (p *Pool) Identity() ServiceIdentity {
+	if p == nil {
+		return ServiceIdentity{}
+	}
+	return p.identity
+}
+
+// BindAuthorizationPolicy invokes the one Step 5 controlled Foundation
+// routine. The SQL statement is owned here so higher-level packages receive no
+// caller-selected statement, arguments, transaction, or raw pgx primitive.
+func (p *Pool) BindAuthorizationPolicy(ctx context.Context, decisionID string) (string, error) {
+	const statement = "SELECT decision.bind_authorization_policy($1::uuid)"
+
+	if p == nil || p.inner == nil {
+		return "", &Error{Stage: "authorization policy binding", Cause: fmt.Errorf("database pool is unavailable")}
+	}
+	if ctx == nil {
+		return "", &Error{Stage: "authorization policy binding", Cause: fmt.Errorf("context is required")}
+	}
+	if strings.TrimSpace(decisionID) == "" {
+		return "", &Error{Stage: "authorization policy binding", Cause: fmt.Errorf("decision reference is required")}
+	}
+
+	var reasonCode string
+	if err := p.inner.QueryRow(ctx, statement, decisionID).Scan(&reasonCode); err != nil {
+		return "", &Error{Stage: "authorization policy binding", Cause: err}
+	}
+	return reasonCode, nil
+}
+
+// Close releases all database connections owned by the pool.
+func (p *Pool) Close() {
+	if p == nil || p.inner == nil {
+		return
+	}
+	p.inner.Close()
 }
 
 func validateDatabaseURL(databaseURL string, allowInsecureLocal bool, identity ServiceIdentity) (*url.URL, error) {

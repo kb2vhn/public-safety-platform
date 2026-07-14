@@ -51,13 +51,13 @@ func TestIntegrationOpenCompatibilityAndCancellation(t *testing.T) {
 	if report.CurrentUser != role {
 		t.Fatalf("CurrentUser = %q, want %q", report.CurrentUser, role)
 	}
-	if pool.Stat().MaxConns() != cfg.Database.MaxConnections {
-		t.Fatalf("MaxConns = %d, want %d", pool.Stat().MaxConns(), cfg.Database.MaxConnections)
+	if pool.inner.Stat().MaxConns() != cfg.Database.MaxConnections {
+		t.Fatalf("MaxConns = %d, want %d", pool.inner.Stat().MaxConns(), cfg.Database.MaxConnections)
 	}
 
 	queryContext, queryCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer queryCancel()
-	_, queryErr := pool.Exec(queryContext, "SELECT pg_sleep(5)")
+	_, queryErr := pool.inner.Exec(queryContext, "SELECT pg_sleep(5)")
 	if queryErr == nil || !errors.Is(queryContext.Err(), context.DeadlineExceeded) {
 		t.Fatalf("canceled query error = %v context error = %v", queryErr, queryContext.Err())
 	}

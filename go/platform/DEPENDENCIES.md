@@ -87,3 +87,12 @@ Production packages must not import code under `go/experiments/`.
 Step 4 adds no direct or transitive Go module. Native systemd-compatible
 notification is implemented with the Go standard library over a bounded Unix
 datagram socket.
+
+
+<!-- phase-6-step-5-dependency-status -->
+## Phase 6 Step 5 Dependency Status
+
+Step 5 adds no direct or transitive Go module. Canonical Decision ID parsing,
+closed reason-code validation, timeouts, cancellation, and typed errors use the
+Go standard library. The accepted `pgx/v5` dependency remains confined to
+`internal/database`.

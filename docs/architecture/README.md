@@ -4,10 +4,9 @@
 >
 > **Status:** Normative architecture under active refinement
 >
-> **Current status:** Phase 6 Step 4 process-host integration and hostile
-> runtime validation acceptance-hardening implementation candidate. Phase 5 is formally accepted, and
-> Phase 6 Step 3 remains the newest accepted production Go implementation
-> boundary.
+> **Current status:** Phase 6 Step 5 Controlled Foundation API Adapter
+> implementation candidate. Phase 5 is formally accepted, and Phase 6 Step 4
+> is the newest accepted production Go implementation checkpoint.
 
 ## Dependency Direction
 
@@ -54,6 +53,7 @@ monitoring vendor, identity provider, or compliance framework.
 - [Production Go Service Boundary and Runtime Model](backend-services/production-go-service-boundary-and-runtime-model.md)
 - [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
+- [Phase 6 Step 5 Controlled Foundation API Adapter](backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Location Service Architecture](backend-services/location-service-architecture.md)
 - [Communications](communications/README.md)
 - [Resource Subscription and Live Update Model](communications/resource-subscription-and-live-update-model.md)
@@ -73,11 +73,10 @@ boundary are formally accepted. Phase 5 is identified by:
 phase-5-production-database-security-boundary-complete-v1
 ```
 
-Phase 6 Step 3 is the newest accepted production Go implementation boundary at
-commit `45f5449d57eda0ea8a5f2e3128f6903251599810`. Its static gate passed with
-144 PASS and 0 FAIL. Phase 6 Step 4 is an acceptance-hardening implementation candidate. Its
-pre-hardening static and complete gates passed with zero failures, but the
-corrected tree must be revalidated before acceptance.
+Phase 6 Step 4 is the newest accepted production Go implementation checkpoint
+at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`. Its final complete gate
+reported 71 PASS and 0 FAIL. Phase 6 Step 5 is the active implementation
+candidate.
 
 Historical accepted Phase 4 result:
 
@@ -248,13 +247,18 @@ Active gate:
 <!-- phase-6-step-4-status:start -->
 ## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
 
-Step 4 is an active acceptance-hardening implementation candidate for
-systemd process hosting, service-specific encrypted credentials, readiness and stopping
-notification, bounded watchdog behavior, restart and resource containment,
-sandboxing, and hostile runtime failure proof.
+Step 4 is accepted at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`
+with 71 complete validation PASS checks and 0 failures.
 
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
-
-No protected business operation, business listener, migration, or durable
-worker loop is authorized by this step.
 <!-- phase-6-step-4-status:end -->
+
+<!-- phase-6-step-5-status:start -->
+## Phase 6 Step 5 — Controlled Foundation API Adapter
+
+Step 5 is a bounded implementation candidate for one typed protected routine.
+It does not authorize transport, authentication, direct table access,
+migrations, or durable workers.
+
+- [Phase 6 Step 5 Controlled Foundation API Adapter](backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
+<!-- phase-6-step-5-status:end -->

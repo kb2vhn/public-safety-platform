@@ -2,17 +2,15 @@
 
 > **Document status:** Normative Platform service architecture.
 >
-> **Phase status:** Phase 6 Step 4 process-host integration and hostile
-> runtime validation acceptance-hardening implementation candidate.
+> **Phase status:** Phase 6 Step 5 Controlled Foundation API Adapter
+> implementation candidate.
 >
-> **Implementation status:** Phase 6 Step 3 is accepted at commit
-> `45f5449d57eda0ea8a5f2e3128f6903251599810`. The production Go module,
-> three bounded executables, typed configuration, protected-file PostgreSQL URL
-> loading, exact service-role checks, bounded PostgreSQL connectivity,
-> loopback-only administrative health/readiness, cancellation, and graceful
-> shutdown exist. The Step 4 process-host implementation passed its
-> pre-hardening static and complete gates with zero failures. The
-> acceptance-hardening correction must be revalidated before acceptance.
+> **Implementation status:** Phase 6 Step 4 is accepted at commit
+> `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0` with 71 PASS and 0 FAIL in
+> complete validation. Step 5 adds one typed adapter for
+> `decision.bind_authorization_policy(uuid)` while preserving the accepted
+> process-host, database-identity, administrative-listener, and dependency
+> boundaries. Acceptance of Step 5 is not yet claimed.
 >
 > **Database predecessor:** Phase 5 production database security boundary at
 > `phase-5-production-database-security-boundary-complete-v1`, targeting
@@ -553,9 +551,12 @@ without broadening process authority.
 
 ### Step 5 — Controlled Foundation API Adapter
 
-Implement a narrow vertical slice that invokes accepted Phase 5 authorization
-and lifecycle routines through typed adapters while preserving reason codes and
-Decision Record references.
+Implement exactly one typed vertical slice over
+`decision.bind_authorization_policy(uuid)`. Accept only a canonical Decision
+Record UUID, preserve the exact Decision Record reference and closed reason-code
+inventory, enforce the Foundation API identity, apply a bounded operation
+deadline, and rely on PostgreSQL for locking and atomic mutation. Do not expose
+the adapter through a business listener in this step.
 
 ### Step 6 — Authenticated Request and Transport Boundary
 

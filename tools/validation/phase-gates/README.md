@@ -8,13 +8,12 @@ Foundation phases. Historical gates validate their own checkpoint trees.
 Newest accepted production Go gate:
 
 ```text
-validate_phase6_step3.sh
+validate_phase6_step4.sh
 ```
 
-Phase 6 Step 4 is an acceptance-hardening implementation candidate. The
-pre-hardening candidate passed 59 static and 60 complete checks with zero
-failures. Step 3 remains the newest accepted implementation until the corrected
-Step 4 tree passes both gate modes.
+Phase 6 Step 4 is accepted at
+`3e15c8cbb7b666537be6a7ec832800e8f4ca9af0` with 71 complete gate PASS checks
+and 0 failures. Phase 6 Step 5 is the active implementation candidate.
 
 Phase 4 progression:
 
@@ -160,19 +159,15 @@ Active gate:
 <!-- phase-6-step-4-status:start -->
 ## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
 
-The Step 4 contract is recorded at:
-
-```text
-docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md
-```
-
-Step 3 remains the newest accepted implementation. The corrected Step 4
-candidate gate must pass in static and complete modes before acceptance is
-claimed.
-Step 4 must not add a protected business operation, business listener,
-migration, or durable worker loop.
-The candidate gate revalidates Step 3 from an isolated local clone on branch
-`dev` with the canonical GitHub origin restored before frozen predecessor gates
-run.
-
+`validate_phase6_step4.sh` is the accepted process-host gate. The accepted
+checkpoint is `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0` with 71 PASS and 0 FAIL.
 <!-- phase-6-step-4-status:end -->
+
+<!-- phase-6-step-5-status:start -->
+## Phase 6 Step 5 — Controlled Foundation API Adapter
+
+`validate_phase6_step5.sh` validates the one-operation adapter candidate. It
+revalidates Step 4 from an isolated branch named `dev`, freezes the SQL and
+process-host boundaries, checks the closed Go adapter contract, and optionally
+runs the disposable PostgreSQL 18 integration and concurrency campaign.
+<!-- phase-6-step-5-status:end -->

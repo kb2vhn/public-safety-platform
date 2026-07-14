@@ -9,6 +9,7 @@
 - [Phase 6 Step 2 Production Go Workspace and Build Baseline](phase-6-step-2-production-go-workspace-and-build-baseline.md)
 - [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
+- [Phase 6 Step 5 Controlled Foundation API Adapter](phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Location Service Architecture](location-service-architecture.md)
 
 Service documents define ownership, interfaces, state, failure behavior, persistence, security, and performance boundaries for the Go modular monolith and any later extracted service.
@@ -46,10 +47,15 @@ graceful lifecycle behavior. Protected operations remain absent.
 
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 
-Step 4 is an acceptance-hardening implementation candidate for systemd
-process hosting, distinct
-operating-system service identities, encrypted service credentials, readiness
-and stopping notification, bounded watchdog behavior, restart and resource
-limits, sandboxing, and hostile runtime failure validation. Step 3 remains the
-newest accepted implementation boundary.
+Step 4 is the accepted process-host checkpoint at
+`3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`, validated at 71 PASS and 0 FAIL.
 <!-- phase-6-step-4-status:end -->
+
+<!-- phase-6-step-5-status:start -->
+## Phase 6 Step 5 — Controlled Foundation API Adapter
+
+- [Phase 6 Step 5 Controlled Foundation API Adapter](phase-6-step-5-controlled-foundation-api-adapter.md)
+
+Step 5 implements one typed policy-binding adapter while leaving transport,
+authentication, direct table access, migrations, and workers out of scope.
+<!-- phase-6-step-5-status:end -->

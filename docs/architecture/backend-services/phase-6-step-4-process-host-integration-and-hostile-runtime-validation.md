@@ -1,9 +1,10 @@
 # Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
 
-> **Status:** Acceptance-hardening implementation candidate. The
-> pre-hardening candidate passed 59 static checks and 60 complete checks with
-> zero failures. This corrected tree must be revalidated before acceptance is
-> claimed.
+> **Status:** Accepted implementation checkpoint.
+>
+> **Accepted checkpoint:** Commit
+> `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`; final complete validation
+> reported 71 PASS and 0 FAIL.
 >
 > **Predecessor:** Phase 6 Step 3, accepted on the authoritative `dev` branch at
 > commit `45f5449d57eda0ea8a5f2e3128f6903251599810` with 144 PASS and
@@ -371,7 +372,7 @@ processes, PostgreSQL clusters, credential files, and service-manager state.
 
 ## 14. Implemented Candidate Repository Boundary
 
-The Step 4 implementation candidate adds the following bounded structure:
+The accepted Step 4 implementation adds the following bounded structure:
 
 ```text
 go/platform/
@@ -454,5 +455,5 @@ Step 4 does not claim:
 
 ## 17. Next Step
 
-After Step 4 is accepted, Phase 6 Step 5 may implement the Controlled Foundation
-API Adapter as a narrow typed vertical slice over accepted Phase 5 routines.
+Phase 6 Step 5 now implements the Controlled Foundation API Adapter as one
+narrow typed vertical slice over the accepted Phase 5 policy-binding routine.

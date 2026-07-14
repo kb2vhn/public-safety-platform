@@ -128,4 +128,4 @@ if grep -R -F 'go/experiments' . --include='*.go' >/dev/null 2>&1; then
 fi
 pass "Production source imports no experiment package"
 
-printf '\nGo Step 3 checks: %d PASS, 0 FAIL\n' "$pass_count"
+printf '\nGo Phase 6 Step 5 checks: %d PASS, 0 FAIL\n' "$pass_count"

@@ -2,9 +2,9 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current status:** Phase 6 Step 4 process-host integration and hostile
-> runtime validation acceptance-hardening implementation candidate; Phase 6 Step 3 remains the newest
-> accepted production Go implementation boundary
+> **Current status:** Phase 6 Step 5 Controlled Foundation API Adapter
+> implementation candidate; Phase 6 Step 4 is the newest accepted production
+> Go implementation checkpoint
 >
 > **Accepted database-security tag:**
 > `phase-5-production-database-security-boundary-complete-v1`
@@ -22,6 +22,7 @@
 - [Backend Services Architecture](architecture/backend-services/README.md)
 - [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](architecture/backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
+- [Phase 6 Step 5 Controlled Foundation API Adapter](architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Communications Architecture](architecture/communications/README.md)
 - [GIS and Mapping Architecture](architecture/gis-and-mapping/README.md)
 - [Operational Workstation Architecture](../modules/CAD/docs/architecture/operational-workstation/README.md)
@@ -52,8 +53,8 @@
 - Phase 5 Production Database Security Boundary:
   `phase-5-production-database-security-boundary-complete-v1`
 
-Phase 6 Step 3 is the newest accepted production Go implementation boundary at
-commit `45f5449d57eda0ea8a5f2e3128f6903251599810`, with 144 static gate PASS
+Phase 6 Step 4 is the newest accepted production Go implementation checkpoint
+at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`, with 71 complete gate PASS
 checks and 0 failures.
 
 Accepted Phase 4 result:
@@ -228,19 +229,24 @@ Active gate:
 <!-- phase-6-step-4-status:start -->
 ## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
 
-Step 4 is an active implementation candidate. It defines the Linux systemd
-process-host, credential-delivery, readiness-notification, watchdog, restart,
-resource-containment, sandboxing, and hostile-runtime validation boundary
-without adding protected business operations.
+Step 4 is accepted at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`.
+Its final complete gate reported 71 PASS and 0 FAIL.
 
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
+<!-- phase-6-step-4-status:end -->
 
-Step 3 remains the newest accepted implementation. The Step 4 candidate
-previously passed 59 static and 60 complete gate checks with zero failures.
-The acceptance-hardening correction must now pass both Step 4 gate modes again:
+<!-- phase-6-step-5-status:start -->
+## Phase 6 Step 5 — Controlled Foundation API Adapter
+
+Step 5 is an implementation candidate for one typed call to
+`decision.bind_authorization_policy(uuid)`. The candidate preserves exact
+Decision Record references and reason codes without adding a business listener,
+direct table access, migration, or worker loop.
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step4.sh --static-only
-./tools/validation/phase-gates/validate_phase6_step4.sh
+./tools/validation/phase-gates/validate_phase6_step5.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step5.sh
 ```
-<!-- phase-6-step-4-status:end -->
+
+- [Phase 6 Step 5 Controlled Foundation API Adapter](architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
+<!-- phase-6-step-5-status:end -->

@@ -2,9 +2,9 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current production Go status:** Phase 6 Step 4 process-host
-> acceptance-hardening implementation candidate. Phase 6 Step 3 remains the
-> newest accepted implementation gate.
+> **Current production Go status:** Phase 6 Step 5 Controlled Foundation API
+> Adapter implementation candidate. Phase 6 Step 4 is the newest accepted
+> implementation gate.
 
 Phase gates are retained under `tools/validation/phase-gates/`.
 
@@ -207,20 +207,27 @@ Active gate:
 <!-- phase-6-step-4-status:start -->
 ## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
 
-The Step 4 contract is recorded at:
+The accepted Step 4 gate is:
 
 ```text
-docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md
+tools/validation/phase-gates/validate_phase6_step4.sh
 ```
 
-Step 3 remains the newest accepted implementation. The pre-hardening Step 4
-candidate passed 59 static and 60 complete checks with zero failures. The
-acceptance-hardening correction must pass both modes again before acceptance is
-claimed.
-Step 4 must not add a protected business operation, business listener,
-migration, or durable worker loop.
-The candidate gate revalidates Step 3 from an isolated local clone on branch
-`dev` with the canonical GitHub origin restored before frozen predecessor gates
-run.
-
+The accepted checkpoint is `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`;
+its final complete result is 71 PASS and 0 FAIL.
 <!-- phase-6-step-4-status:end -->
+
+<!-- phase-6-step-5-status:start -->
+## Phase 6 Step 5 — Controlled Foundation API Adapter
+
+The candidate gate is:
+
+```text
+tools/validation/phase-gates/validate_phase6_step5.sh
+```
+
+It revalidates Step 4 in an isolated clone, preserves frozen SQL and
+process-host paths, validates the exact typed policy-binding adapter, and runs
+positive, denial, concurrency, timeout, cancellation, privilege, and redaction
+evidence.
+<!-- phase-6-step-5-status:end -->

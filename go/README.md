@@ -1,8 +1,8 @@
 # Go Source
 
-> **Current production status:** Phase 6 Step 4 process-host
-> acceptance-hardening implementation candidate. Phase 6 Step 3 remains the
-> newest accepted implementation boundary.
+> **Current production status:** Phase 6 Step 5 Controlled Foundation API
+> Adapter implementation candidate. Phase 6 Step 4 is the newest accepted
+> implementation checkpoint.
 
 The production Go module exists at:
 
@@ -26,6 +26,7 @@ Governing records:
 - [Production Go Service Boundary and Runtime Model](../docs/architecture/backend-services/production-go-service-boundary-and-runtime-model.md)
 - [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](../docs/architecture/backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](../docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
+- [Phase 6 Step 5 Controlled Foundation API Adapter](../docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 
 <!-- phase-6-step-2-status:start -->
 ## Phase 6 Step 2 — Production Go Workspace and Reproducible Build Baseline
@@ -55,13 +56,14 @@ Active gate:
 <!-- phase-6-step-4-status:start -->
 ## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
 
-Step 4 is active acceptance-hardening work for systemd process hosting,
-distinct
-operating-system identities, encrypted service credentials, readiness and
-stopping notification, bounded watchdog behavior, restart and resource limits,
-sandboxing, and hostile runtime failure tests.
-
-The pre-hardening Step 4 candidate passed both gate modes with zero
-failures. The acceptance-hardening correction must be revalidated before
-acceptance is claimed.
+Step 4 is accepted at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`
+with 71 complete gate PASS checks and 0 failures.
 <!-- phase-6-step-4-status:end -->
+
+<!-- phase-6-step-5-status:start -->
+## Phase 6 Step 5 — Controlled Foundation API Adapter
+
+Step 5 adds one standard-library typed Decision ID and closed reason-code
+adapter over the accepted policy-binding routine. `pgx` remains confined to
+`internal/database`; no business transport is added.
+<!-- phase-6-step-5-status:end -->

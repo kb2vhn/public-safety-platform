@@ -121,8 +121,10 @@ The current Foundation includes:
 - Writable correctness logs, summaries, and resource-observation reports
 - Positive, negative, and concurrency behavior tests
 - An accepted Phase 5 production database security boundary
-- An accepted Phase 6 Step 3 production Go runtime with three bounded
-  executables and PostgreSQL connectivity
+- An accepted Phase 6 Step 4 production Go runtime with three bounded
+  executables, PostgreSQL connectivity, and systemd process-host controls
+- A Phase 6 Step 5 candidate for one controlled Foundation policy-binding
+  adapter
 
 ### Accepted Phase 0 Baseline
 
@@ -568,10 +570,10 @@ the accepted Phase 4 Foundation boundary.
 ### Remaining Platform Work
 
 The following remain active work beyond the accepted Phase 5 database boundary
-and accepted Phase 6 Step 3 runtime:
+and accepted Phase 6 Step 4 process-host checkpoint:
 
-- Phase 6 Step 4 process-host integration and hostile runtime validation
-- Controlled Foundation API adapters
+- Phase 6 Step 5 controlled Foundation API adapter acceptance
+- Additional controlled Foundation API operations after separate review
 - Authenticated request and transport boundaries
 - Integration and monitoring delivery-worker behavior
 - Full hostile, failure, concurrency, and resource validation for protected
@@ -792,31 +794,29 @@ See:
 
 ## Current Phase Gate
 
-Phase 6 Step 3 is the newest accepted production Go implementation boundary.
-Revalidate it from the repository root with:
+Phase 6 Step 4 is the newest accepted production Go implementation checkpoint
+at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`. Its final complete gate
+reported 71 PASS and 0 FAIL.
+
+Revalidate the accepted checkpoint with:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step3.sh
+./tools/validation/phase-gates/validate_phase6_step4.sh
 ```
 
-Static repository, predecessor-integrity, build, dependency, documentation, and
-source-boundary validation only:
+Phase 6 Step 5 is the active implementation candidate. It adds exactly one
+typed adapter over `decision.bind_authorization_policy(uuid)` and no business
+listener, migration, direct protected-table access, or durable worker loop.
+
+Candidate validation:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step3.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step5.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step5.sh
 ```
 
-The accepted static result is 144 PASS and 0 FAIL. The complete gate may also
-run disposable PostgreSQL 18 runtime validation. Historical Phase 4 and Phase 5
-acceptance gates remain available and validate their own frozen checkpoint
-trees.
-
-The Step 4 process-host implementation candidate passed its pre-hardening
-static gate with 59 PASS and 0 FAIL and its complete gate with 60 PASS and
-0 FAIL. Acceptance-hardening adds explicit startup-cancellation, SIGINT,
-repeated-signal, in-flight-request, and post-start listener-failure evidence.
-The corrected tree must pass both gate modes again before Step 4 acceptance is
-claimed.
+Historical Phase 4 and Phase 5 acceptance gates remain available and validate
+their own frozen checkpoint trees.
 
 ## Production Go and Historical Experiments
 
@@ -1057,31 +1057,31 @@ Formal acceptance record:
 Phase 5 is formally accepted and frozen at
 `phase-5-production-database-security-boundary-complete-v1`.
 
-Phase 6 Steps 1 through 3 are complete. The accepted Step 3 implementation at
-commit `45f5449d57eda0ea8a5f2e3128f6903251599810` establishes the production Go
-workspace, exact toolchain and dependency graph, typed configuration,
-protected-file secret loading, bounded PostgreSQL connectivity and
-compatibility checks, loopback-only administrative health/readiness,
-cancellation, and graceful shutdown. Its static gate passed with 144 PASS and
-0 FAIL.
+Phase 6 Steps 1 through 4 are complete. The accepted Step 4 checkpoint at
+commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0` preserves the exact toolchain
+and dependency graph, typed configuration, bounded PostgreSQL connectivity,
+loopback-only administrative health/readiness, systemd service identities,
+encrypted credential delivery, readiness/stopping notification, watchdog,
+resource containment, and hostile runtime validation. Its final complete gate
+reported 71 PASS and 0 FAIL.
 
-Phase 6 Step 4 is active acceptance-hardening work for process-host
-integration, systemd
-service and credential boundaries, startup ordering, readiness notification,
-watchdog behavior, resource containment, and hostile runtime validation. It
-must not add a protected business operation, business listener, migration, or
-durable worker loop.
+Phase 6 Step 5 is active implementation-candidate work for one controlled
+Foundation API adapter. The only authorized protected operation is
+`decision.bind_authorization_policy(uuid)`. Step 5 must not add a business
+listener, caller authentication, direct protected-table access, a migration,
+or a durable worker loop.
 
 Governing records:
 
 - [Production Go Service Boundary and Runtime Model](docs/architecture/backend-services/production-go-service-boundary-and-runtime-model.md)
 - [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](docs/architecture/backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
+- [Phase 6 Step 5 Controlled Foundation API Adapter](docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 
-Newest accepted gate:
+Active candidate gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step3.sh
+./tools/validation/phase-gates/validate_phase6_step5.sh
 ```
 
 <!-- phase-6-step-2-status:start -->
@@ -1112,15 +1112,24 @@ Active gate:
 <!-- phase-6-step-4-status:start -->
 ## Phase 6 Step 4 — Process-Host Integration and Hostile Runtime Validation
 
-Step 4 is an active implementation candidate. It now includes three distinct
-systemd service identities, encrypted service-credential references, direct
+Step 4 is accepted at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`.
+The final complete gate reported 71 PASS and 0 FAIL. It establishes three
+distinct systemd service identities, encrypted service credentials, direct
 executable hosting, readiness and stopping notification, bounded watchdog
 behavior, restart and resource limits, sandboxing, explicit non-use of socket
 activation, and hostile runtime validation.
 
-Step 3 remains the newest accepted implementation boundary. Step 4 has a
-validated pre-hardening implementation candidate; the acceptance-hardening
-correction must be revalidated before acceptance is claimed.
-
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 <!-- phase-6-step-4-status:end -->
+
+<!-- phase-6-step-5-status:start -->
+## Phase 6 Step 5 — Controlled Foundation API Adapter
+
+Step 5 is an implementation candidate for exactly one typed policy-binding
+operation over `decision.bind_authorization_policy(uuid)`. It preserves the
+Decision Record reference and closed reason-code inventory, enforces the
+Foundation API identity, and relies on PostgreSQL for locking and atomic
+mutation. No business transport is introduced.
+
+- [Phase 6 Step 5 Controlled Foundation API Adapter](docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
+<!-- phase-6-step-5-status:end -->
