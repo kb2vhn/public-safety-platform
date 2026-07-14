@@ -905,6 +905,28 @@ BEGIN
             MESSAGE = 'Break-glass activation requires an externally generated SCRAM-SHA-256 verifier';
     END IF;
 
+    IF split_part(
+        split_part(p_scram_verifier, '$', 2),
+        ':',
+        1
+    )::integer < 4096 THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'check_violation',
+            MESSAGE = 'Break-glass SCRAM verifier must use at least 4096 iterations';
+    END IF;
+
+    IF encode(
+        extensions.digest(
+            convert_to(p_scram_verifier, 'UTF8'),
+            'sha256'
+        ),
+        'hex'
+    ) <> v_request.credential_fingerprint THEN
+        RAISE EXCEPTION USING
+            ERRCODE = 'check_violation',
+            MESSAGE = 'SCRAM verifier does not match the approved credential fingerprint';
+    END IF;
+
     IF EXISTS (
         SELECT 1
         FROM pg_roles AS role_record

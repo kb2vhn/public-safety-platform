@@ -210,3 +210,7 @@ Step 6 is accepted only when the disposable-cluster test proves:
 - complete predecessor revalidation.
 
 Phase 5 Step 7 may then perform hostile-condition and role-race validation.
+
+## Step 7 Pre-Freeze Credential-Binding Hardening
+
+Hostile-condition review found that syntax validation alone did not prove that the supplied SCRAM verifier matched the fingerprint independently approved with the request. Before formal Phase 5 acceptance, migration `940` now requires at least 4096 SCRAM iterations and compares the SHA-256 digest of the supplied verifier with the approved request fingerprint. The Step 6 disposable test derives its request fingerprints from its ephemeral verifiers so the complete Step 6 boundary is revalidated after this correction.

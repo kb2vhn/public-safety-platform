@@ -239,8 +239,10 @@ assert_fails_as_role() {
 read -r \
     test_password_one \
     test_scram_verifier_one \
+    fingerprint_one \
     test_password_two \
-    test_scram_verifier_two < <(
+    test_scram_verifier_two \
+    fingerprint_two < <(
     python3 - <<'PYCODE'
 import base64
 import hashlib
@@ -275,11 +277,15 @@ def make_credential():
         f"{base64.b64encode(stored_key).decode('ascii')}:"
         f"{base64.b64encode(server_key).decode('ascii')}"
     )
-    return password, verifier
+    fingerprint = hashlib.sha256(verifier.encode("utf-8")).hexdigest()
+    return password, verifier, fingerprint
 
-password_one, verifier_one = make_credential()
-password_two, verifier_two = make_credential()
-print(password_one, verifier_one, password_two, verifier_two)
+password_one, verifier_one, fingerprint_one = make_credential()
+password_two, verifier_two, fingerprint_two = make_credential()
+print(
+    password_one, verifier_one, fingerprint_one,
+    password_two, verifier_two, fingerprint_two,
+)
 PYCODE
 )
 
@@ -352,8 +358,6 @@ fi
 
 printf '\n== Request and independent approval enforcement ==\n'
 
-fingerprint_one="1111111111111111111111111111111111111111111111111111111111111111"
-fingerprint_two="2222222222222222222222222222222222222222222222222222222222222222"
 
 
 
