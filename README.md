@@ -123,8 +123,8 @@ The current Foundation includes:
 - An accepted Phase 5 production database security boundary
 - An accepted Phase 6 Step 4 production Go runtime with three bounded
   executables, PostgreSQL connectivity, and systemd process-host controls
-- A Phase 6 Step 5 candidate for one controlled Foundation policy-binding
-  adapter
+- An accepted Phase 6 Step 5 controlled Foundation policy-binding adapter
+- A Phase 6 Step 6 authenticated request and transport candidate
 
 ### Accepted Phase 0 Baseline
 
@@ -572,7 +572,7 @@ the accepted Phase 4 Foundation boundary.
 The following remain active work beyond the accepted Phase 5 database boundary
 and accepted Phase 6 Step 4 process-host checkpoint:
 
-- Phase 6 Step 5 controlled Foundation API adapter acceptance
+- Phase 6 Step 6 authenticated request and transport acceptance
 - Additional controlled Foundation API operations after separate review
 - Authenticated request and transport boundaries
 - Integration and monitoring delivery-worker behavior
@@ -804,9 +804,9 @@ Revalidate the accepted checkpoint with:
 ./tools/validation/phase-gates/validate_phase6_step4.sh
 ```
 
-Phase 6 Step 5 is the active implementation candidate. It adds exactly one
-typed adapter over `decision.bind_authorization_policy(uuid)` and no business
-listener, migration, direct protected-table access, or durable worker loop.
+Phase 6 Step 5 is accepted at commit
+`1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with 96 PASS and 0 FAIL.
+Phase 6 Step 6 is the active authenticated request and transport candidate.
 
 Candidate validation:
 
@@ -1065,11 +1065,12 @@ encrypted credential delivery, readiness/stopping notification, watchdog,
 resource containment, and hostile runtime validation. Its final complete gate
 reported 71 PASS and 0 FAIL.
 
-Phase 6 Step 5 is active implementation-candidate work for one controlled
-Foundation API adapter. The only authorized protected operation is
-`decision.bind_authorization_policy(uuid)`. Step 5 must not add a business
-listener, caller authentication, direct protected-table access, a migration,
-or a durable worker loop.
+Phase 6 Step 5 is accepted.
+
+Phase 6 Step 6 is active implementation-candidate
+work for one loopback-only signed authentication handoff and business route
+over `decision.bind_authorization_policy(uuid)`. Authentication context must
+not become authorization or be passed to SQL.
 
 Governing records:
 
@@ -1077,11 +1078,12 @@ Governing records:
 - [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](docs/architecture/backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Phase 6 Step 5 Controlled Foundation API Adapter](docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
+- [Phase 6 Step 6 Authenticated Request and Transport Boundary](docs/architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
 
 Active candidate gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step5.sh
+./tools/validation/phase-gates/validate_phase6_step6.sh
 ```
 
 <!-- phase-6-step-2-status:start -->
@@ -1125,11 +1127,22 @@ activation, and hostile runtime validation.
 <!-- phase-6-step-5-status:start -->
 ## Phase 6 Step 5 — Controlled Foundation API Adapter
 
-Step 5 is an implementation candidate for exactly one typed policy-binding
-operation over `decision.bind_authorization_policy(uuid)`. It preserves the
-Decision Record reference and closed reason-code inventory, enforces the
-Foundation API identity, and relies on PostgreSQL for locking and atomic
-mutation. No business transport is introduced.
+Step 5 is accepted at commit `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5`.
+Its final complete gate reported 96 PASS and 0 FAIL. It establishes exactly one
+typed adapter over `decision.bind_authorization_policy(uuid)` with no generic
+SQL, direct table access, business listener, migration, or worker loop.
 
 - [Phase 6 Step 5 Controlled Foundation API Adapter](docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 <!-- phase-6-step-5-status:end -->
+
+<!-- phase-6-step-6-status:start -->
+## Phase 6 Step 6 — Authenticated Request and Transport Boundary
+
+Step 6 is an implementation candidate for one loopback-only authenticated
+business route over the accepted Step 5 adapter. It adds signed short-lived
+gateway handoff verification, bounded replay protection, strict request limits,
+stable redacted envelopes, cancellation, and graceful drain. Authentication
+context does not become authorization and is not passed to SQL.
+
+- [Phase 6 Step 6 Authenticated Request and Transport Boundary](docs/architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
+<!-- phase-6-step-6-status:end -->

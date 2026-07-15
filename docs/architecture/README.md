@@ -4,9 +4,9 @@
 >
 > **Status:** Normative architecture under active refinement
 >
-> **Current status:** Phase 6 Step 5 Controlled Foundation API Adapter
-> implementation candidate. Phase 5 is formally accepted, and Phase 6 Step 4
-> is the newest accepted production Go implementation checkpoint.
+> **Current status:** Phase 6 Step 6 Authenticated Request and Transport
+> Boundary implementation candidate. Phase 5 is formally accepted, and Phase 6
+> Step 5 is the newest accepted production Go implementation checkpoint.
 
 ## Dependency Direction
 
@@ -54,6 +54,7 @@ monitoring vendor, identity provider, or compliance framework.
 - [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Phase 6 Step 5 Controlled Foundation API Adapter](backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
+- [Phase 6 Step 6 Authenticated Request and Transport Boundary](backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
 - [Location Service Architecture](backend-services/location-service-architecture.md)
 - [Communications](communications/README.md)
 - [Resource Subscription and Live Update Model](communications/resource-subscription-and-live-update-model.md)
@@ -75,8 +76,9 @@ phase-5-production-database-security-boundary-complete-v1
 
 Phase 6 Step 4 is the newest accepted production Go implementation checkpoint
 at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`. Its final complete gate
-reported 71 PASS and 0 FAIL. Phase 6 Step 5 is the active implementation
-candidate.
+reported 71 PASS and 0 FAIL. Phase 6 Step 5 is accepted.
+
+Phase 6 Step 6 is the active implementation candidate.
 
 Historical accepted Phase 4 result:
 
@@ -256,9 +258,18 @@ with 71 complete validation PASS checks and 0 failures.
 <!-- phase-6-step-5-status:start -->
 ## Phase 6 Step 5 — Controlled Foundation API Adapter
 
-Step 5 is a bounded implementation candidate for one typed protected routine.
-It does not authorize transport, authentication, direct table access,
-migrations, or durable workers.
+Step 5 is accepted at `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with
+96 PASS and 0 FAIL.
 
 - [Phase 6 Step 5 Controlled Foundation API Adapter](backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 <!-- phase-6-step-5-status:end -->
+
+<!-- phase-6-step-6-status:start -->
+## Phase 6 Step 6 — Authenticated Request and Transport Boundary
+
+Step 6 is a bounded implementation candidate for signed authentication
+handoff, strict transport limits, replay protection, stable envelopes, and
+cancellation over the one accepted Step 5 operation.
+
+- [Phase 6 Step 6 Authenticated Request and Transport Boundary](backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
+<!-- phase-6-step-6-status:end -->

@@ -8,12 +8,12 @@ Foundation phases. Historical gates validate their own checkpoint trees.
 Newest accepted production Go gate:
 
 ```text
-validate_phase6_step4.sh
+validate_phase6_step5.sh
 ```
 
-Phase 6 Step 4 is accepted at
-`3e15c8cbb7b666537be6a7ec832800e8f4ca9af0` with 71 complete gate PASS checks
-and 0 failures. Phase 6 Step 5 is the active implementation candidate.
+Phase 6 Step 5 is accepted at
+`1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with 96 complete gate PASS checks
+and 0 failures. Phase 6 Step 6 is the active implementation candidate.
 
 Phase 4 progression:
 
@@ -166,8 +166,13 @@ checkpoint is `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0` with 71 PASS and 0 FAIL
 <!-- phase-6-step-5-status:start -->
 ## Phase 6 Step 5 — Controlled Foundation API Adapter
 
-`validate_phase6_step5.sh` validates the one-operation adapter candidate. It
-revalidates Step 4 from an isolated branch named `dev`, freezes the SQL and
-process-host boundaries, checks the closed Go adapter contract, and optionally
-runs the disposable PostgreSQL 18 integration and concurrency campaign.
+`validate_phase6_step5.sh` is accepted at
+`1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with 96 PASS and 0 FAIL.
 <!-- phase-6-step-5-status:end -->
+
+<!-- phase-6-step-6-status:start -->
+## Phase 6 Step 6 — Authenticated Request and Transport Boundary
+
+`validate_phase6_step6.sh` validates the one-route authenticated transport
+candidate and revalidates the exact Step 5 predecessor in isolation.
+<!-- phase-6-step-6-status:end -->

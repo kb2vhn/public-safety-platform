@@ -1,17 +1,18 @@
 # Iron Signal Platform Production Go Module
 
-> **Phase status:** Phase 6 Step 5 Controlled Foundation API Adapter
+> **Phase status:** Phase 6 Step 6 Authenticated Request and Transport Boundary
 > implementation candidate.
 >
-> **Accepted predecessor:** Phase 6 Step 4 at commit
-> `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`, with 71 PASS and 0 FAIL in
+> **Accepted predecessor:** Phase 6 Step 5 at commit
+> `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5`, with 96 PASS and 0 FAIL in
 > complete validation.
 >
 > **Runtime status:** Three bounded service processes, typed configuration,
 > protected-file database credentials, PostgreSQL 18 compatibility checks,
 > local administrative health/readiness, systemd notification/watchdog
-> behavior, and one internal typed authorization-policy adapter exist. No
-> business-facing transport or durable worker loop exists.
+> behavior, one typed authorization-policy adapter, and one authenticated
+> loopback business route exist. No external gateway, local authorization
+> engine, or durable worker loop exists.
 
 ## Module
 
@@ -137,3 +138,24 @@ Step 5 does not expose a business API, authenticate a caller, construct trusted
 request context, finalize an authorization decision, issue an Authorization
 Lease, run a migration, access protected tables directly, claim delivery work,
 or provision a production credential.
+
+
+## Step 6 Authenticated Transport Candidate
+
+Foundation API requires a separate loopback business address and encrypted
+`transport-hmac-key` credential. The exact route is:
+
+```text
+POST /v1/foundation/authorization-policy-bindings
+```
+
+The handoff verifier authenticates a short-lived signed gateway result and
+atomically rejects replay. Subject, provider, and assertion identifiers are not
+passed to the Step 5 adapter or returned to clients.
+
+Validation:
+
+```bash
+./scripts/test-authenticated-transport.sh
+./scripts/test-authenticated-transport-runtime.sh
+```

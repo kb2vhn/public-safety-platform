@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net"
@@ -12,31 +13,44 @@ import (
 )
 
 const (
-	EnvAdminListenAddress               = "ISSP_ADMIN_LISTEN_ADDRESS"
-	EnvDatabaseDSNFile                  = "ISSP_DATABASE_DSN_FILE"
-	EnvDatabaseAllowInsecureLocal       = "ISSP_DATABASE_ALLOW_INSECURE_LOCAL"
-	EnvDatabaseConnectTimeout           = "ISSP_DATABASE_CONNECT_TIMEOUT"
-	EnvDatabaseMaxConnections           = "ISSP_DATABASE_MAX_CONNECTIONS"
-	EnvDatabaseMinConnections           = "ISSP_DATABASE_MIN_CONNECTIONS"
-	EnvDatabaseMaxConnectionLife        = "ISSP_DATABASE_MAX_CONNECTION_LIFETIME"
-	EnvDatabaseMaxConnectionIdle        = "ISSP_DATABASE_MAX_CONNECTION_IDLE_TIME"
-	EnvDatabaseHealthCheckPeriod        = "ISSP_DATABASE_HEALTH_CHECK_PERIOD"
-	EnvStartupTimeout                   = "ISSP_STARTUP_TIMEOUT"
-	EnvShutdownTimeout                  = "ISSP_SHUTDOWN_TIMEOUT"
-	maximumSecretFileSize         int64 = 16 * 1024
+	EnvAdminListenAddress                   = "ISSP_ADMIN_LISTEN_ADDRESS"
+	EnvBusinessListenAddress                = "ISSP_BUSINESS_LISTEN_ADDRESS"
+	EnvTransportHMACKeyFile                 = "ISSP_TRANSPORT_HMAC_KEY_FILE"
+	EnvTransportMaxConcurrentRequests       = "ISSP_TRANSPORT_MAX_CONCURRENT_REQUESTS"
+	EnvDatabaseDSNFile                      = "ISSP_DATABASE_DSN_FILE"
+	EnvDatabaseAllowInsecureLocal           = "ISSP_DATABASE_ALLOW_INSECURE_LOCAL"
+	EnvDatabaseConnectTimeout               = "ISSP_DATABASE_CONNECT_TIMEOUT"
+	EnvDatabaseMaxConnections               = "ISSP_DATABASE_MAX_CONNECTIONS"
+	EnvDatabaseMinConnections               = "ISSP_DATABASE_MIN_CONNECTIONS"
+	EnvDatabaseMaxConnectionLife            = "ISSP_DATABASE_MAX_CONNECTION_LIFETIME"
+	EnvDatabaseMaxConnectionIdle            = "ISSP_DATABASE_MAX_CONNECTION_IDLE_TIME"
+	EnvDatabaseHealthCheckPeriod            = "ISSP_DATABASE_HEALTH_CHECK_PERIOD"
+	EnvStartupTimeout                       = "ISSP_STARTUP_TIMEOUT"
+	EnvShutdownTimeout                      = "ISSP_SHUTDOWN_TIMEOUT"
+	maximumSecretFileSize             int64 = 16 * 1024
 )
 
 // LookupEnv is compatible with os.LookupEnv and permits deterministic tests.
 type LookupEnv func(string) (string, bool)
 
-// Config is the complete Step 3 runtime configuration. It intentionally does
-// not contain the PostgreSQL URL or password.
+// Config is the complete Step 6 runtime configuration. It intentionally does
+// not contain the PostgreSQL URL, password, or decoded transport HMAC key.
 type Config struct {
 	ProcessName        string
 	AdminListenAddress string
 	StartupTimeout     time.Duration
 	ShutdownTimeout    time.Duration
 	Database           Database
+	Business           BusinessTransport
+}
+
+// BusinessTransport contains the bounded Step 6 listener and authentication
+// handoff configuration. It is enabled only for foundation-api.
+type BusinessTransport struct {
+	Enabled               bool
+	ListenAddress         string
+	HMACKeyFile           string
+	MaxConcurrentRequests int32
 }
 
 // Database contains only non-secret database settings and the path from which
@@ -129,6 +143,11 @@ func Load(processName string, lookup LookupEnv) (Config, error) {
 		return Config{}, err
 	}
 
+	business, err := loadBusinessTransport(processName, adminAddress, lookup)
+	if err != nil {
+		return Config{}, err
+	}
+
 	return Config{
 		ProcessName:        processName,
 		AdminListenAddress: adminAddress,
@@ -144,21 +163,26 @@ func Load(processName string, lookup LookupEnv) (Config, error) {
 			MaxConnectionIdleTime: maxIdle,
 			HealthCheckPeriod:     healthPeriod,
 		},
+		Business: business,
 	}, nil
 }
 
 // SafeFields returns only non-secret values suitable for structured logs.
 func (c Config) SafeFields() map[string]any {
 	return map[string]any{
-		"process":                       c.ProcessName,
-		"admin_listen_address":          c.AdminListenAddress,
-		"startup_timeout":               c.StartupTimeout.String(),
-		"shutdown_timeout":              c.ShutdownTimeout.String(),
-		"database_dsn_file_configured":  c.Database.DSNFile != "",
-		"database_allow_insecure_local": c.Database.AllowInsecureLocal,
-		"database_connect_timeout":      c.Database.ConnectTimeout.String(),
-		"database_max_connections":      c.Database.MaxConnections,
-		"database_min_connections":      c.Database.MinConnections,
+		"process":                            c.ProcessName,
+		"admin_listen_address":               c.AdminListenAddress,
+		"startup_timeout":                    c.StartupTimeout.String(),
+		"shutdown_timeout":                   c.ShutdownTimeout.String(),
+		"database_dsn_file_configured":       c.Database.DSNFile != "",
+		"database_allow_insecure_local":      c.Database.AllowInsecureLocal,
+		"database_connect_timeout":           c.Database.ConnectTimeout.String(),
+		"database_max_connections":           c.Database.MaxConnections,
+		"database_min_connections":           c.Database.MinConnections,
+		"business_transport_enabled":         c.Business.Enabled,
+		"business_listen_address":            c.Business.ListenAddress,
+		"transport_hmac_key_file_configured": c.Business.HMACKeyFile != "",
+		"transport_max_concurrent_requests":  c.Business.MaxConcurrentRequests,
 	}
 }
 
@@ -167,50 +191,114 @@ func (c Config) String() string { return "[REDACTED CONFIGURATION]" }
 // ReadDatabaseURL reads one PostgreSQL URL from the protected file named by the
 // typed configuration. It rejects symlinks and any group or other permissions.
 func ReadDatabaseURL(path string) (string, error) {
+	return readProtectedSingleLine(path, EnvDatabaseDSNFile)
+}
+
+// ReadTransportHMACKey reads and decodes one base64url service-specific HMAC
+// key. The encoded or decoded key is never retained in Config or SafeFields.
+func ReadTransportHMACKey(path string) ([]byte, error) {
+	encoded, err := readProtectedSingleLine(path, EnvTransportHMACKeyFile)
+	if err != nil {
+		return nil, err
+	}
+	decoded, err := base64.RawURLEncoding.DecodeString(encoded)
+	if err != nil || len(decoded) < 32 || len(decoded) > 64 ||
+		base64.RawURLEncoding.EncodeToString(decoded) != encoded {
+		return nil, &Error{Field: EnvTransportHMACKeyFile, Reason: "must contain canonical base64url for 32 to 64 bytes"}
+	}
+	return decoded, nil
+}
+
+func readProtectedSingleLine(path, field string) (string, error) {
 	pathInfo, err := os.Lstat(path)
 	if err != nil {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "cannot stat configured file"}
+		return "", &Error{Field: field, Reason: "cannot stat configured file"}
 	}
 	if pathInfo.Mode()&os.ModeSymlink != 0 {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "symlinks are prohibited"}
+		return "", &Error{Field: field, Reason: "symlinks are prohibited"}
 	}
 	if !pathInfo.Mode().IsRegular() {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "must name a regular file"}
+		return "", &Error{Field: field, Reason: "must name a regular file"}
 	}
 	if pathInfo.Mode().Perm()&0o077 != 0 {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "group and other permission bits must be zero"}
+		return "", &Error{Field: field, Reason: "group and other permission bits must be zero"}
 	}
 	if pathInfo.Size() <= 0 || pathInfo.Size() > maximumSecretFileSize {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "file size is outside the accepted boundary"}
+		return "", &Error{Field: field, Reason: "file size is outside the accepted boundary"}
 	}
 
 	file, err := os.Open(path)
 	if err != nil {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "cannot open configured file"}
+		return "", &Error{Field: field, Reason: "cannot open configured file"}
 	}
 	defer file.Close()
 
 	openedInfo, err := file.Stat()
 	if err != nil || !openedInfo.Mode().IsRegular() || !os.SameFile(pathInfo, openedInfo) {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "configured file changed during validation"}
+		return "", &Error{Field: field, Reason: "configured file changed during validation"}
 	}
 
 	content, err := io.ReadAll(io.LimitReader(file, maximumSecretFileSize+1))
 	if err != nil {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "cannot read configured file"}
+		return "", &Error{Field: field, Reason: "cannot read configured file"}
 	}
 	if len(content) == 0 || int64(len(content)) > maximumSecretFileSize {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "file size is outside the accepted boundary"}
+		return "", &Error{Field: field, Reason: "file size is outside the accepted boundary"}
 	}
 	value := strings.TrimSpace(string(content))
 	if value == "" {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "file is empty"}
+		return "", &Error{Field: field, Reason: "file is empty"}
 	}
 	if strings.ContainsAny(value, "\r\n\x00") {
-		return "", &Error{Field: EnvDatabaseDSNFile, Reason: "file must contain exactly one text line"}
+		return "", &Error{Field: field, Reason: "file must contain exactly one text line"}
+	}
+	return value, nil
+}
+
+func loadBusinessTransport(processName, adminAddress string, lookup LookupEnv) (BusinessTransport, error) {
+	criticalNames := []string{
+		EnvBusinessListenAddress,
+		EnvTransportHMACKeyFile,
+		EnvTransportMaxConcurrentRequests,
+	}
+	if processName != "foundation-api" {
+		for _, name := range criticalNames {
+			if value, ok := lookup(name); ok && strings.TrimSpace(value) != "" {
+				return BusinessTransport{}, &Error{Field: name, Reason: "is accepted only for foundation-api"}
+			}
+		}
+		return BusinessTransport{}, nil
 	}
 
-	return value, nil
+	listenAddress, err := required(lookup, EnvBusinessListenAddress)
+	if err != nil {
+		return BusinessTransport{}, err
+	}
+	if err := validateLoopbackAddress(listenAddress); err != nil {
+		return BusinessTransport{}, &Error{Field: EnvBusinessListenAddress, Reason: err.Error()}
+	}
+	if listenAddress == adminAddress {
+		return BusinessTransport{}, &Error{Field: EnvBusinessListenAddress, Reason: "must differ from the administrative listener"}
+	}
+
+	keyFile, err := required(lookup, EnvTransportHMACKeyFile)
+	if err != nil {
+		return BusinessTransport{}, err
+	}
+	if !filepath.IsAbs(keyFile) {
+		return BusinessTransport{}, &Error{Field: EnvTransportHMACKeyFile, Reason: "path must be absolute"}
+	}
+
+	maximumConcurrent, err := optionalInt32(lookup, EnvTransportMaxConcurrentRequests, 8, 1, 32)
+	if err != nil {
+		return BusinessTransport{}, err
+	}
+	return BusinessTransport{
+		Enabled:               true,
+		ListenAddress:         listenAddress,
+		HMACKeyFile:           keyFile,
+		MaxConcurrentRequests: maximumConcurrent,
+	}, nil
 }
 
 func required(lookup LookupEnv, name string) (string, error) {

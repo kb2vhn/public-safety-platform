@@ -2,9 +2,9 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current production Go status:** Phase 6 Step 5 Controlled Foundation API
-> Adapter implementation candidate. Phase 6 Step 4 is the newest accepted
-> implementation gate.
+> **Current production Go status:** Phase 6 Step 6 Authenticated Request and
+> Transport Boundary implementation candidate. Phase 6 Step 5 is the newest
+> accepted implementation gate.
 
 Phase gates are retained under `tools/validation/phase-gates/`.
 
@@ -220,14 +220,19 @@ its final complete result is 71 PASS and 0 FAIL.
 <!-- phase-6-step-5-status:start -->
 ## Phase 6 Step 5 — Controlled Foundation API Adapter
 
+The accepted checkpoint is `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with
+96 PASS and 0 FAIL.
+<!-- phase-6-step-5-status:end -->
+
+<!-- phase-6-step-6-status:start -->
+## Phase 6 Step 6 — Authenticated Request and Transport Boundary
+
 The candidate gate is:
 
 ```text
-tools/validation/phase-gates/validate_phase6_step5.sh
+tools/validation/phase-gates/validate_phase6_step6.sh
 ```
 
-It revalidates Step 4 in an isolated clone, preserves frozen SQL and
-process-host paths, validates the exact typed policy-binding adapter, and runs
-positive, denial, concurrency, timeout, cancellation, privilege, and redaction
-evidence.
-<!-- phase-6-step-5-status:end -->
+It revalidates Step 5 in an isolated clone and validates the signed handoff,
+replay, route, limits, envelope, cancellation, credential, and runtime boundary.
+<!-- phase-6-step-6-status:end -->

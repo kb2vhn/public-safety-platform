@@ -10,6 +10,7 @@
 - [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Phase 6 Step 5 Controlled Foundation API Adapter](phase-6-step-5-controlled-foundation-api-adapter.md)
+- [Phase 6 Step 6 Authenticated Request and Transport Boundary](phase-6-step-6-authenticated-request-and-transport-boundary.md)
 - [Location Service Architecture](location-service-architecture.md)
 
 Service documents define ownership, interfaces, state, failure behavior, persistence, security, and performance boundaries for the Go modular monolith and any later extracted service.
@@ -54,8 +55,17 @@ Step 4 is the accepted process-host checkpoint at
 <!-- phase-6-step-5-status:start -->
 ## Phase 6 Step 5 — Controlled Foundation API Adapter
 
-- [Phase 6 Step 5 Controlled Foundation API Adapter](phase-6-step-5-controlled-foundation-api-adapter.md)
+Step 5 is accepted at `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with
+96 PASS and 0 FAIL.
 
-Step 5 implements one typed policy-binding adapter while leaving transport,
-authentication, direct table access, migrations, and workers out of scope.
+- [Phase 6 Step 5 Controlled Foundation API Adapter](phase-6-step-5-controlled-foundation-api-adapter.md)
 <!-- phase-6-step-5-status:end -->
+
+<!-- phase-6-step-6-status:start -->
+## Phase 6 Step 6 — Authenticated Request and Transport Boundary
+
+- [Phase 6 Step 6 Authenticated Request and Transport Boundary](phase-6-step-6-authenticated-request-and-transport-boundary.md)
+
+Step 6 exposes the accepted adapter through one authenticated loopback route
+without creating local authorization semantics.
+<!-- phase-6-step-6-status:end -->

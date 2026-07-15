@@ -1,6 +1,10 @@
 # Phase 6 Step 5 — Controlled Foundation API Adapter
 
-> **Status:** Implementation candidate. Acceptance is not yet claimed.
+> **Status:** Accepted implementation checkpoint.
+>
+> **Accepted checkpoint:** Commit
+> `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5`; final complete validation
+> reported 96 PASS and 0 FAIL.
 >
 > **Accepted predecessor:** Phase 6 Step 4 at commit
 > `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`, with 71 PASS and 0 FAIL in
@@ -326,7 +330,6 @@ Step 5 does not claim:
 
 ## 17. Next Step
 
-After Step 5 is accepted, Phase 6 Step 6 may implement the Authenticated Request
-and Transport Boundary. That step must construct bounded request context,
-authentication handoff, transport limits, error envelopes, and cancellation
-without allowing transport identity or caller claims to become authorization.
+Phase 6 Step 6 now implements the Authenticated Request and Transport Boundary
+as one loopback-only signed handoff and bounded route over this accepted
+adapter, without allowing transport identity to become authorization.

@@ -96,3 +96,11 @@ Step 5 adds no direct or transitive Go module. Canonical Decision ID parsing,
 closed reason-code validation, timeouts, cancellation, and typed errors use the
 Go standard library. The accepted `pgx/v5` dependency remains confined to
 `internal/database`.
+
+
+<!-- phase-6-step-6-dependency-status -->
+## Phase 6 Step 6 Dependency Status
+
+Step 6 adds no direct or transitive Go module. HMAC-SHA-256, SHA-256 body
+digests, base64url, JSON, HTTP limits, mutex-protected replay state, and
+timeouts use the Go standard library.

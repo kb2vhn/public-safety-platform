@@ -8,8 +8,10 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/authentication"
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/config"
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/database"
+	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/foundation"
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/observability"
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/processhost"
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/transport"
@@ -24,9 +26,9 @@ const (
 
 const ExitConfiguration = 78
 
-// Run executes the complete Step 4 lifecycle. It preserves the Step 3 database
-// and administrative boundaries while adding optional systemd-compatible
-// readiness, stopping, and watchdog notification.
+// Run executes the complete Step 6 lifecycle. The Foundation API receives one
+// separately bounded authenticated business listener; worker processes retain
+// only the accepted administrative listener and database lifecycle.
 func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentity) int {
 	logger := observability.NewJSONLogger(output, identity.ProcessName)
 
@@ -34,6 +36,21 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 	if err != nil {
 		logger.Error("configuration rejected", "diagnostic", observability.SafeError(err))
 		return ExitConfiguration
+	}
+
+	var verifier *authentication.Verifier
+	if cfg.Business.Enabled {
+		key, keyErr := config.ReadTransportHMACKey(cfg.Business.HMACKeyFile)
+		if keyErr != nil {
+			logger.Error("transport credential rejected", "diagnostic", observability.SafeError(keyErr))
+			return ExitConfiguration
+		}
+		verifier, err = authentication.NewVerifier(key, nil)
+		zeroBytes(key)
+		if err != nil {
+			logger.Error("transport credential rejected", "diagnostic", authentication.Diagnostic(err))
+			return ExitConfiguration
+		}
 	}
 
 	host, err := processhost.Load(os.LookupEnv, os.Getpid())
@@ -56,9 +73,9 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 		return ExitOperatingSystem
 	}
 
-	serveResult := make(chan error, 1)
+	adminServeResult := make(chan error, 1)
 	go func() {
-		serveResult <- adminServer.Serve()
+		adminServeResult <- adminServer.Serve()
 	}()
 	logger.Info("administrative listener started", "address", adminServer.Addr())
 
@@ -77,29 +94,72 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 	}
 
 	select {
-	case serveErr := <-serveResult:
+	case serveErr := <-adminServeResult:
 		notifyStopping(logger, host)
 		pool.Close()
 		if serveErr != nil {
-			logger.Error(
-				"administrative listener stopped during startup",
-				"diagnostic",
-				"listener_serve_failed",
-			)
+			logger.Error("administrative listener stopped during startup", "diagnostic", "listener_serve_failed")
 		}
 		return ExitSoftware
 	default:
 	}
 
+	var businessServer *transport.BusinessServer
+	var businessServeResult chan error
+	if cfg.Business.Enabled {
+		adapter, adapterErr := foundation.NewAuthorizationPolicyAdapter(pool)
+		if adapterErr != nil {
+			notifyStopping(logger, host)
+			shutdownAdministrativeServer(logger, adminServer, cfg)
+			pool.Close()
+			logger.Error("Foundation adapter construction failed", "diagnostic", foundation.Diagnostic(adapterErr))
+			return ExitSoftware
+		}
+		handler, handlerErr := transport.NewBusinessHandler(
+			verifier,
+			adapter,
+			cfg.Business.MaxConcurrentRequests,
+		)
+		if handlerErr != nil {
+			notifyStopping(logger, host)
+			shutdownAdministrativeServer(logger, adminServer, cfg)
+			pool.Close()
+			logger.Error("business transport construction failed", "diagnostic", "business_transport_configuration_failed")
+			return ExitConfiguration
+		}
+		businessServer, err = transport.ListenBusiness(cfg.Business.ListenAddress, handler)
+		if err != nil {
+			notifyStopping(logger, host)
+			shutdownAdministrativeServer(logger, adminServer, cfg)
+			pool.Close()
+			logger.Error("business listener failed", "diagnostic", "business_listener_bind_failed")
+			return ExitOperatingSystem
+		}
+		businessServeResult = make(chan error, 1)
+		go func() {
+			businessServeResult <- businessServer.Serve()
+		}()
+		logger.Info("business listener started", "address", businessServer.Addr())
+
+		select {
+		case serveErr := <-businessServeResult:
+			notifyStopping(logger, host)
+			shutdownAdministrativeServer(logger, adminServer, cfg)
+			pool.Close()
+			if serveErr != nil {
+				logger.Error("business listener stopped during startup", "diagnostic", "business_listener_serve_failed")
+			}
+			return ExitSoftware
+		default:
+		}
+	}
+
 	state.SetReady(true)
 	if err := host.Ready(); err != nil {
 		state.SetReady(false)
-		logger.Error(
-			"process-host readiness notification failed",
-			"diagnostic",
-			processhost.Diagnostic(err),
-		)
+		logger.Error("process-host readiness notification failed", "diagnostic", processhost.Diagnostic(err))
 		notifyStopping(logger, host)
+		shutdownBusinessServer(logger, businessServer, cfg)
 		shutdownAdministrativeServer(logger, adminServer, cfg)
 		pool.Close()
 		return ExitOperatingSystem
@@ -112,6 +172,7 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 		"postgresql_version_num", compatibility.ServerVersionNumber,
 		"process_host_notification", host.Enabled(),
 		"watchdog_enabled", host.WatchdogEnabled(),
+		"business_transport_enabled", cfg.Business.Enabled,
 	)
 
 	var cancelWatchdog context.CancelFunc
@@ -129,23 +190,21 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 	select {
 	case <-ctx.Done():
 		logger.Info("shutdown requested")
-	case serveErr := <-serveResult:
+	case serveErr := <-adminServeResult:
 		if serveErr != nil {
-			logger.Error(
-				"administrative listener stopped unexpectedly",
-				"diagnostic",
-				"listener_serve_failed",
-			)
+			logger.Error("administrative listener stopped unexpectedly", "diagnostic", "listener_serve_failed")
+			exitCode = ExitSoftware
+		}
+	case serveErr := <-businessServeResult:
+		businessServeResult = nil
+		if serveErr != nil {
+			logger.Error("business listener stopped unexpectedly", "diagnostic", "business_listener_serve_failed")
 			exitCode = ExitSoftware
 		}
 	case watchdogErr := <-watchdogResult:
 		watchdogResult = nil
 		if watchdogErr != nil {
-			logger.Error(
-				"process-host watchdog notification failed",
-				"diagnostic",
-				processhost.Diagnostic(watchdogErr),
-			)
+			logger.Error("process-host watchdog notification failed", "diagnostic", processhost.Diagnostic(watchdogErr))
 			exitCode = ExitSoftware
 		}
 	}
@@ -153,10 +212,17 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 	state.SetReady(false)
 	stopWatchdog(cancelWatchdog, watchdogResult)
 	notifyStopping(logger, host)
+	shutdownBusinessServer(logger, businessServer, cfg)
 	shutdownAdministrativeServer(logger, adminServer, cfg)
 	pool.Close()
 	logger.Info("service stopped", "exit_code", exitCode)
 	return exitCode
+}
+
+func zeroBytes(value []byte) {
+	for index := range value {
+		value[index] = 0
+	}
 }
 
 func stopWatchdog(cancel context.CancelFunc, result <-chan error) {
@@ -171,29 +237,25 @@ func stopWatchdog(cancel context.CancelFunc, result <-chan error) {
 
 func notifyStopping(logger *slog.Logger, host *processhost.Notifier) {
 	if err := host.Stopping(); err != nil {
-		logger.Error(
-			"process-host stopping notification failed",
-			"diagnostic",
-			processhost.Diagnostic(err),
-		)
+		logger.Error("process-host stopping notification failed", "diagnostic", processhost.Diagnostic(err))
 	}
 }
 
-func shutdownAdministrativeServer(
-	logger *slog.Logger,
-	server *transport.Server,
-	cfg config.Config,
-) {
-	shutdownContext, cancelShutdown := context.WithTimeout(
-		context.Background(),
-		cfg.ShutdownTimeout,
-	)
+func shutdownBusinessServer(logger *slog.Logger, server *transport.BusinessServer, cfg config.Config) {
+	if server == nil {
+		return
+	}
+	shutdownContext, cancelShutdown := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancelShutdown()
 	if err := server.Shutdown(shutdownContext); err != nil {
-		logger.Error(
-			"administrative listener shutdown incomplete",
-			"diagnostic",
-			"listener_shutdown_failed",
-		)
+		logger.Error("business listener shutdown incomplete", "diagnostic", "business_listener_shutdown_failed")
+	}
+}
+
+func shutdownAdministrativeServer(logger *slog.Logger, server *transport.Server, cfg config.Config) {
+	shutdownContext, cancelShutdown := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	defer cancelShutdown()
+	if err := server.Shutdown(shutdownContext); err != nil {
+		logger.Error("administrative listener shutdown incomplete", "diagnostic", "listener_shutdown_failed")
 	}
 }

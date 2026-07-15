@@ -13,7 +13,11 @@ User=issp-foundation-api
 Group=issp-foundation-api
 ExecStart=/usr/lib/iron-signal-platform/foundation-api
 LoadCredentialEncrypted=database-url:/etc/iron-signal-platform/credentials/foundation-api.database-url.cred
+LoadCredentialEncrypted=transport-hmac-key:/etc/iron-signal-platform/credentials/foundation-api.transport-hmac-key.cred
 Environment=ISSP_ADMIN_LISTEN_ADDRESS=127.0.0.1:18081
+Environment=ISSP_BUSINESS_LISTEN_ADDRESS=127.0.0.1:18080
+Environment=ISSP_TRANSPORT_HMAC_KEY_FILE=%d/transport-hmac-key
+Environment=ISSP_TRANSPORT_MAX_CONCURRENT_REQUESTS=8
 Environment=ISSP_DATABASE_DSN_FILE=%d/database-url
 Environment=ISSP_DATABASE_CONNECT_TIMEOUT=5s
 Environment=ISSP_DATABASE_MAX_CONNECTIONS=4

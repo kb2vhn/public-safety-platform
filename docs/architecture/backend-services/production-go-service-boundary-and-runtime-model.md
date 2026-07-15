@@ -2,15 +2,14 @@
 
 > **Document status:** Normative Platform service architecture.
 >
-> **Phase status:** Phase 6 Step 5 Controlled Foundation API Adapter
+> **Phase status:** Phase 6 Step 6 Authenticated Request and Transport Boundary
 > implementation candidate.
 >
-> **Implementation status:** Phase 6 Step 4 is accepted at commit
-> `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0` with 71 PASS and 0 FAIL in
-> complete validation. Step 5 adds one typed adapter for
-> `decision.bind_authorization_policy(uuid)` while preserving the accepted
-> process-host, database-identity, administrative-listener, and dependency
-> boundaries. Acceptance of Step 5 is not yet claimed.
+> **Implementation status:** Phase 6 Step 5 is accepted at commit
+> `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with 96 PASS and 0 FAIL in
+> complete validation. Step 6 adds one loopback business listener and signed
+> authentication handoff over the exact Step 5 adapter. Authentication context
+> does not become authorization or a database input.
 >
 > **Database predecessor:** Phase 5 production database security boundary at
 > `phase-5-production-database-security-boundary-complete-v1`, targeting

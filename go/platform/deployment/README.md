@@ -1,7 +1,8 @@
-# Phase 6 Step 4 Linux Process-Host Deployment Boundary
+# Phase 6 Step 6 Linux Process and Authenticated Transport Deployment Boundary
 
-> **Status:** Implementation candidate. These files are not production
-> installation approval.
+> **Status:** Step 4 process-host checkpoint accepted; Step 6 Foundation API
+> authenticated transport configuration is an implementation candidate. These
+> files are not production installation approval.
 
 ## Layout
 
@@ -23,6 +24,7 @@ The candidate installation layout is:
 
 /etc/iron-signal-platform/credentials/
 ├── foundation-api.database-url.cred
+├── foundation-api.transport-hmac-key.cred
 ├── integration-delivery-worker.database-url.cred
 └── monitoring-delivery-worker.database-url.cred
 ```
@@ -44,7 +46,7 @@ No fixed numeric UID or GID is embedded in the package.
 
 ## Credential provisioning
 
-Each service unit uses one distinct encrypted credential source and exposes it
+Each service unit uses one distinct encrypted database credential source and exposes it
 to the process under the short name `database-url` through:
 
 ```text
@@ -103,3 +105,18 @@ protected business operation.
 The transport race tests separately prove bounded shutdown with an in-flight
 administrative request and error propagation after an unexpected listener
 closure.
+
+
+## Step 6 Foundation API transport credential
+
+Only `iron-signal-foundation-api.service` receives:
+
+```text
+LoadCredentialEncrypted=transport-hmac-key:/etc/iron-signal-platform/credentials/foundation-api.transport-hmac-key.cred
+ISSP_TRANSPORT_HMAC_KEY_FILE=%d/transport-hmac-key
+ISSP_BUSINESS_LISTEN_ADDRESS=127.0.0.1:18080
+ISSP_TRANSPORT_MAX_CONCURRENT_REQUESTS=8
+```
+
+The worker units receive none of these settings. The business listener is
+separate from the administrative port and remains loopback-only.

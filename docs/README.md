@@ -2,9 +2,9 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current status:** Phase 6 Step 5 Controlled Foundation API Adapter
-> implementation candidate; Phase 6 Step 4 is the newest accepted production
-> Go implementation checkpoint
+> **Current status:** Phase 6 Step 6 Authenticated Request and Transport
+> Boundary implementation candidate; Phase 6 Step 5 is the newest accepted
+> production Go implementation checkpoint
 >
 > **Accepted database-security tag:**
 > `phase-5-production-database-security-boundary-complete-v1`
@@ -23,6 +23,7 @@
 - [Phase 6 Step 3 Runtime Bootstrap and PostgreSQL Connectivity](architecture/backend-services/phase-6-step-3-runtime-bootstrap-and-postgresql-connectivity.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Phase 6 Step 5 Controlled Foundation API Adapter](architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
+- [Phase 6 Step 6 Authenticated Request and Transport Boundary](architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
 - [Communications Architecture](architecture/communications/README.md)
 - [GIS and Mapping Architecture](architecture/gis-and-mapping/README.md)
 - [Operational Workstation Architecture](../modules/CAD/docs/architecture/operational-workstation/README.md)
@@ -238,15 +239,22 @@ Its final complete gate reported 71 PASS and 0 FAIL.
 <!-- phase-6-step-5-status:start -->
 ## Phase 6 Step 5 — Controlled Foundation API Adapter
 
-Step 5 is an implementation candidate for one typed call to
-`decision.bind_authorization_policy(uuid)`. The candidate preserves exact
-Decision Record references and reason codes without adding a business listener,
-direct table access, migration, or worker loop.
-
-```bash
-./tools/validation/phase-gates/validate_phase6_step5.sh --static-only
-./tools/validation/phase-gates/validate_phase6_step5.sh
-```
+Step 5 is accepted at commit `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5`
+with 96 PASS and 0 FAIL.
 
 - [Phase 6 Step 5 Controlled Foundation API Adapter](architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 <!-- phase-6-step-5-status:end -->
+
+<!-- phase-6-step-6-status:start -->
+## Phase 6 Step 6 — Authenticated Request and Transport Boundary
+
+Step 6 is an implementation candidate for one loopback-only signed gateway
+handoff and one bounded POST route. It adds no second protected operation.
+
+```bash
+./tools/validation/phase-gates/validate_phase6_step6.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step6.sh
+```
+
+- [Phase 6 Step 6 Authenticated Request and Transport Boundary](architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
+<!-- phase-6-step-6-status:end -->
