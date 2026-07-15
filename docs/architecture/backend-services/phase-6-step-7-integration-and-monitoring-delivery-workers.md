@@ -1,6 +1,10 @@
 # Phase 6 Step 7 — Integration and Monitoring Delivery Workers
 
-> **Status:** Implementation candidate. Acceptance is not yet claimed.
+> **Status:** Accepted implementation checkpoint.
+>
+> **Accepted implementation:** Commit
+> `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`, with 142 PASS and 0 FAIL in
+> both static and complete validation.
 >
 > **Accepted predecessor:** Phase 6 Step 6 at commit
 > `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`, with 92 PASS and 0 FAIL in
@@ -378,8 +382,23 @@ Step 7 does not claim:
 - performance thresholds have been accepted;
 - the platform is ready for production use.
 
-## 19. Next Step
+## 19. Accepted Checkpoint
 
-After Step 7 is accepted, Phase 6 Step 8 may perform the consolidated hostile,
-failure, concurrency, and resource validation campaign across the protected
-Foundation adapter, authenticated transport, and both durable delivery workers.
+Step 7 was accepted and frozen at:
+
+```text
+Commit:              79e9723b2dd12e813de8a8c665d08d4f61cc8fab
+Static validation:   142 PASS, 0 FAIL
+Complete validation: 142 PASS, 0 FAIL
+```
+
+The accepted evidence includes exact worker identities, six operation-specific
+database boundaries, distinct relay credentials, concurrency and retry bounds,
+PostgreSQL 18 persistence, cross-role denial, redaction, and worker runtime
+validation.
+
+## 20. Next Step
+
+Phase 6 Step 8 performs the consolidated hostile, failure, concurrency, and
+resource validation campaign across the protected Foundation adapter,
+authenticated transport, and both durable delivery workers.

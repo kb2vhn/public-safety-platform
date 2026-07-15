@@ -2,14 +2,15 @@
 
 > **Document status:** Normative Platform service architecture.
 >
-> **Phase status:** Phase 6 Step 7 Integration and Monitoring Delivery Workers
-> implementation candidate.
+> **Phase status:** Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource
+> Validation implementation candidate.
 >
-> **Implementation status:** Phase 6 Step 6 is accepted at commit
-> `ec3c36081c686fa8ec82c8fd94bda421ed6cff42` with 92 PASS and 0 FAIL in
-> complete validation. Step 7 adds the two exact durable delivery-worker loops
-> over the six accepted claim, completion, and reschedule routines without
-> holding a database transaction across external network delivery.
+> **Implementation status:** Phase 6 Step 7 is accepted at commit
+> `79e9723b2dd12e813de8a8c665d08d4f61cc8fab` with 142 PASS and 0 FAIL in
+> both static and complete validation. Step 8 adds only adversarial tests,
+> hostile fixtures, validation orchestration, and observation-only resource
+> telemetry. Production Go, SQL, deployment, identity, and authority boundaries
+> remain frozen.
 >
 > **Database predecessor:** Phase 5 production database security boundary at
 > `phase-5-production-database-security-boundary-complete-v1`, targeting
@@ -565,19 +566,24 @@ allowing transport identity to become authorization.
 
 ### Step 7 — Integration and Monitoring Delivery Workers
 
-Implement only the two accepted delivery identities and six operation-specific
-claim, completion, and reschedule methods. Claimed destination values remain
-metadata; one deployment-owned HTTPS relay per worker owns network authority.
-Every request carries the durable identifier as an idempotency key. Batch,
-concurrency, payload, timeout, claim lease, retry delay, polling, and shutdown
-are bounded, and no database transaction spans external delivery.
+Accepted at commit `79e9723b2dd12e813de8a8c665d08d4f61cc8fab` with
+142 PASS and 0 FAIL in static and complete validation. The two accepted delivery
+identities use six operation-specific claim, completion, and reschedule methods.
+Claimed destination values remain metadata; one deployment-owned relay per
+worker owns network authority. Every request carries the durable identifier as
+an idempotency key. Batch, concurrency, payload, timeout, claim lease, retry
+delay, polling, and shutdown are bounded, and no database transaction spans
+external delivery.
 
 ### Step 8 — Hostile, Failure, Concurrency, and Resource Validation
 
-Prove privilege denial, malformed-context rejection, timeout and cancellation
-behavior, connection-pool containment, worker duplication handling, process
-shutdown, race-detector cleanliness, and observation-only resource baselines
-across the protected adapters, authenticated transport, and durable workers.
+Prove privilege denial, malformed-context rejection, replay and capacity
+containment, timeout and cancellation behavior, connection-pool containment,
+claim-lease recovery, completion-race single-winner behavior, process shutdown,
+race-detector cleanliness, relay escape prevention, redaction, and
+observation-only resource baselines across the protected adapter,
+authenticated transport, and durable workers. Step 8 changes validation and
+documentation only; production source remains byte-for-byte frozen at Step 7.
 
 ### Step 9 — Formal Acceptance
 

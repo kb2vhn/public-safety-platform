@@ -11,6 +11,8 @@
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Phase 6 Step 5 Controlled Foundation API Adapter](phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](phase-6-step-6-authenticated-request-and-transport-boundary.md)
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](phase-6-step-7-integration-and-monitoring-delivery-workers.md)
+- [Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource Validation](phase-6-step-8-hostile-failure-concurrency-and-resource-validation.md)
 - [Location Service Architecture](location-service-architecture.md)
 
 Service documents define ownership, interfaces, state, failure behavior, persistence, security, and performance boundaries for the Go modular monolith and any later extracted service.
@@ -75,7 +77,15 @@ Step 6 is accepted at `ec3c36081c686fa8ec82c8fd94bda421ed6cff42` with
 
 - [Phase 6 Step 7 Integration and Monitoring Delivery Workers](phase-6-step-7-integration-and-monitoring-delivery-workers.md)
 
-Step 7 implements only the two accepted delivery identities and six accepted
-controlled routines, with a deployment-owned relay and no transaction spanning
-network I/O.
+Step 7 is accepted at commit `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Static and complete validation each
+reported 142 PASS and 0 FAIL.
 <!-- phase-6-step-7-status:end -->
+
+<!-- phase-6-step-8-status:start -->
+## Phase 6 Step 8 — Hostile, Failure, Concurrency, and Resource Validation
+
+- [Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource Validation](phase-6-step-8-hostile-failure-concurrency-and-resource-validation.md)
+
+Step 8 is the validation-only candidate over the frozen Step 7 implementation.
+Formal Phase 6 acceptance remains Step 9.
+<!-- phase-6-step-8-status:end -->

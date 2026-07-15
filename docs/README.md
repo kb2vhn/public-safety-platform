@@ -2,9 +2,9 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current status:** Phase 6 Step 7 Integration and Monitoring Delivery Workers
-> implementation candidate; Phase 6 Step 6 is the newest accepted production
-> Go implementation checkpoint
+> **Current status:** Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource
+> Validation implementation candidate; Phase 6 Step 7 is the newest accepted
+> production Go implementation checkpoint
 >
 > **Accepted database-security tag:**
 > `phase-5-production-database-security-boundary-complete-v1`
@@ -24,6 +24,8 @@
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Phase 6 Step 5 Controlled Foundation API Adapter](architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
+- [Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource Validation](architecture/backend-services/phase-6-step-8-hostile-failure-concurrency-and-resource-validation.md)
 - [Communications Architecture](architecture/communications/README.md)
 - [GIS and Mapping Architecture](architecture/gis-and-mapping/README.md)
 - [Operational Workstation Architecture](../modules/CAD/docs/architecture/operational-workstation/README.md)
@@ -54,9 +56,9 @@
 - Phase 5 Production Database Security Boundary:
   `phase-5-production-database-security-boundary-complete-v1`
 
-Phase 6 Step 6 is the newest accepted production Go implementation checkpoint
-at commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`, with 92 complete gate PASS
-checks and 0 failures.
+Phase 6 Step 7 is the newest accepted production Go implementation checkpoint
+at commit `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Static and complete validation each reported 142 PASS
+and 0 FAIL. Step 8 is the active validation-only implementation candidate.
 
 Accepted Phase 4 result:
 
@@ -257,14 +259,17 @@ with 92 PASS and 0 FAIL.
 <!-- phase-6-step-7-status:start -->
 ## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
 
-Step 7 is an implementation candidate for two exact service-specific worker
-loops. It adds no migration, business route, direct table access, generic job
-framework, or database transaction spanning external delivery.
-
-```bash
-./tools/validation/phase-gates/validate_phase6_step7.sh --static-only
-./tools/validation/phase-gates/validate_phase6_step7.sh
-```
+Step 7 is accepted at commit `79e9723b2dd12e813de8a8c665d08d4f61cc8fab` with 142 PASS and 0 FAIL in both static
+and complete validation. It freezes the two exact durable delivery-worker
+identities and six controlled database operations.
 
 - [Phase 6 Step 7 Integration and Monitoring Delivery Workers](architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
-<!-- phase-6-step-7-status:end -->
+
+## Phase 6 Step 8 — Hostile, Failure, Concurrency, and Resource Validation
+
+Step 8 is the active validation-only candidate. It exercises replay capacity,
+transport limits, adapter lock cancellation, relay failures, cross-role denial,
+claim lease recovery, completion races, repeated race tests, and
+observation-only resource telemetry.
+
+- [Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource Validation](architecture/backend-services/phase-6-step-8-hostile-failure-concurrency-and-resource-validation.md)

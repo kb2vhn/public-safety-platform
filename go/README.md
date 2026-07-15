@@ -1,8 +1,8 @@
 # Go Source
 
 > **Current production status:** Phase 6 Step 7 Integration and Monitoring
-> Delivery Workers implementation candidate. Phase 6 Step 6 is the newest
-> accepted implementation checkpoint.
+> Delivery Workers accepted. Phase 6 Step 8 hostile, failure, concurrency, and
+> resource validation is the active validation-only candidate.
 
 The production Go module exists at:
 
@@ -29,6 +29,7 @@ Governing records:
 - [Phase 6 Step 5 Controlled Foundation API Adapter](../docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](../docs/architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
 - [Phase 6 Step 7 Integration and Monitoring Delivery Workers](../docs/architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
+- [Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource Validation](../docs/architecture/backend-services/phase-6-step-8-hostile-failure-concurrency-and-resource-validation.md)
 
 <!-- phase-6-step-2-status:start -->
 ## Phase 6 Step 2 — Production Go Workspace and Reproducible Build Baseline
@@ -79,8 +80,20 @@ with 92 complete gate PASS checks and 0 failures.
 <!-- phase-6-step-7-status:start -->
 ## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
 
-Step 7 adds operation-specific claim, completion, and reschedule boundaries,
-two bounded worker loops, and an authenticated deployment-owned outbound relay.
-The worker package imports no SQL or pgx and holds no transaction across network
-I/O.
+Step 7 is accepted at commit `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Static and complete validation each
+reported 142 PASS and 0 FAIL. The production module includes the two bounded,
+service-specific durable delivery-worker loops without a generic job framework
+or transaction spanning external delivery.
+
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](../docs/architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
 <!-- phase-6-step-7-status:end -->
+
+<!-- phase-6-step-8-status:start -->
+## Phase 6 Step 8 — Hostile, Failure, Concurrency, and Resource Validation
+
+Step 8 adds test-only adversarial campaigns, disposable PostgreSQL evidence,
+and observation-only resource reporting. It does not modify production Go
+source, dependencies, service units, migrations, or authority.
+
+- [Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource Validation](../docs/architecture/backend-services/phase-6-step-8-hostile-failure-concurrency-and-resource-validation.md)
+<!-- phase-6-step-8-status:end -->

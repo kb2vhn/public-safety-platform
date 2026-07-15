@@ -1,10 +1,8 @@
 # Platform Foundation Documentation
 
 > **Current cross-boundary status:** Phase 5 production database security
-> boundary formally accepted; Phase 6 Step 3 production Go runtime
-> accepted; Phase 6 Step 5 controlled adapter accepted; Phase 6 Step 6
-> authenticated transport accepted; Phase 6 Step 7 delivery-worker candidate
-> active.
+> boundary formally accepted; Phase 6 Steps 3 through 7 production Go
+> checkpoints accepted; Phase 6 Step 8 validation-only candidate active.
 >
 > **Boundary:** This Foundation index records downstream consumption
 > status without moving service-host, transport, or module behavior into

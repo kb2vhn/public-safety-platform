@@ -3,8 +3,8 @@
 > **Owner:** Iron Signal Systems
 >
 > **Current production Go status:** Phase 6 Step 7 Integration and Monitoring
-> Delivery Workers implementation candidate. Phase 6 Step 6 is the newest
-> accepted implementation gate.
+> Delivery Workers accepted. Phase 6 Step 8 hostile, failure, concurrency, and
+> resource validation is the active validation-only gate.
 
 Phase gates are retained under `tools/validation/phase-gates/`.
 
@@ -240,14 +240,26 @@ its final complete result is 92 PASS and 0 FAIL.
 <!-- phase-6-step-7-status:start -->
 ## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
 
-The candidate gate is:
+The accepted checkpoint is `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Static and complete validation each
+reported 142 PASS and 0 FAIL. The historical gate remains:
 
 ```text
 tools/validation/phase-gates/validate_phase6_step7.sh
 ```
-
-It revalidates Step 6 in an isolated clone, freezes accepted SQL and transport
-paths, validates both operation-specific worker boundaries, and optionally runs
-the disposable PostgreSQL 18 delivery, retry, concurrency, privilege, and
-redaction campaign.
 <!-- phase-6-step-7-status:end -->
+
+<!-- phase-6-step-8-status:start -->
+## Phase 6 Step 8 — Hostile, Failure, Concurrency, and Resource Validation
+
+The active validation-only gate is:
+
+```text
+tools/validation/phase-gates/validate_phase6_step8.sh
+```
+
+Static mode revalidates the accepted Step 7 checkpoint in an isolated `dev`
+clone, proves the production tree is frozen, and runs repeated hostile and race
+tests. Complete mode additionally runs the disposable PostgreSQL 18 campaign
+and writes separate correctness and resource reports under
+`/tmp/phase-6-step-8-results`.
+<!-- phase-6-step-8-status:end -->

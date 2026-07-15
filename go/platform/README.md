@@ -1,11 +1,10 @@
 # Iron Signal Platform Production Go Module
 
-> **Phase status:** Phase 6 Step 7 Integration and Monitoring Delivery Workers
-> implementation candidate.
+> **Phase status:** Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource
+> Validation implementation candidate.
 >
-> **Accepted predecessor:** Phase 6 Step 6 at commit
-> `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`, with 92 PASS and 0 FAIL in
-> complete validation.
+> **Accepted production checkpoint:** Phase 6 Step 7 at commit
+> `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Static and complete validation each reported 142 PASS and 0 FAIL.
 >
 > **Runtime status:** Three bounded service processes, typed configuration,
 > protected-file database credentials, PostgreSQL 18 compatibility checks,
@@ -153,6 +152,7 @@ exhaustion, cross-role denial, no direct table privilege, and secret redaction.
 - [Phase 6 Step 5 Controlled Foundation API Adapter](../../docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](../../docs/architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
 - [Phase 6 Step 7 Integration and Monitoring Delivery Workers](../../docs/architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
+- [Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource Validation](../../docs/architecture/backend-services/phase-6-step-8-hostile-failure-concurrency-and-resource-validation.md)
 
 ## Boundary
 
@@ -186,7 +186,7 @@ Validation:
 ```
 
 
-## Step 7 Delivery Worker Candidate
+## Accepted Step 7 Delivery Workers
 
 The integration and monitoring worker identities receive distinct encrypted
 `delivery-token` credentials and fixed deployment-owned relay endpoints. They
@@ -197,8 +197,17 @@ credential, and the durable item identifier as `Idempotency-Key`. Claimed
 external-system and monitoring-destination fields remain metadata and never
 select the relay URL.
 
-The worker loops stop claiming on cancellation, cancel in-flight HTTP requests,
-attempt bounded completion or reschedule only when the network result is known,
-and drain before the PostgreSQL pool closes. Integration retries are bounded
-per attempt but do not claim a terminal dead-letter state because the accepted
-integration schema has no terminal-failure routine.
+The accepted worker loops stop claiming on cancellation, cancel in-flight HTTP
+requests, attempt bounded completion or reschedule only when the network result
+is known, and drain before the PostgreSQL pool closes. Step 7 is frozen at
+`79e9723b2dd12e813de8a8c665d08d4f61cc8fab` with 142 PASS and 0 FAIL in both static and complete validation.
+
+## Phase 6 Step 8 Validation Candidate
+
+Step 8 adds only hostile and failure tests, disposable PostgreSQL concurrency
+and privilege evidence, repeated race campaigns, validation orchestration, and
+observation-only resource reports. Production Go source, service units,
+dependencies, migrations, operations, routes, identities, and privileges remain
+unchanged. Runtime reports use schema `ISSP-PHASE6-STEP8-RESOURCE-V1` and keep
+correctness separate from resource observation and unevaluated performance
+thresholds.

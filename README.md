@@ -125,7 +125,8 @@ The current Foundation includes:
   executables, PostgreSQL connectivity, and systemd process-host controls
 - An accepted Phase 6 Step 5 controlled Foundation policy-binding adapter
 - An accepted Phase 6 Step 6 authenticated request and transport boundary
-- A Phase 6 Step 7 integration and monitoring delivery-worker candidate
+- An accepted Phase 6 Step 7 integration and monitoring delivery-worker boundary
+- A Phase 6 Step 8 hostile, failure, concurrency, and resource-validation candidate
 
 ### Accepted Phase 0 Baseline
 
@@ -795,24 +796,19 @@ See:
 
 ## Current Phase Gate
 
-Phase 6 Step 6 is the newest accepted production Go implementation checkpoint
-at commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`. Its final complete gate
-reported 92 PASS and 0 FAIL.
+Phase 6 Step 7 is the newest accepted production Go implementation checkpoint
+at commit `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Its static and complete
+gates each reported 142 PASS and 0 FAIL.
 
-Revalidate the accepted checkpoint with:
-
-```bash
-./tools/validation/phase-gates/validate_phase6_step6.sh
-```
-
-Phase 6 Step 7 is the active integration and monitoring delivery-worker
-candidate.
+Phase 6 Step 8 is the active hostile, failure, concurrency, and
+resource-validation candidate. It changes tests, validation orchestration, and
+documentation only; accepted production source remains frozen.
 
 Candidate validation:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step7.sh --static-only
-./tools/validation/phase-gates/validate_phase6_step7.sh
+./tools/validation/phase-gates/validate_phase6_step8.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step8.sh
 ```
 
 Historical Phase 4 and Phase 5 acceptance gates remain available and validate
@@ -1057,16 +1053,15 @@ Formal acceptance record:
 Phase 5 is formally accepted and frozen at
 `phase-5-production-database-security-boundary-complete-v1`.
 
-Phase 6 Steps 1 through 6 are complete. The accepted Step 6 checkpoint at
-commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42` preserves the exact toolchain,
+Phase 6 Steps 1 through 7 are complete. The accepted Step 7 checkpoint at
+commit `79e9723b2dd12e813de8a8c665d08d4f61cc8fab` preserves the exact toolchain,
 database and process identities, controlled Foundation adapter, authenticated
-loopback transport, service-manager controls, cancellation, and graceful drain.
-Its final complete gate reported 92 PASS and 0 FAIL.
+loopback transport, service-manager controls, and the two bounded delivery
+workers. Its static and complete gates each reported 142 PASS and 0 FAIL.
 
-Phase 6 Step 7 is active implementation-candidate work for the integration and
-monitoring delivery workers. It invokes only the six accepted claim,
-completion, and reschedule routines and must not hold a database transaction
-across external delivery.
+Phase 6 Step 8 is active implementation-candidate work for consolidated hostile,
+failure, concurrency, race, redaction, and observation-only resource validation.
+It adds no production capability or authority.
 
 Governing records:
 
@@ -1076,11 +1071,13 @@ Governing records:
 - [Phase 6 Step 5 Controlled Foundation API Adapter](docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](docs/architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
 - [Phase 6 Step 7 Integration and Monitoring Delivery Workers](docs/architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
+- [Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource Validation](docs/architecture/backend-services/phase-6-step-8-hostile-failure-concurrency-and-resource-validation.md)
 
 Active candidate gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step7.sh
+./tools/validation/phase-gates/validate_phase6_step8.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step8.sh
 ```
 
 <!-- phase-6-step-2-status:start -->
@@ -1148,11 +1145,20 @@ authorization.
 <!-- phase-6-step-7-status:start -->
 ## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
 
-Step 7 is an implementation candidate for the exact integration outbox and
-monitoring delivery claim, completion, and reschedule routines. It uses
-service-specific database and relay credentials, a deployment-owned HTTPS
-relay, bounded idempotent envelopes, bounded concurrency and retry delay, and
-shutdown drain without holding a database transaction across network I/O.
+Step 7 is accepted at commit `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Static and complete validation each
+reported 142 PASS and 0 FAIL. The checkpoint freezes the exact integration and
+monitoring claim, completion, reschedule, identity, relay, idempotency,
+concurrency, retry, cancellation, and drain boundaries.
 
 - [Phase 6 Step 7 Integration and Monitoring Delivery Workers](docs/architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
 <!-- phase-6-step-7-status:end -->
+
+<!-- phase-6-step-8-status:start -->
+## Phase 6 Step 8 — Hostile, Failure, Concurrency, and Resource Validation
+
+Step 8 is an implementation candidate that adds adversarial tests, hostile
+fixtures, repeated race campaigns, PostgreSQL role and lease-race evidence, and
+observation-only resource reports without changing production source.
+
+- [Phase 6 Step 8 Hostile, Failure, Concurrency, and Resource Validation](docs/architecture/backend-services/phase-6-step-8-hostile-failure-concurrency-and-resource-validation.md)
+<!-- phase-6-step-8-status:end -->

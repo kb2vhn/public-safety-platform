@@ -115,3 +115,13 @@ backoff, concurrency bounds, cancellation, and drain behavior use the Go
 standard library. The accepted `pgx/v5` dependency remains confined to
 `internal/database`; `internal/workers` imports no pgx package and contains no
 SQL.
+
+
+<!-- phase-6-step-8-dependency-status -->
+## Phase 6 Step 8 Dependency Status
+
+Step 8 adds no direct or transitive Go module. The adversarial tests and
+resource-reporting scripts use only the accepted Go standard library, existing
+`pgx/v5` integration-test boundary, Bash, Python 3, PostgreSQL client tools,
+and GNU `time` supplied by the validation host. `go.mod`, `go.sum`, and
+`TOOLCHAIN` remain frozen.

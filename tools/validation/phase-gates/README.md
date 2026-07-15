@@ -8,12 +8,12 @@ Foundation phases. Historical gates validate their own checkpoint trees.
 Newest accepted production Go gate:
 
 ```text
-validate_phase6_step6.sh
+validate_phase6_step7.sh
 ```
 
-Phase 6 Step 6 is accepted at
-`ec3c36081c686fa8ec82c8fd94bda421ed6cff42` with 92 complete gate PASS checks
-and 0 failures. Phase 6 Step 7 is the active implementation candidate.
+Phase 6 Step 7 is accepted at `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Static and complete validation each
+reported 142 PASS and 0 FAIL. Phase 6 Step 8 is the active validation-only
+implementation candidate.
 
 Phase 4 progression:
 
@@ -181,7 +181,16 @@ accepted checkpoint is `ec3c36081c686fa8ec82c8fd94bda421ed6cff42` with
 <!-- phase-6-step-7-status:start -->
 ## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
 
-`validate_phase6_step7.sh` validates the two-worker candidate. It revalidates
-Step 6 from an isolated branch named `dev`, freezes accepted SQL and business
-transport, and runs static or disposable PostgreSQL 18 worker evidence.
+`validate_phase6_step7.sh` is accepted at
+`79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Static and complete validation each reported 142 PASS and 0 FAIL.
 <!-- phase-6-step-7-status:end -->
+
+<!-- phase-6-step-8-status:start -->
+## Phase 6 Step 8 — Hostile, Failure, Concurrency, and Resource Validation
+
+`validate_phase6_step8.sh` is the active validation-only candidate gate. It
+revalidates Step 7 from an isolated branch named `dev`, freezes all production
+source and deployment authority, runs repeated hostile and race tests, and in
+complete mode records disposable PostgreSQL 18 correctness and resource
+evidence. Formal Phase 6 acceptance remains Step 9.
+<!-- phase-6-step-8-status:end -->

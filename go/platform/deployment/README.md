@@ -1,8 +1,9 @@
-# Phase 6 Step 7 Linux Process, Transport, and Delivery-Worker Deployment Boundary
+# Phase 6 Step 8 Linux Process, Transport, and Delivery-Worker Deployment Boundary
 
-> **Status:** Step 6 authenticated transport checkpoint accepted; Step 7
-> integration and monitoring delivery-worker configuration is an implementation
-> candidate. These files are not production installation approval.
+> **Status:** Step 7 integration and monitoring delivery-worker deployment
+> boundary accepted at `79e9723b2dd12e813de8a8c665d08d4f61cc8fab`. Step 8 is validation-only and changes no
+> service unit, credential mapping, endpoint authority, identity, or production
+> installation approval.
 
 ## Layout
 
@@ -147,3 +148,11 @@ ISSP_DELIVERY_RETRY_MAXIMUM=5m
 The workers do not use database destination fields as network addresses. Relay
 credentials, endpoints, payloads, response bodies, and durable identifiers are
 excluded from logs.
+
+
+## Phase 6 Step 8 deployment freeze
+
+Step 8 adds no deployment file or service authority. The hostile runtime
+campaign consumes the accepted service identities and credentials only inside a
+disposable test environment. The accepted systemd units remain byte-for-byte
+frozen from Step 7.
