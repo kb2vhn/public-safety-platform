@@ -8,12 +8,12 @@ Foundation phases. Historical gates validate their own checkpoint trees.
 Newest accepted production Go gate:
 
 ```text
-validate_phase6_step5.sh
+validate_phase6_step6.sh
 ```
 
-Phase 6 Step 5 is accepted at
-`1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with 96 complete gate PASS checks
-and 0 failures. Phase 6 Step 6 is the active implementation candidate.
+Phase 6 Step 6 is accepted at
+`ec3c36081c686fa8ec82c8fd94bda421ed6cff42` with 92 complete gate PASS checks
+and 0 failures. Phase 6 Step 7 is the active implementation candidate.
 
 Phase 4 progression:
 
@@ -173,6 +173,15 @@ checkpoint is `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0` with 71 PASS and 0 FAIL
 <!-- phase-6-step-6-status:start -->
 ## Phase 6 Step 6 — Authenticated Request and Transport Boundary
 
-`validate_phase6_step6.sh` validates the one-route authenticated transport
-candidate and revalidates the exact Step 5 predecessor in isolation.
+`validate_phase6_step6.sh` is the accepted authenticated transport gate. The
+accepted checkpoint is `ec3c36081c686fa8ec82c8fd94bda421ed6cff42` with
+92 PASS and 0 FAIL.
 <!-- phase-6-step-6-status:end -->
+
+<!-- phase-6-step-7-status:start -->
+## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
+
+`validate_phase6_step7.sh` validates the two-worker candidate. It revalidates
+Step 6 from an isolated branch named `dev`, freezes accepted SQL and business
+transport, and runs static or disposable PostgreSQL 18 worker evidence.
+<!-- phase-6-step-7-status:end -->

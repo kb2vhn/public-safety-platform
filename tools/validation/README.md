@@ -2,8 +2,8 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current production Go status:** Phase 6 Step 6 Authenticated Request and
-> Transport Boundary implementation candidate. Phase 6 Step 5 is the newest
+> **Current production Go status:** Phase 6 Step 7 Integration and Monitoring
+> Delivery Workers implementation candidate. Phase 6 Step 6 is the newest
 > accepted implementation gate.
 
 Phase gates are retained under `tools/validation/phase-gates/`.
@@ -227,12 +227,27 @@ The accepted checkpoint is `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with
 <!-- phase-6-step-6-status:start -->
 ## Phase 6 Step 6 — Authenticated Request and Transport Boundary
 
-The candidate gate is:
+The accepted Step 6 gate is:
 
 ```text
 tools/validation/phase-gates/validate_phase6_step6.sh
 ```
 
-It revalidates Step 5 in an isolated clone and validates the signed handoff,
-replay, route, limits, envelope, cancellation, credential, and runtime boundary.
+The accepted checkpoint is `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`;
+its final complete result is 92 PASS and 0 FAIL.
 <!-- phase-6-step-6-status:end -->
+
+<!-- phase-6-step-7-status:start -->
+## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
+
+The candidate gate is:
+
+```text
+tools/validation/phase-gates/validate_phase6_step7.sh
+```
+
+It revalidates Step 6 in an isolated clone, freezes accepted SQL and transport
+paths, validates both operation-specific worker boundaries, and optionally runs
+the disposable PostgreSQL 18 delivery, retry, concurrency, privilege, and
+redaction campaign.
+<!-- phase-6-step-7-status:end -->

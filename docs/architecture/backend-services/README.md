@@ -66,6 +66,16 @@ Step 5 is accepted at `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with
 
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](phase-6-step-6-authenticated-request-and-transport-boundary.md)
 
-Step 6 exposes the accepted adapter through one authenticated loopback route
-without creating local authorization semantics.
+Step 6 is accepted at `ec3c36081c686fa8ec82c8fd94bda421ed6cff42` with
+92 PASS and 0 FAIL.
 <!-- phase-6-step-6-status:end -->
+
+<!-- phase-6-step-7-status:start -->
+## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
+
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](phase-6-step-7-integration-and-monitoring-delivery-workers.md)
+
+Step 7 implements only the two accepted delivery identities and six accepted
+controlled routines, with a deployment-owned relay and no transaction spanning
+network I/O.
+<!-- phase-6-step-7-status:end -->

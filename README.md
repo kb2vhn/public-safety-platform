@@ -124,7 +124,8 @@ The current Foundation includes:
 - An accepted Phase 6 Step 4 production Go runtime with three bounded
   executables, PostgreSQL connectivity, and systemd process-host controls
 - An accepted Phase 6 Step 5 controlled Foundation policy-binding adapter
-- A Phase 6 Step 6 authenticated request and transport candidate
+- An accepted Phase 6 Step 6 authenticated request and transport boundary
+- A Phase 6 Step 7 integration and monitoring delivery-worker candidate
 
 ### Accepted Phase 0 Baseline
 
@@ -572,7 +573,7 @@ the accepted Phase 4 Foundation boundary.
 The following remain active work beyond the accepted Phase 5 database boundary
 and accepted Phase 6 Step 4 process-host checkpoint:
 
-- Phase 6 Step 6 authenticated request and transport acceptance
+- Phase 6 Step 7 delivery-worker acceptance
 - Additional controlled Foundation API operations after separate review
 - Authenticated request and transport boundaries
 - Integration and monitoring delivery-worker behavior
@@ -794,25 +795,24 @@ See:
 
 ## Current Phase Gate
 
-Phase 6 Step 4 is the newest accepted production Go implementation checkpoint
-at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`. Its final complete gate
-reported 71 PASS and 0 FAIL.
+Phase 6 Step 6 is the newest accepted production Go implementation checkpoint
+at commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`. Its final complete gate
+reported 92 PASS and 0 FAIL.
 
 Revalidate the accepted checkpoint with:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step4.sh
+./tools/validation/phase-gates/validate_phase6_step6.sh
 ```
 
-Phase 6 Step 5 is accepted at commit
-`1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with 96 PASS and 0 FAIL.
-Phase 6 Step 6 is the active authenticated request and transport candidate.
+Phase 6 Step 7 is the active integration and monitoring delivery-worker
+candidate.
 
 Candidate validation:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step5.sh --static-only
-./tools/validation/phase-gates/validate_phase6_step5.sh
+./tools/validation/phase-gates/validate_phase6_step7.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step7.sh
 ```
 
 Historical Phase 4 and Phase 5 acceptance gates remain available and validate
@@ -1057,20 +1057,16 @@ Formal acceptance record:
 Phase 5 is formally accepted and frozen at
 `phase-5-production-database-security-boundary-complete-v1`.
 
-Phase 6 Steps 1 through 4 are complete. The accepted Step 4 checkpoint at
-commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0` preserves the exact toolchain
-and dependency graph, typed configuration, bounded PostgreSQL connectivity,
-loopback-only administrative health/readiness, systemd service identities,
-encrypted credential delivery, readiness/stopping notification, watchdog,
-resource containment, and hostile runtime validation. Its final complete gate
-reported 71 PASS and 0 FAIL.
+Phase 6 Steps 1 through 6 are complete. The accepted Step 6 checkpoint at
+commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42` preserves the exact toolchain,
+database and process identities, controlled Foundation adapter, authenticated
+loopback transport, service-manager controls, cancellation, and graceful drain.
+Its final complete gate reported 92 PASS and 0 FAIL.
 
-Phase 6 Step 5 is accepted.
-
-Phase 6 Step 6 is active implementation-candidate
-work for one loopback-only signed authentication handoff and business route
-over `decision.bind_authorization_policy(uuid)`. Authentication context must
-not become authorization or be passed to SQL.
+Phase 6 Step 7 is active implementation-candidate work for the integration and
+monitoring delivery workers. It invokes only the six accepted claim,
+completion, and reschedule routines and must not hold a database transaction
+across external delivery.
 
 Governing records:
 
@@ -1079,11 +1075,12 @@ Governing records:
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Phase 6 Step 5 Controlled Foundation API Adapter](docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](docs/architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](docs/architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
 
 Active candidate gate:
 
 ```bash
-./tools/validation/phase-gates/validate_phase6_step6.sh
+./tools/validation/phase-gates/validate_phase6_step7.sh
 ```
 
 <!-- phase-6-step-2-status:start -->
@@ -1138,11 +1135,24 @@ SQL, direct table access, business listener, migration, or worker loop.
 <!-- phase-6-step-6-status:start -->
 ## Phase 6 Step 6 — Authenticated Request and Transport Boundary
 
-Step 6 is an implementation candidate for one loopback-only authenticated
-business route over the accepted Step 5 adapter. It adds signed short-lived
-gateway handoff verification, bounded replay protection, strict request limits,
-stable redacted envelopes, cancellation, and graceful drain. Authentication
-context does not become authorization and is not passed to SQL.
+Step 6 is accepted at commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`.
+Its final complete gate reported 92 PASS and 0 FAIL. It establishes one
+loopback-only authenticated business route, signed short-lived gateway handoff,
+bounded replay protection, strict request limits, stable redacted envelopes,
+cancellation, and graceful drain without converting identity into
+authorization.
 
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](docs/architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
 <!-- phase-6-step-6-status:end -->
+
+<!-- phase-6-step-7-status:start -->
+## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
+
+Step 7 is an implementation candidate for the exact integration outbox and
+monitoring delivery claim, completion, and reschedule routines. It uses
+service-specific database and relay credentials, a deployment-owned HTTPS
+relay, bounded idempotent envelopes, bounded concurrency and retry delay, and
+shutdown drain without holding a database transaction across network I/O.
+
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](docs/architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
+<!-- phase-6-step-7-status:end -->

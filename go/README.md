@@ -1,7 +1,7 @@
 # Go Source
 
-> **Current production status:** Phase 6 Step 6 Authenticated Request and
-> Transport Boundary implementation candidate. Phase 6 Step 5 is the newest
+> **Current production status:** Phase 6 Step 7 Integration and Monitoring
+> Delivery Workers implementation candidate. Phase 6 Step 6 is the newest
 > accepted implementation checkpoint.
 
 The production Go module exists at:
@@ -28,6 +28,7 @@ Governing records:
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](../docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Phase 6 Step 5 Controlled Foundation API Adapter](../docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](../docs/architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](../docs/architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
 
 <!-- phase-6-step-2-status:start -->
 ## Phase 6 Step 2 — Production Go Workspace and Reproducible Build Baseline
@@ -71,7 +72,15 @@ Step 5 is accepted at `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with
 <!-- phase-6-step-6-status:start -->
 ## Phase 6 Step 6 — Authenticated Request and Transport Boundary
 
-Step 6 adds a standard-library HMAC handoff verifier, replay window, typed
-request context, one bounded business route, and separate listener lifecycle.
-No new dependency or protected database operation is added.
+Step 6 is accepted at commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`
+with 92 complete gate PASS checks and 0 failures.
 <!-- phase-6-step-6-status:end -->
+
+<!-- phase-6-step-7-status:start -->
+## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
+
+Step 7 adds operation-specific claim, completion, and reschedule boundaries,
+two bounded worker loops, and an authenticated deployment-owned outbound relay.
+The worker package imports no SQL or pgx and holds no transaction across network
+I/O.
+<!-- phase-6-step-7-status:end -->

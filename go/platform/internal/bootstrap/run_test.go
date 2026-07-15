@@ -109,3 +109,33 @@ func TestRunRejectsMissingTransportCredentialBeforeDatabaseAccess(t *testing.T) 
 		t.Fatalf("output disclosed credential path: %q", output.String())
 	}
 }
+
+func TestRunRejectsMissingDeliveryCredentialBeforeDatabaseAccess(t *testing.T) {
+	directory := t.TempDir()
+	dsnPath := filepath.Join(directory, "database-url")
+	if err := os.WriteFile(
+		dsnPath,
+		[]byte("postgresql://issp_service_integration_delivery:secret@127.0.0.1:1/db?sslmode=disable\n"),
+		0o600,
+	); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	t.Setenv("ISSP_ADMIN_LISTEN_ADDRESS", "127.0.0.1:18082")
+	t.Setenv("ISSP_DATABASE_DSN_FILE", dsnPath)
+	t.Setenv("ISSP_DATABASE_ALLOW_INSECURE_LOCAL", "true")
+	t.Setenv("ISSP_DELIVERY_ENDPOINT", "http://127.0.0.1:19082/v1/deliveries")
+	t.Setenv("ISSP_DELIVERY_ALLOW_INSECURE_LOCAL", "true")
+	t.Setenv("ISSP_DELIVERY_TOKEN_FILE", filepath.Join(directory, "missing-token"))
+
+	var output bytes.Buffer
+	code := Run(context.Background(), &output, database.IntegrationDeliveryWorker)
+	if code != ExitConfiguration {
+		t.Fatalf("exit code = %d, want %d", code, ExitConfiguration)
+	}
+	if !strings.Contains(output.String(), "delivery credential rejected") {
+		t.Fatalf("output = %q", output.String())
+	}
+	if strings.Contains(output.String(), "missing-token") {
+		t.Fatalf("output disclosed credential path: %q", output.String())
+	}
+}

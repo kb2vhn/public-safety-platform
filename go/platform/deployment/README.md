@@ -1,8 +1,8 @@
-# Phase 6 Step 6 Linux Process and Authenticated Transport Deployment Boundary
+# Phase 6 Step 7 Linux Process, Transport, and Delivery-Worker Deployment Boundary
 
-> **Status:** Step 4 process-host checkpoint accepted; Step 6 Foundation API
-> authenticated transport configuration is an implementation candidate. These
-> files are not production installation approval.
+> **Status:** Step 6 authenticated transport checkpoint accepted; Step 7
+> integration and monitoring delivery-worker configuration is an implementation
+> candidate. These files are not production installation approval.
 
 ## Layout
 
@@ -26,7 +26,9 @@ The candidate installation layout is:
 ├── foundation-api.database-url.cred
 ├── foundation-api.transport-hmac-key.cred
 ├── integration-delivery-worker.database-url.cred
-└── monitoring-delivery-worker.database-url.cred
+├── integration-delivery-worker.delivery-token.cred
+├── monitoring-delivery-worker.database-url.cred
+└── monitoring-delivery-worker.delivery-token.cred
 ```
 
 No plaintext credential or encrypted production credential is stored in this
@@ -46,8 +48,8 @@ No fixed numeric UID or GID is embedded in the package.
 
 ## Credential provisioning
 
-Each service unit uses one distinct encrypted database credential source and exposes it
-to the process under the short name `database-url` through:
+Each service unit uses one distinct encrypted database credential source and
+exposes it to the process under the short name `database-url` through:
 
 ```text
 LoadCredentialEncrypted=database-url:<service-specific-source>
@@ -120,3 +122,28 @@ ISSP_TRANSPORT_MAX_CONCURRENT_REQUESTS=8
 
 The worker units receive none of these settings. The business listener is
 separate from the administrative port and remains loopback-only.
+
+
+## Step 7 delivery-worker relay credentials
+
+Each worker unit additionally receives one distinct encrypted `delivery-token`
+credential and a fixed deployment-owned relay endpoint. The repository unit
+uses an `.invalid` documentation endpoint so a deployment must replace it with
+a governed HTTPS relay before operational use.
+
+```text
+LoadCredentialEncrypted=delivery-token:<service-specific-source>
+ISSP_DELIVERY_TOKEN_FILE=%d/delivery-token
+ISSP_DELIVERY_ENDPOINT=https://<governed-relay>/v1/deliveries
+ISSP_DELIVERY_BATCH_SIZE=8
+ISSP_DELIVERY_MAX_CONCURRENT=4
+ISSP_DELIVERY_CLAIM_LEASE=30s
+ISSP_DELIVERY_POLL_INTERVAL=1s
+ISSP_DELIVERY_REQUEST_TIMEOUT=5s
+ISSP_DELIVERY_RETRY_INITIAL=5s
+ISSP_DELIVERY_RETRY_MAXIMUM=5m
+```
+
+The workers do not use database destination fields as network addresses. Relay
+credentials, endpoints, payloads, response bodies, and durable identifiers are
+excluded from logs.

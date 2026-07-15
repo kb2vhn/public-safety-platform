@@ -104,3 +104,14 @@ Go standard library. The accepted `pgx/v5` dependency remains confined to
 Step 6 adds no direct or transitive Go module. HMAC-SHA-256, SHA-256 body
 digests, base64url, JSON, HTTP limits, mutex-protected replay state, and
 timeouts use the Go standard library.
+
+
+<!-- phase-6-step-7-dependency-status -->
+## Phase 6 Step 7 Dependency Status
+
+Step 7 adds no direct or transitive Go module. HTTP relay delivery, TLS
+configuration, JSON envelopes, base64url bearer credentials, exponential
+backoff, concurrency bounds, cancellation, and drain behavior use the Go
+standard library. The accepted `pgx/v5` dependency remains confined to
+`internal/database`; `internal/workers` imports no pgx package and contains no
+SQL.

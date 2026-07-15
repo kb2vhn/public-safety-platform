@@ -4,9 +4,9 @@
 >
 > **Status:** Normative architecture under active refinement
 >
-> **Current status:** Phase 6 Step 6 Authenticated Request and Transport
-> Boundary implementation candidate. Phase 5 is formally accepted, and Phase 6
-> Step 5 is the newest accepted production Go implementation checkpoint.
+> **Current status:** Phase 6 Step 7 Integration and Monitoring Delivery Workers
+> implementation candidate. Phase 5 is formally accepted, and Phase 6 Step 6
+> is the newest accepted production Go implementation checkpoint.
 
 ## Dependency Direction
 
@@ -74,11 +74,10 @@ boundary are formally accepted. Phase 5 is identified by:
 phase-5-production-database-security-boundary-complete-v1
 ```
 
-Phase 6 Step 4 is the newest accepted production Go implementation checkpoint
-at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`. Its final complete gate
-reported 71 PASS and 0 FAIL. Phase 6 Step 5 is accepted.
-
-Phase 6 Step 6 is the active implementation candidate.
+Phase 6 Step 6 is the newest accepted production Go implementation checkpoint
+at commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`. Its final complete gate
+reported 92 PASS and 0 FAIL. Phase 6 Step 7 is the active implementation
+candidate.
 
 Historical accepted Phase 4 result:
 
@@ -267,9 +266,17 @@ Step 5 is accepted at `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with
 <!-- phase-6-step-6-status:start -->
 ## Phase 6 Step 6 — Authenticated Request and Transport Boundary
 
-Step 6 is a bounded implementation candidate for signed authentication
-handoff, strict transport limits, replay protection, stable envelopes, and
-cancellation over the one accepted Step 5 operation.
+Step 6 is accepted at `ec3c36081c686fa8ec82c8fd94bda421ed6cff42` with
+92 PASS and 0 FAIL.
 
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
 <!-- phase-6-step-6-status:end -->
+
+<!-- phase-6-step-7-status:start -->
+## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
+
+Step 7 is a bounded implementation candidate for service-specific durable
+claim, relay delivery, completion, retry, concurrency, and drain behavior.
+
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
+<!-- phase-6-step-7-status:end -->

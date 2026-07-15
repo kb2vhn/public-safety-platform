@@ -2,14 +2,14 @@
 
 > **Document status:** Normative Platform service architecture.
 >
-> **Phase status:** Phase 6 Step 6 Authenticated Request and Transport Boundary
+> **Phase status:** Phase 6 Step 7 Integration and Monitoring Delivery Workers
 > implementation candidate.
 >
-> **Implementation status:** Phase 6 Step 5 is accepted at commit
-> `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5` with 96 PASS and 0 FAIL in
-> complete validation. Step 6 adds one loopback business listener and signed
-> authentication handoff over the exact Step 5 adapter. Authentication context
-> does not become authorization or a database input.
+> **Implementation status:** Phase 6 Step 6 is accepted at commit
+> `ec3c36081c686fa8ec82c8fd94bda421ed6cff42` with 92 PASS and 0 FAIL in
+> complete validation. Step 7 adds the two exact durable delivery-worker loops
+> over the six accepted claim, completion, and reschedule routines without
+> holding a database transaction across external network delivery.
 >
 > **Database predecessor:** Phase 5 production database security boundary at
 > `phase-5-production-database-security-boundary-complete-v1`, targeting
@@ -565,9 +565,12 @@ allowing transport identity to become authorization.
 
 ### Step 7 — Integration and Monitoring Delivery Workers
 
-Implement bounded claim, external delivery, completion, retry, backpressure,
-and drain behavior for the accepted integration and monitoring worker
-identities.
+Implement only the two accepted delivery identities and six operation-specific
+claim, completion, and reschedule methods. Claimed destination values remain
+metadata; one deployment-owned HTTPS relay per worker owns network authority.
+Every request carries the durable identifier as an idempotency key. Batch,
+concurrency, payload, timeout, claim lease, retry delay, polling, and shutdown
+are bounded, and no database transaction spans external delivery.
 
 ### Step 8 — Hostile, Failure, Concurrency, and Resource Validation
 

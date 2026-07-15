@@ -1,6 +1,10 @@
 # Phase 6 Step 6 — Authenticated Request and Transport Boundary
 
-> **Status:** Implementation candidate. Acceptance is not yet claimed.
+> **Status:** Accepted implementation checkpoint.
+>
+> **Accepted checkpoint:** Commit
+> `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`; final complete validation
+> reported 92 PASS and 0 FAIL.
 >
 > **Accepted predecessor:** Phase 6 Step 5 at commit
 > `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5`, with 96 PASS and 0 FAIL in
@@ -429,8 +433,7 @@ Step 6 does not claim:
 
 ## 19. Next Step
 
-After Step 6 is accepted, Phase 6 Step 7 may implement the integration and
-monitoring delivery workers through their already accepted PostgreSQL claim,
-completion, and retry routines. Step 7 must preserve the process, credential,
-database-role, transport, and bounded resource boundaries accepted through
-Step 6.
+Phase 6 Step 7 now implements the integration and monitoring delivery workers
+through their already accepted PostgreSQL claim, completion, and retry
+routines. Step 7 preserves the process, credential, database-role, transport,
+and bounded resource boundaries accepted through Step 6.

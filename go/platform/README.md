@@ -1,18 +1,19 @@
 # Iron Signal Platform Production Go Module
 
-> **Phase status:** Phase 6 Step 6 Authenticated Request and Transport Boundary
+> **Phase status:** Phase 6 Step 7 Integration and Monitoring Delivery Workers
 > implementation candidate.
 >
-> **Accepted predecessor:** Phase 6 Step 5 at commit
-> `1aefa613a80c1f5cdaf7807702b1b747d7e77ec5`, with 96 PASS and 0 FAIL in
+> **Accepted predecessor:** Phase 6 Step 6 at commit
+> `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`, with 92 PASS and 0 FAIL in
 > complete validation.
 >
 > **Runtime status:** Three bounded service processes, typed configuration,
 > protected-file database credentials, PostgreSQL 18 compatibility checks,
 > local administrative health/readiness, systemd notification/watchdog
-> behavior, one typed authorization-policy adapter, and one authenticated
-> loopback business route exist. No external gateway, local authorization
-> engine, or durable worker loop exists.
+> behavior, one typed authorization-policy adapter, one authenticated loopback
+> business route, and two bounded durable delivery-worker loops exist. No local
+> authorization engine, direct protected-table access, generic job framework,
+> or database transaction spanning external delivery exists.
 
 ## Module
 
@@ -40,7 +41,9 @@ cmd/monitoring-delivery-worker
 ```
 
 Each executable is compiled with one exact Phase 5 PostgreSQL service identity.
-Only the Foundation API identity may construct the Step 5 controlled adapter.
+Only the Foundation API identity may construct the controlled adapter and
+business transport. Only the integration and monitoring identities may
+construct their corresponding Step 7 worker.
 
 ## Required Runtime Configuration
 
@@ -70,9 +73,21 @@ accepted only when `ISSP_DATABASE_ALLOW_INSECURE_LOCAL=true` is set explicitly.
 
 No password or full PostgreSQL URL is logged.
 
-## Step 5 Controlled Adapter
+Delivery workers additionally require:
 
-The candidate adapter is implemented in:
+```text
+ISSP_DELIVERY_ENDPOINT
+ISSP_DELIVERY_TOKEN_FILE
+```
+
+Batch size, maximum concurrency, claim lease, poll interval, request timeout,
+and retry delays have bounded defaults and accepted ranges. Remote relay
+endpoints require HTTPS. Plain HTTP is test-only through an explicit
+literal-loopback exception.
+
+## Accepted Step 5 Controlled Adapter
+
+The accepted adapter is implemented in:
 
 ```text
 internal/foundation/authorization_policy.go
@@ -93,7 +108,7 @@ Decision ID plus one closed stable reason code. The adapter:
 - performs no automatic retry;
 - contains no direct protected-table reference;
 - exposes no generic SQL or pgx primitive;
-- is not connected to a business-facing listener in Step 5.
+- is exposed only through the accepted Step 6 authenticated loopback route.
 
 PostgreSQL remains authoritative for row locking, policy resolution, terminal
 deny persistence, and statement atomicity.
@@ -124,23 +139,31 @@ exact reason codes, persisted Decision Record state, wrong-role denial,
 concurrency serialization, no direct protected-table privilege, and secret
 non-disclosure.
 
+`test-delivery-workers.sh` runs the Step 7 source, identity, operation-specific
+database-boundary, unit, and race checks.
+
+`test-delivery-workers-runtime.sh` uses PostgreSQL 18 and a bounded local relay
+to prove distinct claims, idempotency headers, success, retry, monitoring retry
+exhaustion, cross-role denial, no direct table privilege, and secret redaction.
+
 ## Governing Records
 
 - [Production Go Service Boundary and Runtime Model](../../docs/architecture/backend-services/production-go-service-boundary-and-runtime-model.md)
 - [Phase 6 Step 4 Process-Host Integration and Hostile Runtime Validation](../../docs/architecture/backend-services/phase-6-step-4-process-host-integration-and-hostile-runtime-validation.md)
 - [Phase 6 Step 5 Controlled Foundation API Adapter](../../docs/architecture/backend-services/phase-6-step-5-controlled-foundation-api-adapter.md)
+- [Phase 6 Step 6 Authenticated Request and Transport Boundary](../../docs/architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](../../docs/architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
 
 ## Boundary
 
 This module must not import `go/experiments/`.
 
-Step 5 does not expose a business API, authenticate a caller, construct trusted
-request context, finalize an authorization decision, issue an Authorization
-Lease, run a migration, access protected tables directly, claim delivery work,
-or provision a production credential.
+Step 7 does not add a second protected API operation, migration, generic job
+framework, direct table access, database-selected network destination, shared
+worker identity, exactly-once claim, or production credential.
 
 
-## Step 6 Authenticated Transport Candidate
+## Accepted Step 6 Authenticated Transport
 
 Foundation API requires a separate loopback business address and encrypted
 `transport-hmac-key` credential. The exact route is:
@@ -158,4 +181,24 @@ Validation:
 ```bash
 ./scripts/test-authenticated-transport.sh
 ./scripts/test-authenticated-transport-runtime.sh
+./scripts/test-delivery-workers.sh
+./scripts/test-delivery-workers-runtime.sh
 ```
+
+
+## Step 7 Delivery Worker Candidate
+
+The integration and monitoring worker identities receive distinct encrypted
+`delivery-token` credentials and fixed deployment-owned relay endpoints. They
+invoke only their exact claim, completion, and reschedule routines.
+
+Every delivery uses `ISSP-DELIVERY-V1`, a bounded JSON envelope, a bearer
+credential, and the durable item identifier as `Idempotency-Key`. Claimed
+external-system and monitoring-destination fields remain metadata and never
+select the relay URL.
+
+The worker loops stop claiming on cancellation, cancel in-flight HTTP requests,
+attempt bounded completion or reschedule only when the network result is known,
+and drain before the PostgreSQL pool closes. Integration retries are bounded
+per attempt but do not claim a terminal dead-letter state because the accepted
+integration schema has no terminal-failure routine.

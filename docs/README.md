@@ -2,9 +2,9 @@
 
 > **Owner:** Iron Signal Systems
 >
-> **Current status:** Phase 6 Step 6 Authenticated Request and Transport
-> Boundary implementation candidate; Phase 6 Step 5 is the newest accepted
-> production Go implementation checkpoint
+> **Current status:** Phase 6 Step 7 Integration and Monitoring Delivery Workers
+> implementation candidate; Phase 6 Step 6 is the newest accepted production
+> Go implementation checkpoint
 >
 > **Accepted database-security tag:**
 > `phase-5-production-database-security-boundary-complete-v1`
@@ -54,8 +54,8 @@
 - Phase 5 Production Database Security Boundary:
   `phase-5-production-database-security-boundary-complete-v1`
 
-Phase 6 Step 4 is the newest accepted production Go implementation checkpoint
-at commit `3e15c8cbb7b666537be6a7ec832800e8f4ca9af0`, with 71 complete gate PASS
+Phase 6 Step 6 is the newest accepted production Go implementation checkpoint
+at commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`, with 92 complete gate PASS
 checks and 0 failures.
 
 Accepted Phase 4 result:
@@ -248,13 +248,23 @@ with 96 PASS and 0 FAIL.
 <!-- phase-6-step-6-status:start -->
 ## Phase 6 Step 6 — Authenticated Request and Transport Boundary
 
-Step 6 is an implementation candidate for one loopback-only signed gateway
-handoff and one bounded POST route. It adds no second protected operation.
-
-```bash
-./tools/validation/phase-gates/validate_phase6_step6.sh --static-only
-./tools/validation/phase-gates/validate_phase6_step6.sh
-```
+Step 6 is accepted at commit `ec3c36081c686fa8ec82c8fd94bda421ed6cff42`
+with 92 PASS and 0 FAIL.
 
 - [Phase 6 Step 6 Authenticated Request and Transport Boundary](architecture/backend-services/phase-6-step-6-authenticated-request-and-transport-boundary.md)
 <!-- phase-6-step-6-status:end -->
+
+<!-- phase-6-step-7-status:start -->
+## Phase 6 Step 7 — Integration and Monitoring Delivery Workers
+
+Step 7 is an implementation candidate for two exact service-specific worker
+loops. It adds no migration, business route, direct table access, generic job
+framework, or database transaction spanning external delivery.
+
+```bash
+./tools/validation/phase-gates/validate_phase6_step7.sh --static-only
+./tools/validation/phase-gates/validate_phase6_step7.sh
+```
+
+- [Phase 6 Step 7 Integration and Monitoring Delivery Workers](architecture/backend-services/phase-6-step-7-integration-and-monitoring-delivery-workers.md)
+<!-- phase-6-step-7-status:end -->

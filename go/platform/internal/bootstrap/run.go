@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/authentication"
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/config"
@@ -15,6 +16,7 @@ import (
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/observability"
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/processhost"
 	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/transport"
+	"github.com/Iron-Signal-Systems/iron-signal-platform/go/platform/internal/workers"
 )
 
 const (
@@ -26,9 +28,9 @@ const (
 
 const ExitConfiguration = 78
 
-// Run executes the complete Step 6 lifecycle. The Foundation API receives one
-// separately bounded authenticated business listener; worker processes retain
-// only the accepted administrative listener and database lifecycle.
+// Run executes the complete Step 7 lifecycle. The Foundation API preserves the
+// Step 6 authenticated listener, while the two delivery identities receive only
+// their exact bounded worker loop and deployment-owned outbound relay.
 func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentity) int {
 	logger := observability.NewJSONLogger(output, identity.ProcessName)
 
@@ -51,6 +53,16 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 			logger.Error("transport credential rejected", "diagnostic", authentication.Diagnostic(err))
 			return ExitConfiguration
 		}
+	}
+
+	var deliveryToken []byte
+	if cfg.Delivery.Enabled {
+		deliveryToken, err = config.ReadDeliveryToken(cfg.Delivery.TokenFile)
+		if err != nil {
+			logger.Error("delivery credential rejected", "diagnostic", observability.SafeError(err))
+			return ExitConfiguration
+		}
+		defer zeroBytes(deliveryToken)
 	}
 
 	host, err := processhost.Load(os.LookupEnv, os.Getpid())
@@ -154,11 +166,29 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 		}
 	}
 
+	var deliveryRunner workers.Runner
+	if cfg.Delivery.Enabled {
+		deliveryRunner, err = workers.New(pool, cfg.Delivery, deliveryToken, logger)
+		zeroBytes(deliveryToken)
+		deliveryToken = nil
+		if err != nil {
+			notifyStopping(logger, host)
+			shutdownBusinessServer(logger, businessServer, cfg)
+			shutdownAdministrativeServer(logger, adminServer, cfg)
+			pool.Close()
+			logger.Error("delivery worker construction failed", "diagnostic", workers.Diagnostic(err))
+			return ExitConfiguration
+		}
+	}
+
 	state.SetReady(true)
 	if err := host.Ready(); err != nil {
 		state.SetReady(false)
 		logger.Error("process-host readiness notification failed", "diagnostic", processhost.Diagnostic(err))
 		notifyStopping(logger, host)
+		if deliveryRunner != nil {
+			deliveryRunner.Close()
+		}
 		shutdownBusinessServer(logger, businessServer, cfg)
 		shutdownAdministrativeServer(logger, adminServer, cfg)
 		pool.Close()
@@ -173,6 +203,7 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 		"process_host_notification", host.Enabled(),
 		"watchdog_enabled", host.WatchdogEnabled(),
 		"business_transport_enabled", cfg.Business.Enabled,
+		"delivery_worker_enabled", cfg.Delivery.Enabled,
 	)
 
 	var cancelWatchdog context.CancelFunc
@@ -183,6 +214,17 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 		watchdogResult = make(chan error, 1)
 		go func() {
 			watchdogResult <- host.RunWatchdog(watchdogContext)
+		}()
+	}
+
+	var cancelDelivery context.CancelFunc
+	var deliveryResult chan error
+	if deliveryRunner != nil {
+		deliveryContext, cancel := context.WithCancel(context.Background())
+		cancelDelivery = cancel
+		deliveryResult = make(chan error, 1)
+		go func() {
+			deliveryResult <- deliveryRunner.Run(deliveryContext)
 		}()
 	}
 
@@ -201,6 +243,14 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 			logger.Error("business listener stopped unexpectedly", "diagnostic", "business_listener_serve_failed")
 			exitCode = ExitSoftware
 		}
+	case deliveryErr := <-deliveryResult:
+		deliveryResult = nil
+		if deliveryErr != nil {
+			logger.Error("delivery worker stopped unexpectedly", "diagnostic", workers.Diagnostic(deliveryErr))
+		} else {
+			logger.Error("delivery worker stopped unexpectedly", "diagnostic", "delivery_worker_stopped")
+		}
+		exitCode = ExitSoftware
 	case watchdogErr := <-watchdogResult:
 		watchdogResult = nil
 		if watchdogErr != nil {
@@ -212,6 +262,12 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 	state.SetReady(false)
 	stopWatchdog(cancelWatchdog, watchdogResult)
 	notifyStopping(logger, host)
+	deliveryDrained := stopDeliveryWorker(logger, cancelDelivery, deliveryResult, cfg.ShutdownTimeout)
+	if !deliveryDrained {
+		exitCode = ExitSoftware
+	} else if deliveryRunner != nil {
+		deliveryRunner.Close()
+	}
 	shutdownBusinessServer(logger, businessServer, cfg)
 	shutdownAdministrativeServer(logger, adminServer, cfg)
 	pool.Close()
@@ -222,6 +278,29 @@ func Run(ctx context.Context, output io.Writer, identity database.ServiceIdentit
 func zeroBytes(value []byte) {
 	for index := range value {
 		value[index] = 0
+	}
+}
+
+func stopDeliveryWorker(logger *slog.Logger, cancel context.CancelFunc, result <-chan error, timeout time.Duration) bool {
+	if cancel == nil {
+		return true
+	}
+	cancel()
+	if result == nil {
+		return true
+	}
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+	select {
+	case err := <-result:
+		if err != nil {
+			logger.Error("delivery worker drain failed", "diagnostic", workers.Diagnostic(err))
+			return false
+		}
+		return true
+	case <-timer.C:
+		logger.Error("delivery worker drain timed out", "diagnostic", "delivery_worker_drain_timeout")
+		return false
 	}
 }
 
