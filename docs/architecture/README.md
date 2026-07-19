@@ -1,4 +1,4 @@
-# Platform Architecture
+# DNP Architecture
 
 > **Owner:** Iron Signal Systems
 >
@@ -31,6 +31,7 @@ monitoring vendor, identity provider, or compliance framework.
 ### Platform Foundation
 
 - [Platform Foundation Documentation](foundation/README.md)
+- [DNP Project Naming and Identity Transition](foundation/dnp-project-naming-and-identity-transition.md)
 - [Approval Independence and Separation of Duties](foundation/approval-independence-and-separation-of-duties-model.md)
 - [Resource Telemetry and Performance-Regression Testing](foundation/resource-telemetry-and-performance-regression-testing-model.md)
 - [Foundation Migration Timeout and Execution Performance Standard](foundation/foundation-migration-timeout-and-execution-performance-standard.md)

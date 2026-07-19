@@ -1,4 +1,4 @@
-# Platform Foundation Documentation
+# DNP Foundation Documentation
 
 > **Current cross-boundary status:** Phase 5 production database security
 > boundary formally accepted; Phase 6 Steps 3 through 7 production Go
