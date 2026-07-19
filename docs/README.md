@@ -1,4 +1,4 @@
-# Platform Documentation
+# DNP Documentation
 
 > **Owner:** Iron Signal Systems
 >
@@ -14,6 +14,7 @@
 ## Start Here
 
 - [Repository Overview](../README.md)
+- [DNP Project Naming and Identity Transition](architecture/foundation/dnp-project-naming-and-identity-transition.md)
 - [Architecture Index](architecture/README.md)
 - [Platform Foundation Documentation](architecture/foundation/README.md)
 - [Approval Independence and Separation of Duties](architecture/foundation/approval-independence-and-separation-of-duties-model.md)

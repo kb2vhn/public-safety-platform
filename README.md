@@ -1,4 +1,12 @@
-# Iron Signal Platform
+# DNP — Domain-Neutral Platform
+
+<p align="center">
+  <img
+    src="docs/assets/branding/dnp-platform-badge.png"
+    alt="DNP — Domain-Neutral Platform Foundation badge"
+    width="760"
+  >
+</p>
 
 > An Iron Signal Systems project
 >
@@ -18,6 +26,19 @@ Canonical repository:
 ```text
 https://github.com/Iron-Signal-Systems/iron-signal-platform
 ```
+
+## Project Identity
+
+**DNP** is the canonical project and product name. Its expansion is
+**Domain-Neutral Platform**. DNP is an Iron Signal Systems project.
+
+This project-identity change is intentionally separate from technical-identifier
+migration. The repository path, accepted tags, historical evidence, `issp_*`
+database and deployment identifiers, service names, schema-version identifiers,
+and phase-gate contracts remain unchanged unless a separately governed migration
+explicitly changes them.
+
+See [DNP Project Naming and Identity Transition](docs/architecture/foundation/dnp-project-naming-and-identity-transition.md).
 
 ## Project Mission
 
@@ -641,6 +662,7 @@ The authoritative Foundation migration order is maintained in:
 Start with:
 
 - [Platform Documentation](docs/README.md)
+- [DNP Project Naming and Identity Transition](docs/architecture/foundation/dnp-project-naming-and-identity-transition.md)
 - [Architecture Index](docs/architecture/README.md)
 - [Platform Foundation Documentation](docs/architecture/foundation/README.md)
 - [Foundation Terminology and Domain Neutrality](docs/architecture/foundation/foundation-terminology-and-domain-neutrality.md)
